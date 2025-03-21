@@ -1,6 +1,10 @@
 
-<div class="po-wrapper">
-  <po-toolbar p-title="Portal do Representante - Serv Sal"></po-toolbar>
+<div class="po-wrapper" *ngIf="!isLoginRoute">
+  <po-toolbar
+    p-title="Portal do Representante - Serv Sal"
+    [p-profile]="profile"
+    [p-profile-actions]="profileActions"
+  ></po-toolbar>
 
   <po-menu
     [p-collapsed]="false"
@@ -16,8 +20,9 @@
 
   </po-menu>
 
-  <po-page-default p-title="Home">
+  <po-page-default>
     <router-outlet></router-outlet>
   </po-page-default>
 </div>
 
+<router-outlet *ngIf="isLoginRoute"></router-outlet>
