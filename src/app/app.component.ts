@@ -34,7 +34,7 @@ export class AppComponent {
   }
 
   get isLoginRoute(): boolean {
-    return this.router.url.includes('/login')
+    return this.router.url.includes('/login') || this.router.url.includes('/page-not-found')
   }
 
   logoServSal = 'assets/images/logo-serv-sal.png';

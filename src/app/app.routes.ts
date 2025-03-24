@@ -7,6 +7,7 @@ import { TabelasPrecoComponent } from './components/tabelas-preco/tabelas-preco.
 import { LoginComponent } from './components/login/login.component';
 import { ContasAReceberComponent } from './components/contas-a-receber/contas-a-receber.component';
 import { HomeComponent } from './components/home/home.component';
+import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 
 export const routes: Routes = [
     {path: 'login',             title: 'Login',                     component: LoginComponent                                   },
@@ -16,5 +17,7 @@ export const routes: Routes = [
     {path: 'categorias',        title: 'Categorias e Performance',  component: CategoriasComponent,     canActivate: [authGuard]},
     {path: 'contas-a-receber',  title: 'Contas a Receber',          component: ContasAReceberComponent, canActivate: [authGuard]},
     {path: 'tabelas-preco',     title: 'Tabelas de Preço',          component: TabelasPrecoComponent,   canActivate: [authGuard]},
-    {path: '**',                redirectTo: 'login'},
+    {path: 'page-not-found',    title: 'Página não encontrada',     component: PageNotFoundComponent,   canActivate: [authGuard]},
+    {path: '',                  redirectTo: 'home',                 pathMatch: 'full'},
+    {path: '**',                redirectTo: 'page-not-found'},
 ];
