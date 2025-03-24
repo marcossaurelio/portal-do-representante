@@ -73,13 +73,24 @@
 
     </div>
 
+    <po-table
+        [p-columns]="columns"
+        [p-items]="items"
+        [p-draggable]="true"
+        [p-hide-columns-manager]="true"
+        [p-sort]="true"
+        [p-striped]="false"
+        [p-actions]="itemActions"
+    >
+
+    </po-table>
+
 </po-page-dynamic-search>
 
 <style>
     .add-button {
         margin-top: 15px;
         margin-bottom: 20px;
-        margin-top: -10px;
     }
 
     .stat-widget {
@@ -92,7 +103,7 @@
         --border-color-selected: #045B8F;
         margin-left: -10px;
         margin-right: 10px;
-        margin-bottom: 10px;
+        margin-bottom: 20px;
     }
     
     .stat-label {
