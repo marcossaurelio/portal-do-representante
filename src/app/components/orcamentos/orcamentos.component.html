@@ -1,1 +1,120 @@
-<p>orcamentos works!</p>
+<po-page-dynamic-search class="dsearch" p-title="Orçamentos" [p-filters]="[{ property: 'name' }]">
+
+    <po-button
+        class="add-button"
+        (p-click)="addOrcamento()"
+        p-aria-label="Teste"
+        p-icon="an an-plus"
+        p-kind="primary"
+        p-label="Incluir"
+    ></po-button>
+
+    <div>
+
+        <po-widget
+            class="po-xl-2 po-lg-4 po-md-6 stat-widget"
+            (p-click)="addOrcamento()"
+            [p-height]="74"
+        >
+            <po-icon p-icon="an an-money-wavy" class="icon"></po-icon>
+            <p class="stat-label">Em cotação</p>
+            <p class="stat-value">10</p>
+        </po-widget>
+
+        <po-widget
+            class="po-xl-2 po-lg-4 po-md-6 stat-widget"
+            (p-click)="addOrcamento()"
+            [p-height]="74"
+        >
+            <po-icon p-icon="an an-check-circle" class="icon"></po-icon>
+            <p class="stat-label">Em aprovação</p>
+            <p class="stat-value">2</p>
+        </po-widget>
+
+        <po-widget
+        class="po-xl-2 po-lg-4 po-md-6 stat-widget"
+        (p-click)="addOrcamento()"
+        [p-height]="74"
+        >
+            <po-icon p-icon="an an-truck" class="icon"></po-icon>
+            <p class="stat-label">Em carregamento</p>
+            <p class="stat-value">3</p>
+        </po-widget>
+
+        <po-widget
+            class="po-xl-2 po-lg-4 po-md-6 stat-widget"
+            (p-click)="addOrcamento()"
+            [p-height]="74"
+        >
+            <po-icon p-icon="an an-flag-checkered" class="icon"></po-icon>
+            <p class="stat-label">Finalizados</p>
+            <p class="stat-value">21</p>
+        </po-widget>
+
+        <po-widget
+            class="po-xl-2 po-lg-4 po-md-6 stat-widget"
+            (p-click)="addOrcamento()"
+            [p-height]="74"
+        >
+            <po-icon p-icon="an an-x-circle" class="icon"></po-icon>
+            <p class="stat-label">Rejeitados</p>
+            <p class="stat-value">6</p>
+        </po-widget>
+
+        <po-widget
+            class="po-xl-2 po-lg-4 po-md-6 stat-widget"
+            (p-click)="addOrcamento()"
+            [p-height]="74"
+        >
+            <po-icon p-icon="an an-timer" class="icon"></po-icon>
+            <p class="stat-label">Pendente ação</p>
+            <p class="stat-value">7</p>
+        </po-widget>
+
+    </div>
+
+</po-page-dynamic-search>
+
+<style>
+    .add-button {
+        margin-top: 15px;
+        margin-bottom: 20px;
+        margin-top: -10px;
+    }
+
+    .stat-widget {
+        --border-radius: 8px;
+        --border-width: 2px;
+        --border-color: #B4E2FD;
+        --shadow: 0;
+        --border-color-hover: #045B8F;
+        --background-selected: #B4E2FD;
+        --border-color-selected: #045B8F;
+        margin-left: -10px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        color: #045B8F;
+        font-weight: 600;
+        margin-bottom: 4px;
+        margin-top: -52px;
+        margin-left: 50px;
+        white-space: nowrap;
+    }
+
+    .stat-value {
+        font-size: 32px;
+        color: #045B8F;
+        font-weight: 600;
+        margin-left: 50px;
+        white-space: nowrap;
+    }
+
+    .icon {
+        font-size: 36px;
+        color: #045B8F;
+    }
+</style>
