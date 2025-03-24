@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import { PoPageModule } from '@po-ui/ng-components';
+import { PoPageModule, PoInfoModule } from '@po-ui/ng-components';
 
 @Component({
   selector: 'app-home',
   imports: [
-    PoPageModule
+    PoPageModule,
+    PoInfoModule,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
