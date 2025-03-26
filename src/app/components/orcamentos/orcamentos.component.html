@@ -16,9 +16,9 @@
             (p-click)="addOrcamento()"
             [p-height]="74"
         >
-            <po-icon p-icon="an an-money-wavy" class="icon"></po-icon>
-            <p class="stat-label">Em cotação</p>
+            <po-icon p-icon="an an-money-wavy" class="stat-icon"></po-icon>
             <p class="stat-value">10</p>
+            <p class="stat-label">Em cotação</p>
         </po-widget>
 
         <po-widget
@@ -26,9 +26,9 @@
             (p-click)="addOrcamento()"
             [p-height]="74"
         >
-            <po-icon p-icon="an an-check-circle" class="icon"></po-icon>
-            <p class="stat-label">Em aprovação</p>
+            <po-icon p-icon="an an-check-circle" class="stat-icon"></po-icon>
             <p class="stat-value">2</p>
+            <p class="stat-label">Em aprovação</p>
         </po-widget>
 
         <po-widget
@@ -36,9 +36,9 @@
         (p-click)="addOrcamento()"
         [p-height]="74"
         >
-            <po-icon p-icon="an an-truck" class="icon"></po-icon>
-            <p class="stat-label">Em carregamento</p>
+            <po-icon p-icon="an an-truck" class="stat-icon"></po-icon>
             <p class="stat-value">3</p>
+            <p class="stat-label">Em carregamento</p>
         </po-widget>
 
         <po-widget
@@ -46,9 +46,9 @@
             (p-click)="addOrcamento()"
             [p-height]="74"
         >
-            <po-icon p-icon="an an-flag-checkered" class="icon"></po-icon>
-            <p class="stat-label">Finalizados</p>
+            <po-icon p-icon="an an-flag-checkered" class="stat-icon"></po-icon>
             <p class="stat-value">21</p>
+            <p class="stat-label">Finalizados</p>
         </po-widget>
 
         <po-widget
@@ -56,9 +56,9 @@
             (p-click)="addOrcamento()"
             [p-height]="74"
         >
-            <po-icon p-icon="an an-x-circle" class="icon"></po-icon>
-            <p class="stat-label">Rejeitados</p>
+            <po-icon p-icon="an an-x-circle" class="stat-icon"></po-icon>
             <p class="stat-value">6</p>
+            <p class="stat-label">Rejeitados</p>
         </po-widget>
 
         <po-widget
@@ -66,9 +66,9 @@
             (p-click)="addOrcamento()"
             [p-height]="74"
         >
-            <po-icon p-icon="an an-timer" class="icon"></po-icon>
-            <p class="stat-label">Pendente ação</p>
+            <po-icon p-icon="an an-timer" class="stat-icon"></po-icon>
             <p class="stat-value">7</p>
+            <p class="stat-label">Pendente ação</p>
         </po-widget>
 
     </div>
@@ -97,7 +97,6 @@
         --border-radius: 8px;
         --border-width: 2px;
         --border-color: #B4E2FD;
-        --shadow: 0;
         --border-color-hover: #045B8F;
         --background-selected: #B4E2FD;
         --border-color-selected: #045B8F;
@@ -110,9 +109,8 @@
         font-size: 14px;
         color: #045B8F;
         font-weight: 600;
-        margin-bottom: 4px;
-        margin-top: -52px;
-        margin-left: 50px;
+        margin-left: 45px;
+        margin-bottom: -10px;
         white-space: nowrap;
     }
 
@@ -120,12 +118,14 @@
         font-size: 32px;
         color: #045B8F;
         font-weight: 600;
-        margin-left: 50px;
+        margin-left: 45px;
+        margin-top: -42px;
         white-space: nowrap;
     }
 
-    .icon {
+    .stat-icon {
         font-size: 36px;
         color: #045B8F;
+        margin-left: -3px;
     }
 </style>
