@@ -1,10 +1,13 @@
 <po-page-dynamic-search
     class="dsearch" p-title="Orçamentos"
-    [p-filters]="filterColumns"
+    [p-filters]="filters"
     [p-actions]="actions"
     [p-concat-filters]="true"
     [p-concat-filters]="true"
     [p-keep-filters]="true"
+    (p-advanced-search)="onAdvancedSearch($event)"
+    (p-change-disclaimers)="onChangeDisclaimers($event)"
+    (p-quick-search)="onQuickSearch($event)"
     >
 
     <div>
@@ -73,7 +76,7 @@
 
     <po-table
         [p-columns]="columns"
-        [p-items]="items"
+        [p-items]="filteredItems"
         [p-actions]="itemActions"
         [p-hide-columns-manager]="true"
         [p-draggable]="true"
@@ -81,7 +84,7 @@
         [p-striped]="true"
         p-container="border"
         [p-height]="400"
-
+        [p-loading-show-more]="true"
     >
 
     </po-table>

@@ -22,6 +22,7 @@ export class OrcamentosComponent {
 
   public columns: Array<PoTableColumn> = [];
   public items: Array<any> = [];
+  public filteredItems: Array<any> = [];
 
   public readonly actions: Array<PoPageAction> = [
     {label: 'Incluir', action: this.addBudget.bind(this), icon: 'an an-plus', disabled: false, visible: true}
@@ -35,21 +36,23 @@ export class OrcamentosComponent {
     {action: this.rejectQuotation.bind(this),   icon: 'an an-x',                  label: 'Rejeitar cotação',   disabled: (item: any) => !this.isPendingQuotation(item)  },
   ]
 
-  public readonly filterColumns: Array<PoPageDynamicSearchFilters> = [
+  public readonly filters: Array<PoPageDynamicSearchFilters> = [
     { property: 'budget',         label: 'Orçamento'      , type: 'label'},
     { property: 'order',          label: 'Pedido'         },
     { property: 'customer',       label: 'Cliente'        },
     { property: 'inclusionDate',  label: 'Data Inclusão'  },
   ]
+
   
   constructor(){
 
   }
   
-  ngOnInit(): void {
+  public ngOnInit(): void {
     
     this.columns = this.getColumns();
     this.items = this.getItems();
+    this.filteredItems = this.getItems();
 
   }
 
@@ -96,6 +99,68 @@ export class OrcamentosComponent {
       {'budgetStatus':'CR',   'orderStatus':' ',  'budget':'000025',   'order':'      ',  'customer':'SERV SAL REFINARIA LTDA',              'inclusionDate':'10/03/2025'},
     ]
   }
+
+  public onAdvancedSearch(filter: object) {
+    const filters = Object.entries(filter)
+    filters.length ? this.searchItems(filters) : this.resetFilters();
+  }
+  
+  private resetFilters() {
+    this.filteredItems = this.items;
+  }
+  
+  private searchItems(filters: Array<any>) {
+    this.filteredItems = this.items.filter(item => {
+    return filters.every(([key, value]) => {
+      if (!item[key]) return false;  // Se a chave não existir no item, o item não passa
+      return String(item[key]).toLowerCase().includes(String(value).toLowerCase());
+    });
+  });
+  }
+
+  public onQuickSearch(value: string) {
+    this.filteredItems = this.items.filter(item =>
+      Object.keys(item).some(key =>
+        item[key]?.toString().toLowerCase().includes(value.toLowerCase())
+      )
+    );
+  }
+
+  public onChangeDisclaimers(disclaimers: Array<any>) {
+    if(disclaimers.length > 0) {
+
+      let filters: Array<any> = []
+      disclaimers.forEach(disclaimer => filters.push([disclaimer.property,disclaimer.value]));
+      this.searchItems(filters);
+
+    } else {
+
+      this.resetFilters();
+      
+    }
+  }
+
+  /*public onChangeDisclaimers(disclaimers) {
+    const filter = {};
+    disclaimers.forEach(item => {
+      filter[item.property] = item.value;
+    });
+    this.searchItems(filter);
+  }
+
+  public onQuickSearch(filter) {
+    filter ? this.searchItems({ name: filter }) : this.resetFilters();
+  }
+
+
+  private updateFilters() {
+    this.filters[0].options = this.statusOptions;
+    this.filters[3].options = this.jobDescriptionOptions;
+  }
+
+  private onClickRemoveAllDisclaimer() {
+    this.hideRemoveAllDisclaimer = !this.hideRemoveAllDisclaimer;
+  }*/
 
   private isPendingQuotation(item: any): boolean {
     return item.budgetStatus === 'CP';
