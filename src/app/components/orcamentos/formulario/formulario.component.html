@@ -1,0 +1,50 @@
+<po-page-edit
+    p-title="Orçamentos - Inclusão"
+    >
+
+    <po-tabs>
+
+        <po-tab
+        [p-active]="true"
+        p-label="Dados gerais" >
+            <po-container
+            [p-height]="176"
+            [p-no-border]="true"
+            [p-no-padding]="true" >
+                <po-dynamic-form [p-fields]="[{ property: 'budgetType', required: true, showRequired: true, label: 'Tipo do orçamento' }]">
+                    
+                </po-dynamic-form>
+            </po-container>
+        </po-tab>
+
+        <po-tab
+        [p-active]="true"
+        p-label="Dados logísticos" >
+            <po-container
+            [p-height]="176"
+            [p-no-border]="true"
+            [p-no-padding]="true" >
+                <po-dynamic-form [p-fields]="[
+                    { property: 'transportationType', required: true, showRequired: true, label: 'Tipo de frete' },
+                    { property: 'transportationdsaType', required: true, showRequired: true, label: 'Tipo de frete' },
+                    { property: 'transportatidasonType', required: true, showRequired: true, label: 'Tipo de frete' },
+                    { property: 'transportatdasionType', required: true, showRequired: true, label: 'Tipo de frete' },
+                    { property: 'transportatdasdionType', required: true, showRequired: true, label: 'Tipo de frete' },
+                    { property: 'transportadsdtionType', required: true, showRequired: true, label: 'Tipo de frete' },
+                    ]">
+
+                </po-dynamic-form>
+            </po-container>
+        </po-tab>
+
+    </po-tabs>
+
+    <po-container
+    [p-height]="310"
+    [p-no-border]="true"
+    [p-no-padding]="true" >
+        <po-grid [p-data]="data" [p-columns]="columns" class="teste">
+    
+        </po-grid>
+    </po-container>
+</po-page-edit>

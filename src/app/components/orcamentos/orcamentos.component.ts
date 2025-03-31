@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { PoInfoModule, PoSearchModule, PoTableModule, PoTagType, PoTableColumn, PoButtonModule, PoWidgetModule, PoFieldModule, PoModule, PoTableAction, PoPageAction } from '@po-ui/ng-components';
-import { PoPageDynamicSearchModule, PoPageDynamicSearchLiterals, PoPageDynamicSearchFilters, PoPageDynamicTableModule } from '@po-ui/ng-templates';
+import { PoPageDynamicSearchModule, PoPageDynamicSearchFilters, PoPageDynamicTableModule } from '@po-ui/ng-templates';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-orcamentos',
@@ -44,7 +45,7 @@ export class OrcamentosComponent {
   ]
 
   
-  constructor(){
+  constructor(private router: Router){
 
   }
   
@@ -140,34 +141,12 @@ export class OrcamentosComponent {
     }
   }
 
-  /*public onChangeDisclaimers(disclaimers) {
-    const filter = {};
-    disclaimers.forEach(item => {
-      filter[item.property] = item.value;
-    });
-    this.searchItems(filter);
-  }
-
-  public onQuickSearch(filter) {
-    filter ? this.searchItems({ name: filter }) : this.resetFilters();
-  }
-
-
-  private updateFilters() {
-    this.filters[0].options = this.statusOptions;
-    this.filters[3].options = this.jobDescriptionOptions;
-  }
-
-  private onClickRemoveAllDisclaimer() {
-    this.hideRemoveAllDisclaimer = !this.hideRemoveAllDisclaimer;
-  }*/
-
   private isPendingQuotation(item: any): boolean {
     return item.budgetStatus === 'CP';
   }
   
   public addBudget() {
-    
+    this.router.navigate(['/','orcamentos','formulario'])
   }
   
   public viewBudget() {
