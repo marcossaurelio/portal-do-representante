@@ -23,7 +23,7 @@ jobs:
           node-version: 18
 
       - name: Instalar dependências
-        run: npm install
+        run: npm install --force
 
       - name: Compilar o projeto
         run: npm run build -- --configuration=production --base-href="/portal-do-representante/"
