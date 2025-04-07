@@ -1,12 +1,16 @@
-import { Component } from '@angular/core';
-import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule } from '@po-ui/ng-components';
+import { Component, ViewChild } from '@angular/core';
+import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormLoad } from '@po-ui/ng-components';
 import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-formulario',
   imports: [
     PoTabsModule,
     PoPageModule,
+    PoTableModule,
+    PoModalModule,
+    PoButtonModule,
     PoPageDynamicEditModule,
     PoDynamicModule,
     PoGridModule,
@@ -17,61 +21,304 @@ import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
 })
 export class FormularioComponent {
 
-  constructor() {
-
+  
+  constructor(private router: Router) {
+    
   }
 
+  @ViewChild(PoModalComponent, { static: true }) 'modal': PoModalComponent;
+
+  public readonly fields: Array<PoDynamicFormField> = [
+    {
+      property: 'loadingLocation',
+      label: 'Unidade Carreg.',
+      visible: true,
+      required: true,
+      showRequired: true,
+      readonly: false,
+      gridColumns: 3,
+      options: [
+        { loadingLocation: 'Rio Grande do Norte', code: "RN" },
+        { loadingLocation: 'Rio Grande do Norte', code: "RN" },
+        { loadingLocation: 'São Paulo',           code: "SP" },
+        { loadingLocation: 'Rio de Janeiro',      code: "RJ" },
+      ],
+      type: 'string',
+      fieldValue: 'code',
+      fieldLabel: 'loadingLocation',
+      order: 1,
+    },
+    {
+      property: 'budgetType',
+      label: 'Tipo Orçamento',
+      visible: true,
+      required: true,
+      showRequired: true,
+      readonly: true,
+      minLength: 6,
+      maxLength: 6,
+      gridColumns: 3,
+      type: 'string',
+      order: 1,
+    },
+    {
+      property: 'customer',
+      label: 'Cliente',
+      visible: true,
+      required: true,
+      showRequired: true,
+      readonly: false,
+      minLength: 3,
+      maxLength: 70,
+      gridColumns: 4,
+      type: 'string',
+      order: 1,
+    },
+    {
+      property: 'paymentTerms',
+      label: 'Cond. Pag.',
+      visible: true,
+      required: true,
+      showRequired: true,
+      readonly: false,
+      minLength: 3,
+      maxLength: 40,
+      gridColumns: 2,
+      type: 'string',
+      order: 1,
+    },
+    {
+      property: 'observation',
+      label: 'Observação',
+      visible: true,
+      required: false,
+      showRequired: false,
+      readonly: false,
+      maxLength: 100,
+      gridColumns: 12,
+      type: 'string',
+      rows: 1,
+      order: 1,
+    },
+    {
+      property: 'freightType',
+      label: 'Tipo Frete',
+      visible: true,
+      required: true,
+      showRequired: true,
+      readonly: false,
+      maxLength: 3,
+      gridColumns: 3,
+      options: [
+        { freightType: 'CIF' },
+        { freightType: 'CIF' },
+        { freightType: 'FOB' },
+        { freightType: 'FOB' },
+      ],
+      type: 'string',
+      fieldValue: 'freightType',
+      fieldLabel: 'freightType',
+      order: 2,
+    },
+    {
+      property: 'freightPaymentTerms',
+      label: 'Cond. Pag. Frete',
+      visible: true,
+      required: false,
+      showRequired: false,
+      readonly: true,
+      minLength: 3,
+      maxLength: 40,
+      gridColumns: 3,
+      type: 'string',
+      order: 2,
+    },
+    {
+      property: 'cargoType',
+      label: 'Tipo Carga',
+      visible: true,
+      required: false,
+      showRequired: false,
+      readonly: true,
+      minLength: 3,
+      maxLength: 40,
+      gridColumns: 3,
+      options: [
+        { cargoType: 'Batida'     },
+        { cargoType: 'Batida'     },
+        { cargoType: 'Paletizada' },
+        { cargoType: 'Paletizada' },
+      ],
+      type: 'string',
+      fieldValue: 'cargoType',
+      fieldLabel: 'cargoType',
+      order: 2,
+    },
+  ]
+  
   public readonly columns: Array<any> = [
-    { property: 'id', label: 'Código', align: 'right', readonly: true, freeze: true, width: 120 },
-    { property: 'name', label: 'Nome', width: '200px', required: true },
-    { property: 'occupation', label: 'Cargo', width: 150 },
-    { property: 'email', label: 'E-mail', width: 100, required: true },
-    { property: 'status', label: 'Status', align: 'center', width: 80 },
-    { property: 'lastActivity', label: 'Última atividade', align: 'center', width: 140 }
+    {
+      property: 'item',
+      label: 'Item',
+      type: 'string',
+      required: true,
+      showRequired: false,
+      readonly: true,
+      minLength: 2,
+      maxLength: 4,
+      gridColumns: 1,
+    },
+    {
+      property: 'productCode',
+      label: 'Cód. Produto',
+      type: 'string',
+      required: true,
+      showRequired: false,
+      readonly: false,
+      maxLength: 20,
+      gridColumns: 3,
+    },
+    {
+      property: 'productDescription',
+      label: 'Desc. Produto',
+      type: 'string',
+      required: false,
+      showRequired: false,
+      readonly: true,
+      maxLength: 60,
+      gridColumns: 6,
+    },
+    {
+      property: 'amount',
+      label: 'Quantidade',
+      type: 'number',
+      required: true,
+      showRequired: false,
+      readonly: false,
+      maxLength: 20,
+      gridColumns: 2,
+    },
+    {
+      property: 'packagingType',
+      label: 'Embalagem',
+      type: 'string',
+      required: true,
+      showRequired: false,
+      readonly: false,
+      maxLength: 20,
+      gridColumns: 2,
+    },
+    {
+      property: 'unitPrice',
+      label: 'Valor Unit.',
+      type: 'currency',
+      required: false,
+      showRequired: false,
+      readonly: true,
+      maxLength: 20,
+      gridColumns: 2,
+    },
+    {
+      property: 'totalPrice',
+      label: 'Valor Total',
+      type: 'currency',
+      required: false,
+      showRequired: false,
+      readonly: true,
+      maxLength: 20,
+      gridColumns: 2,
+    },
+    {
+      property: 'comission',
+      label: 'Comissão',
+      type: 'number',
+      required: true,
+      showRequired: false,
+      readonly: false,
+      maxLength: 20,
+      gridColumns: 2,
+    },
   ];
 
-  public readonly data: Array<any> = [
+  public rows: Array<any> = [
     {
-      id: 629131,
-      name: 'Jhonatas Silvano',
-      occupation: 'Developer',
-      email: 'jhonatas.silvano@po-ui.com.br',
-      status: 'Active',
-      lastActivity: '2018-12-12'
+      item: '01',
     },
-    {
-      id: 78492341,
-      name: 'Rafael Gonçalvez',
-      occupation: 'Engineer',
-      email: 'rafael.goncalvez@po-ui.com.br',
-      status: 'Active',
-      lastActivity: '2018-12-10'
-    },
-    {
-      id: 986434,
-      name: 'Nicoli Pereira',
-      occupation: 'Developer',
-      email: 'nicoli.pereira@po-ui.com.br',
-      status: 'Active',
-      lastActivity: '2018-12-12'
-    },
-    {
-      id: 4235652,
-      name: 'Mauricio João Mendez',
-      occupation: 'Developer',
-      email: 'mauricio.joao@po-ui.com.br',
-      status: 'Active',
-      lastActivity: '2018-11-23'
-    },
-    {
-      id: 629131,
-      name: 'Leandro Oliveira',
-      occupation: 'Engineer',
-      email: 'leandro.oliveira@po-ui.com.br',
-      status: 'Active',
-      lastActivity: '2018-11-30'
-    }
   ];
 
+  public readonly confirmRow: PoModalAction = {
+    action: () => {
+      this.saveRow(this.rowData);
+    },
+    label: 'Confirmar',
+    disabled: false,
+    loading: false,
+  }
+  
+  public readonly cancelRow: PoModalAction = {
+    action: () => {
+      this.closeRow();
+    },
+    label: 'Cancelar',
+    disabled: false,
+    loading: false,
+  }
+
+  public rowData: any = {}
+
+  public readonly generalDataFields: Array<PoDynamicFormField> = this.getFields(1)
+  public readonly logisticsDataFields: Array<PoDynamicFormField> = this.getFields(2)
+
+  public gridRowActions: Array<PoTableAction> = [
+    { action: this.onModifyRow.bind(this),       icon: 'an an-note-pencil',   label: 'Alterar linha',     disabled: false },
+    { action: this.onAddRow.bind(this),          icon: 'an an-plus',          label: 'Adicionar linha',   disabled: false },
+  ];
+
+  public getFields(order: number): Array<PoDynamicFormField> {
+    return this.fields.filter(field => field.order == order);
+  }
+
+  public fillRowData(row: any): void {
+    Object.entries(row).forEach(([key, value]) => this.rowData[key] = value);
+  }
+
+  public fillRowNextItem(row: any): void {
+    const item = this.rows[this.rows.length-1].item;
+    const newItem = parseInt(item, 10)+1
+    this.rowData.item = newItem.toString().padStart(item.length, '0')
+  }
+
+  public eraseRowData(): void {
+    this.rowData = {};
+  }
+
+  public onSaveForm() {
+    
+  }
+
+  public onCancelForm() {
+    this.router.navigate(['/','orcamentos'])
+  }
+
+  public onModifyRow(row: Object) {
+    this.eraseRowData();
+    this.fillRowData(row)
+    this.modal.open()
+  }
+
+  public onAddRow(row: Object) {
+    this.eraseRowData();
+    this.fillRowNextItem(row)
+    this.modal.open()
+  }
+
+  public saveRow(row: any) {
+    this.rows = [...this.rows, row]
+    this.modal.close()
+  }
+
+  public closeRow() {
+    this.modal.close()
+  }
 
 }

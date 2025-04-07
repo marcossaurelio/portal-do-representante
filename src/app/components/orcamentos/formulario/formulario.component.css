@@ -1,6 +1,6 @@
 ::ng-deep po-grid .po-grid-cell {
-    border-color: #B4E2FD !important; /* Cor da barra vertical do grid */
-    --color-grid-head-content-border-bottom-color: #B4E2FD; /* Cor da barra horizontal do grid */
+    border-color: #B4E2FD !important; /* Cor da barra vertical do po-grid */
+    --color-grid-head-content-border-bottom-color: #B4E2FD; /* Cor da barra horizontal do po-grid */
 }
 
 ::ng-deep .po-tab-button {

@@ -1,5 +1,8 @@
 <po-page-edit
     p-title="Orçamentos - Inclusão"
+    (p-save)="onSaveForm()"
+    (p-cancel)="onCancelForm()"
+    [p-disable-submit]="false"
     >
 
     <po-tabs>
@@ -11,7 +14,7 @@
             [p-height]="176"
             [p-no-border]="true"
             [p-no-padding]="true" >
-                <po-dynamic-form [p-fields]="[{ property: 'budgetType', required: true, showRequired: true, label: 'Tipo do orçamento' }]">
+                <po-dynamic-form [p-fields]="generalDataFields">
                     
                 </po-dynamic-form>
             </po-container>
@@ -24,27 +27,50 @@
             [p-height]="176"
             [p-no-border]="true"
             [p-no-padding]="true" >
-                <po-dynamic-form [p-fields]="[
-                    { property: 'transportationType', required: true, showRequired: true, label: 'Tipo de frete' },
-                    { property: 'transportationdsaType', required: true, showRequired: true, label: 'Tipo de frete' },
-                    { property: 'transportatidasonType', required: true, showRequired: true, label: 'Tipo de frete' },
-                    { property: 'transportatdasionType', required: true, showRequired: true, label: 'Tipo de frete' },
-                    { property: 'transportatdasdionType', required: true, showRequired: true, label: 'Tipo de frete' },
-                    { property: 'transportadsdtionType', required: true, showRequired: true, label: 'Tipo de frete' },
-                    ]">
-
+                <po-dynamic-form [p-fields]="logisticsDataFields">
+                        
                 </po-dynamic-form>
             </po-container>
         </po-tab>
 
     </po-tabs>
 
-    <po-container
+    <!--
+        <po-container
+        [p-height]="310"
+        [p-no-border]="true"
+        [p-no-padding]="true" >
+            <po-grid [p-data]="data" [p-columns]="gridColumns" [p-row-actions]="gridRowActions">
+        
+            </po-grid>
+        </po-container>
+    -->
+
+    <po-table
+    [p-columns]="columns"
+    [p-items]="rows"
+    [p-actions]="gridRowActions"
+    [p-hide-columns-manager]="true"
+    [p-draggable]="false"
+    [p-sort]="false"
+    [p-striped]="true"
+    p-container="border"
     [p-height]="310"
-    [p-no-border]="true"
-    [p-no-padding]="true" >
-        <po-grid [p-data]="data" [p-columns]="columns" class="teste">
-    
-        </po-grid>
-    </po-container>
+    [p-loading-show-more]="true" >
+
+    </po-table>
+
+    <po-modal #modal
+    [p-click-out]="false"
+    [p-hide-close]="true"
+    p-icon="an an-plus-circle"
+    [p-primary-action]="confirmRow"
+    [p-secondary-action]="cancelRow"
+    p-size="xl"
+    p-title="Item - Adicionar" >
+        <po-dynamic-form [p-fields]="columns" [p-value]="rowData" >
+            
+        </po-dynamic-form>
+    </po-modal>
+
 </po-page-edit>
