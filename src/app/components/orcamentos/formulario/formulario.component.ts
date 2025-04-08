@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormLoad } from '@po-ui/ng-components';
+import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent, PoNotificationService } from '@po-ui/ng-components';
 import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
 import { Router } from '@angular/router';
 
@@ -27,6 +27,7 @@ export class FormularioComponent {
   }
 
   @ViewChild(PoModalComponent, { static: true }) 'modal': PoModalComponent;
+  @ViewChild(PoDynamicFormComponent, { static: true }) 'dynamicForm': PoDynamicFormComponent;
 
   public readonly fields: Array<PoDynamicFormField> = [
     {
@@ -247,18 +248,14 @@ export class FormularioComponent {
   ];
 
   public readonly confirmRow: PoModalAction = {
-    action: () => {
-      this.saveRow(this.rowData);
-    },
+    action: () => { this.saveRow(this.rowData); },
     label: 'Confirmar',
     disabled: false,
     loading: false,
   }
   
   public readonly cancelRow: PoModalAction = {
-    action: () => {
-      this.closeRow();
-    },
+    action: () => { this.closeRow(); },
     label: 'Cancelar',
     disabled: false,
     loading: false,
@@ -280,12 +277,14 @@ export class FormularioComponent {
 
   public fillRowData(row: any): void {
     Object.entries(row).forEach(([key, value]) => this.rowData[key] = value);
+    this.rowData.operation = 'MOD';
   }
 
   public fillRowNextItem(row: any): void {
     const item = this.rows[this.rows.length-1].item;
-    const newItem = parseInt(item, 10)+1
-    this.rowData.item = newItem.toString().padStart(item.length, '0')
+    const newItem = parseInt(item, 10)+1;
+    this.rowData.item = newItem.toString().padStart(item.length, '0');
+    this.rowData.operation = 'ADD';
   }
 
   public eraseRowData(): void {
@@ -300,25 +299,35 @@ export class FormularioComponent {
     this.router.navigate(['/','orcamentos'])
   }
 
-  public onModifyRow(row: Object) {
+  public onModifyRow(row: any) {
     this.eraseRowData();
     this.fillRowData(row)
     this.modal.open()
   }
 
-  public onAddRow(row: Object) {
+  public onAddRow(row: any) {
     this.eraseRowData();
     this.fillRowNextItem(row)
     this.modal.open()
   }
 
   public saveRow(row: any) {
-    this.rows = [...this.rows, row]
+    const { operation, ...cleanRow } = row; // remove o campo "operation"
+
+    if (row.operation === 'ADD') {
+      this.rows = [...this.rows, cleanRow]
+    } else if (row.operation === 'MOD') {
+      this.rows = this.rows.map(existingRow => {
+        return existingRow.item === cleanRow.item ? { ...cleanRow } : existingRow;
+      });
+    }
     this.modal.close()
   }
 
   public closeRow() {
     this.modal.close()
   }
+
+
 
 }
