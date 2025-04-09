@@ -68,7 +68,7 @@
     [p-secondary-action]="cancelRow"
     p-size="xl"
     p-title="Item - Adicionar" >
-        <po-dynamic-form #dynamicForm [p-fields]="columns" [p-value]="rowData" >
+        <po-dynamic-form #dynamicForm [p-fields]="columns" [p-value]="rowData" [p-validate]="this.onChangeFields.bind(this)" >
             
         </po-dynamic-form>
     </po-modal>

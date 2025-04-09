@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
-import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent, PoNotificationService } from '@po-ui/ng-components';
+import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent, PoNotificationService, PoDynamicFormValidation } from '@po-ui/ng-components';
 import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
 import { Router } from '@angular/router';
 
@@ -365,6 +365,15 @@ export class FormularioComponent {
     this.modal.close()
   }
 
-
+  public onChangeFields(changeValue: any): PoDynamicFormValidation {
+    if (changeValue.property === 'productCode') {
+      return {
+        value: { productDescription: 'Teste' },
+        fields: [{ property: 'productCode', readonly: true }]
+      }
+    } else {
+      return {}
+    }
+  };
 
 }
