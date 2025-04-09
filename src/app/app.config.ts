@@ -2,10 +2,14 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 
-import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection, LOCALE_ID } from '@angular/core';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 import { PoHttpRequestModule } from '@po-ui/ng-components';
+
+import { registerLocaleData } from '@angular/common';
+import ptBr from '@angular/common/locales/pt';
+registerLocaleData(ptBr);
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -13,7 +17,8 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     importProvidersFrom([PoHttpRequestModule]),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideHttpClient(withInterceptorsFromDi())
+    provideHttpClient(withInterceptorsFromDi()),
+    { provide: LOCALE_ID, useValue: 'pt-BR' }
   ],
   
 };

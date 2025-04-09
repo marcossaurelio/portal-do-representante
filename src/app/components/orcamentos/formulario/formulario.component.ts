@@ -1,4 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
 import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent, PoNotificationService } from '@po-ui/ng-components';
 import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
 import { Router } from '@angular/router';
@@ -20,10 +21,9 @@ import { Router } from '@angular/router';
   styleUrl: './formulario.component.css'
 })
 export class FormularioComponent {
-
   
   constructor(private router: Router) {
-    
+
   }
 
   @ViewChild(PoModalComponent, { static: true }) 'modal': PoModalComponent;
@@ -196,16 +196,17 @@ export class FormularioComponent {
       required: true,
       showRequired: false,
       readonly: false,
-      maxLength: 20,
+      maxLength: 10,
       gridColumns: 2,
+      format: '1.2-2',
     },
     {
       property: 'packagingType',
       label: 'Embalagem',
       type: 'string',
-      required: true,
+      required: false,
       showRequired: false,
-      readonly: false,
+      readonly: true,
       maxLength: 20,
       gridColumns: 2,
     },
@@ -218,6 +219,7 @@ export class FormularioComponent {
       readonly: true,
       maxLength: 20,
       gridColumns: 2,
+      format: 'BRL',
     },
     {
       property: 'totalPrice',
@@ -228,22 +230,51 @@ export class FormularioComponent {
       readonly: true,
       maxLength: 20,
       gridColumns: 2,
+      format: 'BRL',
     },
     {
-      property: 'comission',
-      label: 'Comissão',
+      property: 'comissionPercentage',
+      label: 'Comissão (%)',
       type: 'number',
       required: true,
       showRequired: false,
       readonly: false,
+      maxLength: 3,
+      gridColumns: 2,
+    },
+    {
+      property: 'comissionUnitValue',
+      label: 'Vl. Unit. Comissão',
+      type: 'currency',
+      required: false,
+      showRequired: false,
+      readonly: true,
       maxLength: 20,
       gridColumns: 2,
+      format: 'BRL',
+    },
+    {
+      property: 'comissionTotalValue',
+      label: 'Vl. Total Comissão',
+      type: 'currency',
+      required: false,
+      showRequired: false,
+      readonly: true,
+      maxLength: 20,
+      gridColumns: 2,
+      format: 'BRL',
     },
   ];
 
   public rows: Array<any> = [
     {
       item: '01',
+      amount: '1',
+      unitPrice: 0,
+      totalPrice: 0,
+      comissionPercentage: 0,
+      comissionUnitValue: 0,
+      comissionTotalValue: 0,
     },
   ];
 
@@ -284,6 +315,12 @@ export class FormularioComponent {
     const item = this.rows[this.rows.length-1].item;
     const newItem = parseInt(item, 10)+1;
     this.rowData.item = newItem.toString().padStart(item.length, '0');
+    this.rowData.amount = 1;
+    this.rowData.unitPrice = 0;
+    this.rowData.totalPrice = 0;
+    this.rowData.comissionPercentage = 0;
+    this.rowData.comissionUnitValue = 0;
+    this.rowData.comissionTotalValue = 0;
     this.rowData.operation = 'ADD';
   }
 

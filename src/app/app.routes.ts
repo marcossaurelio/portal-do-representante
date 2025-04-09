@@ -11,15 +11,15 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
 import { FormularioComponent } from './components/orcamentos/formulario/formulario.component';
 
 export const routes: Routes = [
-    {path: 'login',                 title: 'Login',                     component: LoginComponent                                   },
-    {path: 'home',                  title: 'Home',                      component: HomeComponent,           canActivate: [authGuard]},
-    {path: 'orcamentos',            title: 'Orçamentos',                component: OrcamentosComponent,     canActivate: [authGuard]},
-    {path: 'orcamentos/formulario', title: 'Orçamentos - Formulário',   component: FormularioComponent,     canActivate: [authGuard]},
-    {path: 'visao-vendas',          title: 'Visão Geral das Vendas',    component: VisaoVendasComponent,    canActivate: [authGuard]},
-    {path: 'categorias',            title: 'Categorias e Performance',  component: CategoriasComponent,     canActivate: [authGuard]},
-    {path: 'contas-a-receber',      title: 'Contas a Receber',          component: ContasAReceberComponent, canActivate: [authGuard]},
-    {path: 'tabelas-preco',         title: 'Tabelas de Preço',          component: TabelasPrecoComponent,   canActivate: [authGuard]},
-    {path: 'page-not-found',        title: 'Página não encontrada',     component: PageNotFoundComponent,   canActivate: [authGuard]},
+    {path: 'login',                 component: LoginComponent                                   },
+    {path: 'home',                  component: HomeComponent,           canActivate: [authGuard]},
+    {path: 'orcamentos',            component: OrcamentosComponent,     canActivate: [authGuard]},
+    {path: 'orcamentos/formulario', component: FormularioComponent,     canActivate: [authGuard]},
+    {path: 'visao-vendas',          component: VisaoVendasComponent,    canActivate: [authGuard]},
+    {path: 'categorias',            component: CategoriasComponent,     canActivate: [authGuard]},
+    {path: 'contas-a-receber',      component: ContasAReceberComponent, canActivate: [authGuard]},
+    {path: 'tabelas-preco',         component: TabelasPrecoComponent,   canActivate: [authGuard]},
+    {path: 'page-not-found',        component: PageNotFoundComponent,   canActivate: [authGuard]},
     {path: '',                      redirectTo: 'home',                 pathMatch: 'full'},
     {path: '**',                    redirectTo: 'page-not-found'},
 ];

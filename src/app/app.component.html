@@ -1,7 +1,7 @@
 
 <div class="po-wrapper" *ngIf="!isLoginRoute">
   <po-toolbar
-    p-title="Portal do Representante - Serv Sal"
+    p-title="Portal do Representante | Serv Sal"
     [p-profile]="profile"
     [p-profile-actions]="profileActions"
   ></po-toolbar>
@@ -11,6 +11,7 @@
     [p-filter]="false"
     [p-menus]="menus"
     [p-automatic-toggle]="false"
+    p-short-logo="assets/images/logo-serv-sal-small.png"
   >
   
     <div *p-menu-header-template class="po-p-2 po-font-title">
