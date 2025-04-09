@@ -3,18 +3,19 @@ import { PoPageLoginModule, PoPageLoginLiterals } from '@po-ui/ng-templates';
 import { AuthService } from '../../auth.service';
 import { PoNotificationService } from '@po-ui/ng-components';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
   imports: [
-    PoPageLoginModule
+    PoPageLoginModule,
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
 
-  constructor(private authService: AuthService, private poNotification: PoNotificationService, private router: Router) {}
+  constructor(private authService: AuthService, private poNotification: PoNotificationService, private router: Router, private http: HttpClient) {}
 
   loading: boolean = false;
 
@@ -34,6 +35,28 @@ export class LoginComponent {
       this.poNotification.error('Usuário ou senha inválidos.')
       this.loading = false;
     }
+    
+    /*
+  onLoginSubmit(credentials: {login: string; password: string}) {
+    this.loading = true;
+    this.authService.login(credentials.login, credentials.password).subscribe({
+      next: (res: any) => {
+        if (res.auth === 'true') {
+          this.poNotification.success('Login realizado com sucesso!');
+          localStorage.setItem('Token', res.token);
+          localStorage.setItem('tokenExpiration', res.tokenExpiration);
+          this.router.navigate(['/','home'])
+        } else {
+          this.poNotification.error('Usuário ou senha inválidos.')
+          this.loading = false;
+        }
+      },
+      error: () => {
+        this.poNotification.error('Usuário ou senha inválidos.')
+        this.loading = false;
+        }
+      });
+      */
   }
 
 }

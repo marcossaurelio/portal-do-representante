@@ -1,0 +1,6 @@
+{
+    "name": "portal-do-representante",
+    "version": "1.0.0",
+    "productLine": "Protheus",
+    "api_baseUrl": "http://192.168.100.249:8500"
+}
