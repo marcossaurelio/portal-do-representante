@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { PoButtonModule, PoToolbarProfile, PoToolbarAction, PoNotificationService } from '@po-ui/ng-components';
-import { AuthService } from './auth.service';
+import { AuthService } from './services/auth.service';
 import { ProtheusLibCoreModule } from '@totvs/protheus-lib-core';
 
 import {

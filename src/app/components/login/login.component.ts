@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { PoPageLoginModule, PoPageLoginLiterals } from '@po-ui/ng-templates';
-import { AuthService } from '../../auth.service';
+import { AuthService } from '../../services/auth.service';
 import { PoNotificationService } from '@po-ui/ng-components';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -26,6 +26,7 @@ export class LoginComponent {
     loginHint: 'Suas credenciais de acesso são as fornecidas pela equipe comercial da Serv Sal',
   };
 
+  /*
   onLoginSubmit(credentials: {login: string; password: string}) {
     this.loading = true;
     if (credentials.login === 'admin' && credentials.password === 'admin') {
@@ -35,28 +36,28 @@ export class LoginComponent {
       this.poNotification.error('Usuário ou senha inválidos.')
       this.loading = false;
     }
-    
-    /*
+    */
+  
   onLoginSubmit(credentials: {login: string; password: string}) {
     this.loading = true;
     this.authService.login(credentials.login, credentials.password).subscribe({
       next: (res: any) => {
-        if (res.auth === 'true') {
-          this.poNotification.success('Login realizado com sucesso!');
-          localStorage.setItem('Token', res.token);
-          localStorage.setItem('tokenExpiration', res.tokenExpiration);
+        if (res.auth === true) {
+          this.poNotification.success('Login realizado com sucesso.');
+          localStorage.setItem('authToken', res.token);
+          localStorage.setItem('authTokenExpiration', res.tokenExpiration);
           this.router.navigate(['/','home'])
+          this.loading = false;
         } else {
           this.poNotification.error('Usuário ou senha inválidos.')
           this.loading = false;
         }
       },
       error: () => {
-        this.poNotification.error('Usuário ou senha inválidos.')
+        this.poNotification.error('Erro ao realizar o login.')
         this.loading = false;
-        }
-      });
-      */
+      }
+    });
   }
 
 }
