@@ -44,8 +44,9 @@ export class LoginComponent {
       next: (res: any) => {
         if (res.auth === true) {
           this.poNotification.success('Login realizado com sucesso.');
-          localStorage.setItem('authToken', res.token);
-          localStorage.setItem('authTokenExpiration', res.tokenExpiration);
+          localStorage.setItem('authToken', res.authToken);
+          localStorage.setItem('authTokenExpiration', res.authTokenExpiration);
+          localStorage.setItem('userName', this.capitalizeName(res.userName));
           this.router.navigate(['/','home'])
           this.loading = false;
         } else {
@@ -58,6 +59,17 @@ export class LoginComponent {
         this.loading = false;
       }
     });
+  }
+
+  capitalizeName(name: string): string {
+    return name
+      .toLowerCase()
+      .split(' ')
+      .map(word => {
+        // Verifica se a palavra tem caracteres acentuados e capitaliza corretamente
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      })
+      .join(' ');
   }
 
 }

@@ -37,19 +37,20 @@ export class AppComponent {
     return this.router.url.includes('/login') || this.router.url.includes('/page-not-found')
   }
 
-  logoServSal = 'assets/images/logo-serv-sal.png';
+  public logoServSal = 'assets/images/logo-serv-sal.png';
+  private userName: string = localStorage.getItem('userName') ?? 'Usuário';
 
-  profile: PoToolbarProfile = {
-    avatar: 'https://via.placeholder.com/48x48?text=AVATAR',
+  public profile: PoToolbarProfile = {
+    avatar: '',
     subtitle: 'Representante',
-    title: 'Admin'
+    title: this.userName
   };
 
-  profileActions: Array<PoToolbarAction> = [
+  public profileActions: Array<PoToolbarAction> = [
     { icon: 'an an-sign-out', label: 'Sair', type: 'danger', separator: true, action: this.logout.bind(this) }
   ];
 
-  readonly menus: Array<PoMenuItem> = [
+  public readonly menus: Array<PoMenuItem> = [
     { label: 'Home',                      action: this.homeClick.bind(this),          icon: 'an an-house-line',             shortLabel: "Home" },
     { label: 'Orçamentos',                action: this.orcamentosClick.bind(this),    icon: 'an an-clipboard-text',         shortLabel: "Orçamentos" },
     { label: 'Visão Geral de Vendas',     action: this.visaoVendasClick.bind(this),   icon: 'an an-chart-line-up',          shortLabel: "Vendas" },

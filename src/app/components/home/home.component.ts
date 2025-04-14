@@ -12,4 +12,12 @@ import { PoPageModule, PoInfoModule } from '@po-ui/ng-components';
 })
 export class HomeComponent {
 
+  constructor() {
+
+  }
+
+  private userName: string = localStorage.getItem('userName') ?? '';
+
+  public welcomeMessage: string = this.userName ? 'Seja bem-vindo, ' + this.userName : 'Seja bem-vindo';
+
 }
