@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { PoInfoModule, PoSearchModule, PoTableModule, PoTagType, PoTableColumn, PoButtonModule, PoWidgetModule, PoFieldModule, PoModule, PoTableAction, PoPageAction } from '@po-ui/ng-components';
 import { PoPageDynamicSearchModule, PoPageDynamicSearchFilters, PoPageDynamicTableModule } from '@po-ui/ng-templates';
 import { Router } from '@angular/router';
+import { ApiService } from '../../services/api.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-orcamentos',
@@ -20,6 +22,8 @@ import { Router } from '@angular/router';
   styleUrl: './orcamentos.component.css'
 })
 export class OrcamentosComponent {
+
+  constructor(private router: Router, private api: ApiService) {}
 
   public columns: Array<PoTableColumn> = [];
   public items: Array<any> = [];
@@ -43,18 +47,11 @@ export class OrcamentosComponent {
     { property: 'customer',       label: 'Cliente'        },
     { property: 'inclusionDate',  label: 'Data Inclusão'  },
   ]
-
   
-  constructor(private router: Router){
-
-  }
-  
-  public ngOnInit(): void {
-    
+  public async ngOnInit(): Promise<void> {
     this.columns = this.getColumns();
-    this.items = this.getItems();
-    this.filteredItems = this.getItems();
-
+    this.items = await this.getItems();
+    this.filteredItems = [...this.items];
   }
 
   public getColumns(): Array<PoTableColumn> {
@@ -89,16 +86,29 @@ export class OrcamentosComponent {
     ]
   }
 
-  public getItems(): Array<any> {
-    return [
-      {'budgetStatus':'PA',   'orderStatus':'F',  'budget':'000001',   'order':'000856',  'customer':'M C SERVICOS DE TECNOLOGIA E GESTAO',  'inclusionDate':'07/03/2025'},
-      {'budgetStatus':'PA',   'orderStatus':'C',  'budget':'000002',   'order':'000892',  'customer':'SERV SAL REFINARIA LTDA',              'inclusionDate':'07/03/2025'},
-      {'budgetStatus':'PA',   'orderStatus':'O',  'budget':'000005',   'order':'000913',  'customer':'MC DISTRIBUIDORA LTDA',                'inclusionDate':'08/03/2025'},
-      {'budgetStatus':'PR',   'orderStatus':' ',  'budget':'000008',   'order':'      ',  'customer':'MOSSORO ATACADO E VAREJO LTDA',        'inclusionDate':'10/03/2025'},
-      {'budgetStatus':'PP',   'orderStatus':' ',  'budget':'000010',   'order':'      ',  'customer':'M C SERVICOS DE TECNOLOGIA E GESTAO',  'inclusionDate':'10/03/2025'},
-      {'budgetStatus':'CP',   'orderStatus':' ',  'budget':'000022',   'order':'      ',  'customer':'FORTALEZA REFINADOS SA',               'inclusionDate':'10/03/2025'},
-      {'budgetStatus':'CR',   'orderStatus':' ',  'budget':'000025',   'order':'      ',  'customer':'SERV SAL REFINARIA LTDA',              'inclusionDate':'10/03/2025'},
-    ]
+  public async getItems(): Promise<Array<any>> {
+    
+    const params: string = '?seller=000017&page=1';
+
+    try {
+
+      const res: any = await firstValueFrom(this.api.get('portal-do-representante/orcamentos' + params));
+
+      return res.objects.map((item: any) => ({
+        budgetStatus: 'CP',
+        orderStatus: '',
+        budget: item.orcamento,
+        order: '',
+        customer: item.cliente,
+        inclusionDate: item.dataEmissao,
+      }));
+
+    } catch (e) {
+
+      console.error('Falha ao buscar os dados: ' + e);
+      return [];
+
+    }
   }
 
   public onAdvancedSearch(filter: object) {
