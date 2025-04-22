@@ -28,6 +28,8 @@ export class OrcamentosComponent {
   public columns: Array<PoTableColumn> = [];
   public items: Array<any> = [];
   public filteredItems: Array<any> = [];
+  private sellerCode: string = localStorage.getItem('sellerCode') ?? '';
+  public isHideLoading: boolean = true;
 
   public readonly actions: Array<PoPageAction> = [
     {label: 'Incluir', action: this.addBudget.bind(this), icon: 'an an-plus', disabled: false, visible: true}
@@ -49,13 +51,17 @@ export class OrcamentosComponent {
   ]
   
   public async ngOnInit(): Promise<void> {
+    this.isHideLoading = false;
     this.columns = this.getColumns();
     this.items = await this.getItems();
     this.filteredItems = [...this.items];
+    this.isHideLoading = true;
   }
 
   public getColumns(): Array<PoTableColumn> {
     return [
+      {property: 'loadingLocation', label: 'Unidade'},
+      {property: 'budget', label: 'Orçamento'},
       {
         property: 'budgetStatus',
         label: 'Situação Orçamento',
@@ -69,38 +75,39 @@ export class OrcamentosComponent {
           { value: 'PA',  type: PoTagType.Success,    label: 'Pré pedido aprovado',   icon: true  },
         ]
       },
+      {property: 'order', label: 'Pedido'},
       {
         property: 'orderStatus',
         label: 'Situação Pedido',
         type: 'label',
         labels: [
           { value: 'F', type: PoTagType.Success,    label: 'Faturado',          icon: true  },
-          { value: 'O', type: PoTagType.Warning,    label: 'Aguardando Ordem',  icon: true  },
           { value: 'C', type: PoTagType.Info,       label: 'Em carregamento',   icon: true  },
+          { value: 'O', type: PoTagType.Warning,    label: 'Aguardando Ordem',  icon: true  },
         ]
       },
-      {property: 'budget', label: 'Orçamento'},
-      {property: 'order', label: 'Pedido'},
       {property: 'customer', label: 'Cliente'},
-      {property: 'inclusionDate', label: 'Data Inclusão'},
+      {property: 'inclusionDate', label: 'Data Inclusão', type: 'date'},
     ]
   }
 
   public async getItems(): Promise<Array<any>> {
     
-    const params: string = '?seller=000017&page=1';
+    const params: string = '?seller='+this.sellerCode+'&page=1';
 
     try {
 
       const res: any = await firstValueFrom(this.api.get('portal-do-representante/orcamentos' + params));
 
       return res.objects.map((item: any) => ({
-        budgetStatus: 'CP',
-        orderStatus: '',
-        budget: item.orcamento,
-        order: '',
-        customer: item.cliente,
-        inclusionDate: item.dataEmissao,
+        loadingLocationCode:  item.filial,
+        loadingLocation:      this.getLoadingLocationByCode(item.filial),
+        budgetStatus:         item.situacao,
+        orderStatus:          '',
+        budget:               item.orcamento,
+        order:                '',
+        customer:             item.nomeCliente,
+        inclusionDate:        this.dateFormat(item.dataEmissao),
       }));
 
     } catch (e) {
@@ -109,6 +116,28 @@ export class OrcamentosComponent {
       return [];
 
     }
+  }
+
+  private getLoadingLocationByCode(code: string): string{
+
+    if (code == '01020009'){
+      return 'SP'
+    } else if (code == '01030010') {
+      return 'RJ'
+    } else {
+      return 'RN'
+    }
+
+  }
+
+  private dateFormat(dateString: string): string {
+
+    const year = dateString.substring(0, 4);
+    const month = dateString.substring(4, 6);
+    const day = dateString.substring(6, 8);
+
+    return year+'-'+month+'-'+day;
+
   }
 
   public onAdvancedSearch(filter: object) {
@@ -156,19 +185,19 @@ export class OrcamentosComponent {
   }
   
   public addBudget() {
-    this.router.navigate(['/','orcamentos','formulario'])
+    this.router.navigate(['/','orcamentos','formulario'], { queryParams: { mode: 'add' } })
   }
   
-  public viewBudget() {
-    
+  public viewBudget(item: any) {
+    this.router.navigate(['/','orcamentos','formulario'], { queryParams: { mode: 'view', location: item.loadingLocationCode, budget: item.budget } })
   }
   
-  public copyBudget() {
-    
+  public copyBudget(item: any) {
+    this.router.navigate(['/','orcamentos','formulario'], { queryParams: { mode: 'copy', location: item.loadingLocationCode, budget: item.budget } })
   }
   
-  public modifyBudget() {
-    
+  public modifyBudget(item: any) {
+    this.router.navigate(['/','orcamentos','formulario'], { queryParams: { mode: 'modify', location: item.loadingLocationCode, budget: item.budget } })
   }
   
   public approveQuotation() {
