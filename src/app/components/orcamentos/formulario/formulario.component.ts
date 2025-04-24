@@ -36,6 +36,7 @@ export class FormularioComponent {
   public location: string = ''
   public budget: string   = ''
   public isHideLoading: boolean = true;
+  public formTitle: string = 'Orçamentos'
 
   public readonly fields: Array<PoDynamicFormField> = [
     {
@@ -378,6 +379,11 @@ export class FormularioComponent {
   public readonly generalDataFields: Array<PoDynamicFormField> = this.getFields(1);
   public readonly logisticsDataFields: Array<PoDynamicFormField> = this.getFields(2);
 
+  public gridRowActions: Array<PoTableAction> = [
+    { action: this.onModifyRow.bind(this),       icon: 'an an-note-pencil',   label: 'Alterar linha',     disabled: false },
+    { action: this.onAddRow.bind(this),          icon: 'an an-plus',          label: 'Adicionar linha',   disabled: false },
+  ];
+
   public async ngOnInit() {
     this.isHideLoading = false;
 
@@ -386,6 +392,8 @@ export class FormularioComponent {
       this.budget = params['budget'] || '';
       this.location = params['location'] || '';
     });
+
+    this.formTitle += ' - ' + this.getModeDescription(this.mode)
 
     if (this.mode != 'add' && this.location && this.budget) {
       const res = await this.loadFormFields(this.location,this.budget);
@@ -423,11 +431,6 @@ export class FormularioComponent {
     this.isHideLoading = true;
 
   }
-
-  public gridRowActions: Array<PoTableAction> = [
-    { action: this.onModifyRow.bind(this),       icon: 'an an-note-pencil',   label: 'Alterar linha',     disabled: false },
-    { action: this.onAddRow.bind(this),          icon: 'an an-plus',          label: 'Adicionar linha',   disabled: false },
-  ];
 
   public getFields(order: number): Array<PoDynamicFormField> {
     return this.fields.filter(field => field.order == order);
@@ -512,4 +515,17 @@ export class FormularioComponent {
       return null;
     }
   }
+  
+  private getModeDescription(mode: string): string {
+    if (mode == 'add') {
+      return 'Incluir'
+    } else if (mode == 'modify') {
+      return 'Alterar'
+    } else if (mode == 'copy') {
+      return 'Copiar'
+    } else {
+      return 'Visualizar'
+    }
+  }
+
 }

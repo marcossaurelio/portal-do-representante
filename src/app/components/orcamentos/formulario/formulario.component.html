@@ -1,6 +1,6 @@
 <po-loading-overlay [hidden]="isHideLoading"></po-loading-overlay>
 <po-page-edit
-    p-title="Orçamentos - Inclusão"
+    [p-title]="formTitle"
     (p-save)="onSaveForm()"
     (p-cancel)="onCancelForm()"
     [p-disable-submit]="false"

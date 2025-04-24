@@ -29,9 +29,7 @@ import {
 })
 export class AppComponent {
 
-  constructor(private router: Router, private authService: AuthService, private poNotification: PoNotificationService) {
-
-  }
+  constructor(private router: Router, private authService: AuthService, private poNotification: PoNotificationService) {}
 
   get isLoginRoute(): boolean {
     return this.router.url.includes('/login') || this.router.url.includes('/page-not-found')
@@ -39,10 +37,11 @@ export class AppComponent {
 
   public logoServSal = 'assets/images/logo-serv-sal.png';
   private userName: string = localStorage.getItem('userName') ?? 'Usuário';
+  private sellerId: string = localStorage.getItem('sellerCode') ?? 'Representante';
 
   public profile: PoToolbarProfile = {
     avatar: '',
-    subtitle: 'Representante',
+    subtitle: this.sellerId,
     title: this.userName
   };
 
