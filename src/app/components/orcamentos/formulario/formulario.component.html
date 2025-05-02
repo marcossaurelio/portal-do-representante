@@ -15,7 +15,10 @@
             [p-height]="175"
             [p-no-border]="true"
             [p-no-padding]="true" >
-                <po-dynamic-form [p-fields]="generalDataFields" [p-value]="headerData">
+                <po-dynamic-form [p-fields]="generalDataFields"
+                [p-value]="headerData"
+                [p-validate-fields]="this.validateFieldsHeader"
+                [p-validate]="this.onChangeFieldsHeader.bind(this)" >
                     
                 </po-dynamic-form>
             </po-container>
@@ -23,12 +26,17 @@
 
         <po-tab
         [p-active]="true"
+        [p-disabled]="isLoadingLocationEmpty()"
         p-label="Dados logísticos" >
             <po-container
             [p-height]="175"
             [p-no-border]="true"
             [p-no-padding]="true" >
-                <po-dynamic-form [p-fields]="logisticsDataFields" [p-value]="headerData">
+                <po-dynamic-form
+                [p-fields]="logisticsDataFields"
+                [p-value]="headerData" 
+                [p-validate-fields]="this.validateFieldsHeader"
+                [p-validate]="this.onChangeFieldsHeader.bind(this)" >
                         
                 </po-dynamic-form>
             </po-container>
@@ -70,7 +78,7 @@
     [p-primary-action]="confirmRow"
     [p-secondary-action]="cancelRow"
     p-size="xl"
-    p-title="Item - Adicionar" >
+    [p-title]="rowFormTitle" >
         <po-dynamic-form #dynamicForm
         [p-fields]="columns"
         [p-value]="rowData"

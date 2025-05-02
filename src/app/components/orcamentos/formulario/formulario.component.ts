@@ -1,5 +1,4 @@
 import { Component, ViewChild } from '@angular/core';
-import { registerLocaleData } from '@angular/common';
 import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent, PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged } from '@po-ui/ng-components';
 import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -25,24 +24,25 @@ import { firstValueFrom } from 'rxjs';
 })
 export class FormularioComponent {
   
-  constructor(private router: Router, private route: ActivatedRoute, private api: ApiService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private api: ApiService, private poNotification: PoNotificationService) {}
 
   @ViewChild(PoModalComponent, { static: true }) 'modal': PoModalComponent;
   @ViewChild(PoDynamicFormComponent, { static: true }) 'dynamicForm': PoDynamicFormComponent;
 
   public headerData: any  = {};
-  public rowData: any     = {};
-  public mode: string     = 'view';
+  public rowData: any = {};
+  public mode: string = 'view';
   public location: string = ''
-  public budget: string   = ''
+  public budgetId: string = ''
   public isHideLoading: boolean = true;
   public formTitle: string = 'Orçamentos'
-  public validateFieldsHeader: Array<string> = ['state'];
+  public validateFieldsHeader: Array<string> = ['loadingLocation','freightType'];
   public validateFieldsRow: Array<string> = ['productId','comissionPercentage','unitPrice','amount'];
   public fields: Array<PoDynamicFormField> = [];
   public generalDataFields: Array<PoDynamicFormField> = [];
   public logisticsDataFields: Array<PoDynamicFormField> = [];
   public columns: Array<any> = [];
+  public rowFormTitle: string = 'Item - Adicionar';
 
   private currentRowProduct: string = ''
 
@@ -50,7 +50,7 @@ export class FormularioComponent {
   public rows: Array<any> = [
     {
       item: '01',
-      amount: '1',
+      amount: 1,
       unitPrice: 0,
       totalPrice: 0,
       comissionUnitValue: 0,
@@ -79,7 +79,7 @@ export class FormularioComponent {
 
     this.route.queryParams.subscribe(params => {
       this.mode = params['mode'] || '';
-      this.budget = params['budget'] || '';
+      this.budgetId = params['budget'] || '';
       this.location = params['location'] || '';
     });
 
@@ -92,7 +92,7 @@ export class FormularioComponent {
         visible: true,
         required: true,
         showRequired: true,
-        readonly: this.isViewMode(),
+        readonly: !this.isAddMode(),
         gridColumns: 3,
         options: [
           { loadingLocation: 'Rio Grande do Norte', code: "01010001" },
@@ -106,22 +106,35 @@ export class FormularioComponent {
         order: 1,
       },
       {
-        property: 'budgetType',
-        label: 'Tipo Orçamento',
+        property: 'budgetId',
+        label: 'Orçamento',
         visible: true,
-        required: true,
-        showRequired: true,
+        required: false,
+        showRequired: false,
+        readonly: true,
+        gridColumns: 2,
+        type: 'string',
+        order: 1,
+      },
+      {
+        property: 'budgetStatus',
+        label: 'Sit. Orçamento',
+        visible: true,
+        required: false,
+        showRequired: false,
         readonly: true,
         gridColumns: 3,
         options: [
-          { budgetType: 'Cotação',     code: "C" },
-          { budgetType: 'Cotação',     code: "C" },
-          { budgetType: 'Pré Pedido',  code: "P" },
-          { budgetType: 'Pré Pedido',  code: "P" },
+          { budgetStatus: 'Cotação pendente',     code: "CP" },
+          { budgetStatus: 'Cotação rejeitada',    code: "CR" },
+          { budgetStatus: 'Pré Pedido pendente',  code: "PP" },
+          { budgetStatus: 'Pré Pedido cancelado', code: "PC" },
+          { budgetStatus: 'Pré Pedido rejeitado', code: "PR" },
+          { budgetStatus: 'Pré Pedido aprovado',  code: "PA" },
         ],
         type: 'string',
         fieldValue: 'code',
-        fieldLabel: 'budgetType',
+        fieldLabel: 'budgetStatus',
         order: 1,
       },
       {
@@ -130,22 +143,21 @@ export class FormularioComponent {
         visible: true,
         required: true,
         showRequired: true,
-        readonly: false,
-        disabled: !this.isAddMode(),
+        disabled: true,
         minLength: 3,
         maxLength: 6,
-        gridColumns: 6,
+        gridColumns: 4,
         type: 'string',
         searchService: 'https://192.168.100.249:8500/portal-do-representante/clientes',
         columns: [
-          { property: 'codigo', label: 'Código' },
+          { property: 'cliente', label: 'Código' },
           { property: 'cgc', label: 'CNPJ' },
           { property: 'tipo', label: 'Tipo' },
           { property: 'razaoSocial', label: 'Nome' },
         ],
         format: ['cgc', 'razaoSocial'],
         fieldLabel: 'razaoSocial',
-        fieldValue: 'cgc',
+        fieldValue: 'codigoLoja',
         order: 1,
       },
       {
@@ -154,7 +166,7 @@ export class FormularioComponent {
         visible: true,
         required: true,
         showRequired: true,
-        disabled: this.isViewMode(),
+        disabled: this.isViewMode() || this.isAddMode(),
         minLength: 3,
         maxLength: 40,
         gridColumns: 3,
@@ -175,7 +187,7 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        readonly: this.isViewMode(),
+        readonly: this.isViewMode() || this.isAddMode(),
         maxLength: 120,
         gridColumns: 9,
         type: 'string',
@@ -208,7 +220,7 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        disabled: this.isViewMode(),
+        disabled: this.isViewMode() || this.isAddMode(),
         minLength: 3,
         maxLength: 40,
         gridColumns: 3,
@@ -224,15 +236,28 @@ export class FormularioComponent {
         order: 2,
       },
       {
+        property: 'freightCost',
+        label: 'Valor Frete',
+        visible: true,
+        required: false,
+        showRequired: false,
+        readonly: this.isViewMode() || this.isAddMode(),
+        type: 'currency',
+        maxLength: 20,
+        gridColumns: 2,
+        format: 'BRL',
+        order: 2
+      },
+      {
         property: 'cargoType',
         label: 'Tipo Carga',
         visible: true,
         required: false,
         showRequired: false,
-        readonly: this.isViewMode(),
+        readonly: this.isViewMode() || this.isAddMode(),
         minLength: 3,
         maxLength: 40,
-        gridColumns: 3,
+        gridColumns: 4,
         options: [
           { cargoType: 'Batida'                             , code: '1' },
           { cargoType: 'Batida'                             , code: '1' },
@@ -250,7 +275,7 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        readonly: this.isViewMode(),
+        readonly: this.isViewMode() || this.isAddMode(),
         minLength: 3,
         maxLength: 40,
         gridColumns: 3,
@@ -271,7 +296,7 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        readonly: this.isViewMode(),
+        readonly: this.isViewMode() || this.isAddMode(),
         type: 'currency',
         maxLength: 20,
         gridColumns: 2,
@@ -405,18 +430,20 @@ export class FormularioComponent {
       { action: this.onAddRow.bind(this),          icon: 'an an-plus',          label: 'Adicionar linha',   disabled: this.isViewMode() },
     ];
         
-    if (this.mode != 'add' && this.location && this.budget) {
-      const res = await this.loadFormFields(this.location,this.budget);
+    if (this.mode != 'add' && this.location && this.budgetId) {
+      const res = await this.loadFormFields(this.location,this.budgetId);
 
       if (res) {
         this.headerData = {
           loadingLocation:      res.filial,
-          budgetType:           res.situacao[0],
+          budgetId:             res.orcamento,
+          budgetStatus:         res.situacao,
           customerId:           res.cliente+res.loja,
           paymentTerms:         res.condPag,
-          observation:          res.observacao,
+          observation:          res.observacao.trim(),
           freightType:          res.tipoFrete,
           freightPaymentTerms:  res.condPagFrete,
+          freightCost:          res.valorFrete,
           cargoType:            res.tipoCarga,
           unloadingType:        res.tipoDescarga,
           unloadingCost:        res.valorDescarga,
@@ -466,8 +493,79 @@ export class FormularioComponent {
     this.rowData = {};
   }
 
-  public onSaveForm() {
-    
+  public async onSaveForm() {
+    if (this.validateHeaderData()) {
+      this.isHideLoading = false;
+      const res = await this.sendForm(this.isAddMode());
+      if (res) {
+        if (res.success) {
+          this.poNotification.success(res.message);
+          this.router.navigate(['/','orcamentos']);
+        } else {
+          this.poNotification.error(res.message + ': ' + res.fix);
+        }
+      }
+      this.isHideLoading = true;
+    }
+  }
+
+  public async sendForm(isAddMode: boolean): Promise<any> {
+    const body = {
+      "filial":         this.headerData.loadingLocation           ?? "",
+      "orcamento":      this.headerData.budgetId                  ?? "",
+      "cliente":        this.headerData.customerId.substring(0,6) ?? "",
+      "lojaCliente":    this.headerData.customerId.slice(-2)      ?? "",
+      "condPag":        this.headerData.paymentTerms              ?? "",
+      "observacao":     this.headerData.observation               ?? "",
+      "vendedor":       localStorage.getItem('sellerId')          ?? "",
+      "situacao":       this.headerData.budgetStatus              ?? "",
+      "condPagFrete":   this.headerData.freightPaymentTerms       ?? "",
+      "valorFrete":     this.headerData.freightCost               ?? 0,
+      "tipoCarga":      this.headerData.cargoType                 ?? "",
+      "tipoDescarga":   this.headerData.unloadingType             ?? "",
+      "valorDescarga":  this.headerData.unloadingCost             ?? 0,
+      "tipoFrete":      this.headerData.freightType               ?? "",
+      "itens":          this.rows.map((item: any) => ({
+        "item":           item.item                 ?? "",
+        "produto":        item.productId            ?? "",
+        "quantidade":     item.amount               ?? 0,
+        "precoUnitario":  item.unitPrice            ?? 0,
+        "comissao":       item.comissionPercentage  ?? 0
+      }))
+    };
+    try {
+      if (isAddMode) {
+        const res = await firstValueFrom( this.api.post('portal-do-representante/orcamentos/incluir/', body));
+        return res;
+      } else {
+        const res = await firstValueFrom( this.api.put('portal-do-representante/orcamentos/alterar/', body));
+        return res;
+      }
+    } catch (error) {
+      this.poNotification.error('Erro ao buscar orçamento: ' + error);
+      return null;
+    }
+  }
+
+  public validateHeaderData(): boolean {
+    const requiredFields: Array<PoDynamicFormField> = this.getRequiredFields();
+    const missingFields = requiredFields.filter(field => {
+      const value = this.headerData[field.property];
+      return value === null || value === undefined || value === '';
+    });
+
+    if (missingFields.length > 0) {
+      const missingFieldLabels = missingFields.map(f => f.label).join(', ');
+      this.poNotification.warning('Preencha os campos obrigatórios: ' + missingFieldLabels);
+      return false;
+    }
+
+    return true;
+
+  }
+
+  public getRequiredFields(): Array<PoDynamicFormField> {
+      return this.fields.filter(field => field.required == true);
   }
 
   public onCancelForm() {
@@ -475,27 +573,31 @@ export class FormularioComponent {
   }
 
   public onModifyRow(row: any) {
-    this.eraseRowData();
-    this.fillRowData(row)
-    this.currentRowProduct = this.rowData.productId
-    this.modal.open()
+    if (this.validateHeaderData()) {
+      this.eraseRowData();
+      this.fillRowData(row)
+      this.currentRowProduct = this.rowData.productId
+      this.rowFormTitle = 'Item - Alterar'
+      this.modal.open()
+    }
   }
 
   public onAddRow(row: any) {
-    this.eraseRowData();
-    this.fillRowNextItem(row)
-    this.currentRowProduct = this.rowData.productId
-    this.modal.open()
+    if (this.validateHeaderData()) {
+      this.eraseRowData();
+      this.fillRowNextItem(row)
+      this.currentRowProduct = this.rowData.productId
+      this.rowFormTitle = 'Item - Adicionar'
+      this.modal.open()
+    }
   }
 
   public saveRow(row: any) {
-    const { operation, ...cleanRow } = row; // remove o campo "operation"
-
     if (row.operation === 'ADD') {
-      this.rows = [...this.rows, cleanRow]
+      this.rows = [...this.rows, row]
     } else if (row.operation === 'MOD') {
       this.rows = this.rows.map(existingRow => {
-        return existingRow.item === cleanRow.item ? { ...cleanRow } : existingRow;
+        return existingRow.item === row.item ? { ...row } : existingRow;
       });
     }
     this.modal.close()
@@ -504,6 +606,35 @@ export class FormularioComponent {
   public closeRow() {
     this.modal.close()
   }
+
+  public onChangeFieldsHeader(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
+    
+    if (changedValue.property === 'loadingLocation') {
+      const newBudgetStatus = changedValue.value.loadingLocation === '01010001' ? 'CP' : 'PP';
+      return {
+        value: { budgetStatus: newBudgetStatus},
+        fields: [
+          { property: 'loadingLocation',  readonly: true },
+          { property: 'customerId',       disabled: false },
+          { property: 'paymentTerms',     disabled: false },
+          { property: 'observation',      readonly: false },
+        ],
+      }
+    } else if (changedValue.property === 'freightType') {
+      return {
+        fields: [
+          { property: 'freightPaymentTerms',  disabled: false },
+          { property: 'cargoType',            readonly: false },
+          { property: 'unloadingType',        readonly: false },
+          { property: 'freightCost',          readonly: false },
+          { property: 'unloadingCost',        readonly: false },
+        ]
+      }
+    } else {
+      return {}
+    }
+    return {}
+  };
 
   public onChangeFieldsRow(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
     
@@ -529,9 +660,9 @@ export class FormularioComponent {
     }
   };
 
-  private async loadFormFields(location: string, budget: string): Promise<any> {
+  private async loadFormFields(location: string, budgetId: string): Promise<any> {
     try {
-      const res = await firstValueFrom(this.api.get('portal-do-representante/orcamentos/dados?loadingLocation='+this.location+'&budget='+this.budget));
+      const res = await firstValueFrom(this.api.get('portal-do-representante/orcamentos/dados?loadingLocation='+location+'&budget='+budgetId));
       return res; // Retorna os dados completos do orçamento
     } catch (error) {
       console.error('Erro ao buscar orçamento:', error);
@@ -579,6 +710,10 @@ export class FormularioComponent {
     } else {
       return false
     }
+  }
+
+  public isLoadingLocationEmpty(): boolean {
+    return !this.headerData.loadingLocation
   }
 
 }

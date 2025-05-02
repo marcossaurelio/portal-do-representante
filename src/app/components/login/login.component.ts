@@ -47,7 +47,7 @@ export class LoginComponent {
           localStorage.setItem('authToken', res.authToken);
           localStorage.setItem('authTokenExpiration', res.authTokenExpiration);
           localStorage.setItem('userName', this.capitalizeName(res.userName));
-          localStorage.setItem('sellerCode', res.sellerCode);
+          localStorage.setItem('sellerId', res.sellerId);
           this.router.navigate(['/','home'])
           this.loading = false;
         } else {
