@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent, PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged } from '@po-ui/ng-components';
+import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent, PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged, PoInfoModule, PoInfoOrientation } from '@po-ui/ng-components';
 import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
@@ -18,6 +18,7 @@ import { firstValueFrom } from 'rxjs';
     PoGridModule,
     PoContainerModule,
     PoLoadingModule,
+    PoInfoModule,
   ],
   templateUrl: './formulario.component.html',
   styleUrl: './formulario.component.css'
@@ -43,9 +44,9 @@ export class FormularioComponent {
   public logisticsDataFields: Array<PoDynamicFormField> = [];
   public columns: Array<any> = [];
   public rowFormTitle: string = 'Item - Adicionar';
+  public infoOrientation: PoInfoOrientation = PoInfoOrientation.Horizontal;
 
   private currentRowProduct: string = ''
-
 
   public rows: Array<any> = [
     {
@@ -408,6 +409,18 @@ export class FormularioComponent {
         format: 'BRL',
       },
       {
+        property: 'tes',
+        label: 'TES',
+        type: 'string',
+        required: false,
+        showRequired: false,
+        readonly: false,
+        visible: false,
+        noAutocomplete: true,
+        maxLength: 3,
+        gridColumns: 2,
+      },
+      {
         property: 'comissionPercentage',
         label: 'Comissão (%)',
         type: 'number',
@@ -479,6 +492,7 @@ export class FormularioComponent {
           packagingType:        item.embalagem,
           unitPrice:            item.valorUnitario,
           totalPrice:           item.valorTotal,
+          tes:                  item.tes,
           comissionPercentage:  item.comissao,
           comissionUnitValue:   item.valorUnitario * item.comissao / 100,
           comissionTotalValue:  item.valorTotal * item.comissao / 100,
@@ -492,6 +506,29 @@ export class FormularioComponent {
 
   public getFields(order: number): Array<PoDynamicFormField> {
     return this.fields.filter(field => field.order == order);
+  }
+
+  public get budgetTotalValue(): string {
+    const totalValue = this.rows.reduce((sum, row) => {
+      const price = Number(row.totalPrice);
+      return sum + (isNaN(price) ? 0 : price);
+    }, 0);
+
+    return totalValue.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    });
+  }
+
+  public get budgetFreightValue(): string {
+    const freightCost   = isNaN(Number(this.headerData.freightCost))    ? 0 : this.headerData.freightCost
+    const unloadingCost = isNaN(Number(this.headerData.unloadingCost))  ? 0 : this.headerData.unloadingCost
+    const totalValue = freightCost + unloadingCost
+
+    return totalValue.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    });
   }
 
   public fillRowData(row: any): void {
@@ -538,7 +575,7 @@ export class FormularioComponent {
       "cliente":        this.headerData.customerId.substring(0,6) ?? "",
       "lojaCliente":    this.headerData.customerId.slice(-2)      ?? "",
       "condPag":        this.headerData.paymentTerms              ?? "",
-      "observacao":     this.headerData.observation               ?? "",
+      "observacao":     this.headerData.observation.trim()        ?? "",
       "vendedor":       localStorage.getItem('sellerId')          ?? "",
       "situacao":       this.headerData.budgetStatus              ?? "",
       "condPagFrete":   this.headerData.freightPaymentTerms       ?? "",
@@ -552,7 +589,8 @@ export class FormularioComponent {
         "produto":        item.productId            ?? "",
         "quantidade":     item.amount               ?? 0,
         "precoUnitario":  item.unitPrice            ?? 0,
-        "comissao":       item.comissionPercentage  ?? 0
+        "comissao":       item.comissionPercentage  ?? 0,
+        "tes":            item.tes                  ?? "",
       }))
     };
     try {
@@ -715,7 +753,6 @@ export class FormularioComponent {
     } else {
       return {}
     }
-    return {}
   };
 
   public onChangeFieldsRow(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {

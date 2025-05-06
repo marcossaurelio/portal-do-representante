@@ -86,8 +86,9 @@ export class OrcamentosComponent {
           { value: 'O', type: PoTagType.Warning,    label: 'Aguardando Ordem',  icon: true  },
         ]
       },
-      {property: 'customer', label: 'Cliente'},
-      {property: 'inclusionDate', label: 'Data Inclusão', type: 'date'},
+      { property: 'customer',       label: 'Cliente'  },
+      //{ property: 'totalValue',     label: 'Valor Total',   type: 'numeric'  },
+      { property: 'inclusionDate',  label: 'Data Inclusão', type: 'date'     },
     ]
   }
 
@@ -107,6 +108,7 @@ export class OrcamentosComponent {
         budget:               item.orcamento,
         order:                '',
         customer:             item.nomeCliente,
+        totalValue:           item.valorTotal,
         inclusionDate:        this.dateFormat(item.dataEmissao),
       }));
 

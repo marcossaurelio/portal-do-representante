@@ -6,3 +6,16 @@
 ::ng-deep .po-tab-button {
     min-width: 48% !important; /* Largura mínima do botão de seleção da aba */
 }
+
+.total-values {
+    display: flex;
+    justify-content: space-between;
+    gap: 15%; /* espaçamento entre os po-info */
+    margin-top: 10px;
+    margin-left: 3%;
+}
+
+.total-values po-info {
+    flex: 1;               /* todos ocupam o mesmo espaço */
+    min-width: 0;          /* previne overflow em casos extremos */
+}

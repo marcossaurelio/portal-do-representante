@@ -71,6 +71,12 @@
 
     </po-table>
 
+    <div class="total-values">
+        <po-info p-label="Valor Total"  [p-value]="this.budgetTotalValue"   [p-orientation]="infoOrientation" > </po-info>
+        <po-info p-label="Peso Total"   p-value="0 kg"                      [p-orientation]="infoOrientation" > </po-info>
+        <po-info p-label="Valor Frete"  [p-value]="this.budgetFreightValue" [p-orientation]="infoOrientation" > </po-info>
+    </div>
+
     <po-modal #modal
     [p-click-out]="false"
     [p-hide-close]="true"
