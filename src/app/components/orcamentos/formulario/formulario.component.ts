@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent, PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged, PoInfoModule, PoInfoOrientation } from '@po-ui/ng-components';
+import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent, PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged, PoInfoModule, PoInfoOrientation, PoTableComponent } from '@po-ui/ng-components';
 import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
@@ -27,8 +27,9 @@ export class FormularioComponent {
   
   constructor(private router: Router, private route: ActivatedRoute, private api: ApiService, private poNotification: PoNotificationService) {}
 
-  @ViewChild(PoModalComponent, { static: true }) 'modal': PoModalComponent;
-  @ViewChild(PoDynamicFormComponent, { static: true }) 'dynamicForm': PoDynamicFormComponent;
+  @ViewChild('modal', { static: true }) 'modal': PoModalComponent;
+  @ViewChild('modalCopy', { static: true }) 'modalCopy': PoModalComponent;
+  @ViewChild('tableCopy', { static: true }) 'tableCopy': PoTableComponent;
 
   public headerData: any  = {};
   public rowData: any = {};
@@ -37,7 +38,7 @@ export class FormularioComponent {
   public budgetId: string = ''
   public isHideLoading: boolean = true;
   public formTitle: string = 'Orçamentos'
-  public validateFieldsHeader: Array<string> = ['loadingLocation','freightType'];
+  public validateFieldsHeader: Array<string> = ['loadingLocation','freightType','customerId'];
   public validateFieldsRow: Array<string> = ['productId','comissionPercentage','unitPrice','amount'];
   public fields: Array<PoDynamicFormField> = [];
   public generalDataFields: Array<PoDynamicFormField> = [];
@@ -45,8 +46,10 @@ export class FormularioComponent {
   public columns: Array<any> = [];
   public rowFormTitle: string = 'Item - Adicionar';
   public infoOrientation: PoInfoOrientation = PoInfoOrientation.Horizontal;
+  public rows2Copy: Array<any> = []
 
-  private currentRowProduct: string = ''
+  private selectedProductId: string = '';
+  private selectedCustomerId: string = '';
 
   public rows: Array<any> = [
     {
@@ -73,6 +76,20 @@ export class FormularioComponent {
     loading: false,
   }
 
+  public readonly confirmCopy: PoModalAction = {
+    action: () => { this.saveRows2Copy(); },
+    label: 'Confirmar',
+    disabled: false,
+    loading: false,
+  }
+  
+  public readonly cancelCopy: PoModalAction = {
+    action: () => { this.router.navigate(['/','orcamentos']); },
+    label: 'Cancelar',
+    disabled: false,
+    loading: false,
+  }
+
   public gridRowActions: Array<PoTableAction> = [];
 
   public async ngOnInit() {
@@ -93,7 +110,7 @@ export class FormularioComponent {
         visible: true,
         required: true,
         showRequired: true,
-        readonly: !this.isAddMode(),
+        readonly: !this.isAddMode() && !this.isCopyMode(),
         noAutocomplete: true,
         gridColumns: 3,
         options: [
@@ -109,7 +126,7 @@ export class FormularioComponent {
       },
       {
         property: 'budgetId',
-        label: 'Orçamento',
+        label: 'Cód. Orçamento',
         visible: true,
         required: false,
         showRequired: false,
@@ -155,7 +172,7 @@ export class FormularioComponent {
         type: 'string',
         searchService: 'https://192.168.100.249:8500/portal-do-representante/clientes',
         columns: [
-          { property: 'cliente', label: 'Código' },
+          { property: 'codigo', label: 'Código' },
           { property: 'cgc', label: 'CNPJ' },
           { property: 'tipo', label: 'Tipo' },
           { property: 'razaoSocial', label: 'Nome' },
@@ -171,7 +188,7 @@ export class FormularioComponent {
         visible: true,
         required: true,
         showRequired: true,
-        disabled: this.isViewMode() || this.isAddMode(),
+        disabled: !this.isModifyMode(),
         noAutocomplete: true,
         minLength: 3,
         maxLength: 40,
@@ -193,7 +210,7 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        readonly: this.isViewMode() || this.isAddMode(),
+        readonly: !this.isModifyMode(),
         noAutocomplete: true,
         maxLength: 120,
         gridColumns: 9,
@@ -470,10 +487,10 @@ export class FormularioComponent {
 
       if (res) {
         this.headerData = {
-          loadingLocation:      res.filial,
-          budgetId:             res.orcamento,
-          budgetStatus:         res.situacao,
-          customerId:           res.cliente+res.loja,
+          loadingLocation:      !this.isCopyMode() ? res.filial : '',
+          budgetId:             !this.isCopyMode() ? res.orcamento : '',
+          budgetStatus:         !this.isCopyMode() ? res.situacao : '',
+          customerId:           !this.isCopyMode() ? res.cliente+res.loja : '',
           paymentTerms:         res.condPag,
           observation:          res.observacao.trim(),
           freightType:          res.tipoFrete,
@@ -483,20 +500,46 @@ export class FormularioComponent {
           unloadingType:        res.tipoDescarga,
           unloadingCost:        res.valorDescarga,
         };
+        
+        if (!this.isCopyMode()) {
 
-        this.rows = res.itens.map((item: any) => ({
-          item:                 item.item,
-          productId:            item.produto.trim(),
-          productDescription:   item.descProduto.trim(),
-          amount:               item.quantidade,
-          packagingType:        item.embalagem,
-          unitPrice:            item.valorUnitario,
-          totalPrice:           item.valorTotal,
-          tes:                  item.tes,
-          comissionPercentage:  item.comissao,
-          comissionUnitValue:   item.valorUnitario * item.comissao / 100,
-          comissionTotalValue:  item.valorTotal * item.comissao / 100,
-        }));
+          this.rows = res.itens.map((item: any) => ({
+            item:                 item.item,
+            productId:            item.produto.trim(),
+            productDescription:   item.descProduto.trim(),
+            amount:               item.quantidade,
+            packagingType:        item.embalagem,
+            unitPrice:            item.valorUnitario,
+            totalPrice:           item.valorTotal,
+            tes:                  item.tes,
+            comissionPercentage:  item.comissao,
+            comissionUnitValue:   item.valorUnitario * item.comissao / 100,
+            comissionTotalValue:  item.valorTotal * item.comissao / 100,
+          }));
+          
+        } else {
+
+          this.rows2Copy = res.itens.map((item: any) => ({
+            item:                 item.item,
+            productId:            item.produto.trim(),
+            productDescription:   item.descProduto.trim(),
+            amount:               item.quantidade,
+            packagingType:        item.embalagem,
+            unitPrice:            item.valorUnitario,
+            totalPrice:           item.valorTotal,
+            tes:                  item.tes,
+            comissionPercentage:  item.comissao,
+            comissionUnitValue:   item.valorUnitario * item.comissao / 100,
+            comissionTotalValue:  item.valorTotal * item.comissao / 100,
+          }));
+
+          setTimeout(() => {
+            this.openCopyModal();
+          }, 0);
+
+        }
+        
+
       }
     }
 
@@ -694,7 +737,7 @@ export class FormularioComponent {
     if (this.validateHeader()) {
       this.eraseRowData();
       this.fillRowData(row)
-      this.currentRowProduct = this.rowData.productId
+      this.selectedProductId = this.rowData.productId
       this.rowFormTitle = 'Item - Alterar'
       this.modal.open()
     }
@@ -704,7 +747,7 @@ export class FormularioComponent {
     if (this.validateHeader() && this.validateRows()) {
       this.eraseRowData();
       this.fillRowNextItem(row)
-      this.currentRowProduct = this.rowData.productId
+      this.selectedProductId = this.rowData.productId
       this.rowFormTitle = 'Item - Adicionar'
       this.modal.open()
     }
@@ -750,6 +793,17 @@ export class FormularioComponent {
           { property: 'unloadingCost',        readonly: false },
         ]
       }
+    } else if (changedValue.property === 'customerId') {
+      if (!this.selectedCustomerId.trim()) {
+        this.selectedCustomerId = changedValue.value.customerId;
+        return {}
+      } else {
+        this.poNotification.warning('Não é possível alterar o cliente do orçamento uma vez que ele é selecionado.');
+        return {
+          value: { customerId: this.selectedCustomerId },
+        }
+      }
+      return {}
     } else {
       return {}
     }
@@ -758,12 +812,12 @@ export class FormularioComponent {
   public onChangeFieldsRow(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
     
     if (changedValue.property === 'productId') {
-      if (!this.currentRowProduct) {
+      if (!this.selectedProductId) {
         this.fillProductData(changedValue.value.productId)
         return {}
       } else {
         return {
-          value: { productId: this.currentRowProduct },
+          value: { productId: this.selectedProductId },
         }
       }
     } else if (changedValue.property === 'comissionPercentage' || changedValue.property === 'unitPrice' || changedValue.property === 'amount') {
@@ -841,6 +895,14 @@ export class FormularioComponent {
     }
   }
 
+  private isModifyMode(): boolean {
+    if (this.mode == 'modify') {
+      return true
+    } else {
+      return false
+    }
+  }
+
   private isCopyMode(): boolean {
     if (this.mode == 'copy') {
       return true
@@ -851,6 +913,32 @@ export class FormularioComponent {
 
   public isLoadingLocationEmpty(): boolean {
     return !this.headerData.loadingLocation
+  }
+
+  private openCopyModal(): any {
+    this.modalCopy.open()
+    this.tableCopy.selectRowItem(row => true)
+  }
+
+  private saveRows2Copy(): any {
+    if (this.tableCopy.getSelectedRows().length > 0) {
+
+      let item = 0;
+      this.rows = [];
+      this.tableCopy.getSelectedRows().forEach((row) => {
+        item++;
+        row.item = item.toString().padStart(2, '0');
+        delete row.$selected;
+        delete row.tes;
+        this.rows.push(row);
+      })
+      this.modalCopy.close()
+
+    } else {
+
+      this.modalCopy.close()
+
+    }
   }
 
 }

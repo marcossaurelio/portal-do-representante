@@ -85,13 +85,41 @@
     [p-secondary-action]="cancelRow"
     p-size="xl"
     [p-title]="rowFormTitle" >
-        <po-dynamic-form #dynamicForm
+        <po-dynamic-form #rowForm
         [p-fields]="columns"
         [p-value]="rowData"
         [p-validate-fields]="this.validateFieldsRow"
         [p-validate]="this.onChangeFieldsRow.bind(this)" >
             
         </po-dynamic-form>
+    </po-modal>
+
+    <po-modal #modalCopy
+    [p-click-out]="false"
+    [p-hide-close]="true"
+    p-icon="an an-copy"
+    [p-primary-action]="confirmCopy"
+    [p-secondary-action]="cancelCopy"
+    p-size="xl"
+    p-title="Copiar - Seleção de Itens" >
+
+        <po-info p-label="Selecione abaixo os itens que deseja copiar para o novo orçamento" [p-orientation]="infoOrientation" ></po-info>
+
+        <po-table #tableCopy
+        [p-columns]="columns"
+        [p-items]="rows2Copy"
+        [p-hide-columns-manager]="true"
+        [p-draggable]="false"
+        [p-sort]="false"
+        [p-striped]="true"
+        p-container="border"
+        [p-selectable]="true"
+        [p-selectable-entire-line]="true"
+        [p-hide-table-search]="false"
+        [p-height]="325" >
+
+        </po-table>
+
     </po-modal>
 
 </po-page-edit>

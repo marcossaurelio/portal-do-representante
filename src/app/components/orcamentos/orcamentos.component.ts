@@ -28,7 +28,7 @@ export class OrcamentosComponent {
   public columns: Array<PoTableColumn> = [];
   public items: Array<any> = [];
   public filteredItems: Array<any> = [];
-  private sellerCode: string = localStorage.getItem('sellerCode') ?? '';
+  private sellerId: string = localStorage.getItem('sellerId') ?? '';
   public isHideLoading: boolean = true;
 
   public readonly actions: Array<PoPageAction> = [
@@ -94,7 +94,7 @@ export class OrcamentosComponent {
 
   public async getItems(): Promise<Array<any>> {
     
-    const params: string = '?seller='+this.sellerCode+'&page=1';
+    const params: string = '?sellerId='+this.sellerId+'&page=1';
 
     try {
 
