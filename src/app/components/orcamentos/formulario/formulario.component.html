@@ -1,7 +1,6 @@
-<po-loading-overlay [hidden]="isHideLoading"></po-loading-overlay>
 <po-page-edit
     [p-title]="formTitle"
-    (p-save)="onSaveForm()"
+    (p-save)="saveForm(false)"
     (p-cancel)="onCancelForm()"
     [p-disable-submit]="false"
     >
@@ -43,17 +42,6 @@
         </po-tab>
 
     </po-tabs>
-
-    <!--
-        <po-container
-        [p-height]="310"
-        [p-no-border]="true"
-        [p-no-padding]="true" >
-            <po-grid [p-data]="data" [p-columns]="gridColumns" [p-row-actions]="gridRowActions">
-        
-            </po-grid>
-        </po-container>
-    -->
 
     <div style="margin-top: 5px;"></div>
 
@@ -103,6 +91,13 @@
     p-size="xl"
     p-title="Copiar - Seleção de Itens" >
 
+        <po-dynamic-form
+        [p-fields]="copyModalFields"
+        [p-value]="copyModalHeaderData" >
+        </po-dynamic-form>
+
+        <po-divider></po-divider>
+
         <po-info p-label="Selecione abaixo os itens que deseja copiar para o novo orçamento" [p-orientation]="infoOrientation" ></po-info>
 
         <po-table #tableCopy
@@ -115,11 +110,11 @@
         p-container="border"
         [p-selectable]="true"
         [p-selectable-entire-line]="true"
-        [p-hide-table-search]="false"
-        [p-height]="325" >
-
+        [p-hide-table-search]="true"
+        [p-height]="350" >
         </po-table>
 
     </po-modal>
 
 </po-page-edit>
+<po-loading-overlay [hidden]="isHideLoading"></po-loading-overlay>

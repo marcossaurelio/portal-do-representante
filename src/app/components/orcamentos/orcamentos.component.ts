@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { PoInfoModule, PoSearchModule, PoTableModule, PoTagType, PoTableColumn, PoButtonModule, PoWidgetModule, PoFieldModule, PoModule, PoTableAction, PoPageAction } from '@po-ui/ng-components';
+import { PoInfoModule, PoSearchModule, PoTableModule, PoTagType, PoTableColumn, PoButtonModule, PoWidgetModule, PoFieldModule, PoModule, PoTableAction, PoPageAction, PoNotificationService } from '@po-ui/ng-components';
 import { PoPageDynamicSearchModule, PoPageDynamicSearchFilters, PoPageDynamicTableModule } from '@po-ui/ng-templates';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
@@ -23,7 +23,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class OrcamentosComponent {
 
-  constructor(private router: Router, private api: ApiService) {}
+  constructor(private router: Router, private api: ApiService, private poNotification: PoNotificationService) {}
 
   public columns: Array<PoTableColumn> = [];
   public items: Array<any> = [];
@@ -112,9 +112,9 @@ export class OrcamentosComponent {
         inclusionDate:        this.dateFormat(item.dataEmissao),
       }));
 
-    } catch (e) {
+    } catch (e: any) {
 
-      console.error('Falha ao buscar os dados: ' + e);
+      this.poNotification.error('Falha ao buscar os dados: ' + e.message);
       return [];
 
     }

@@ -1,9 +1,9 @@
 import { Component, ViewChild } from '@angular/core';
-import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent, PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged, PoInfoModule, PoInfoOrientation, PoTableComponent } from '@po-ui/ng-components';
+import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent, PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged, PoInfoModule, PoInfoOrientation, PoTableComponent, PoDividerModule } from '@po-ui/ng-components';
 import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 
 @Component({
   selector: 'app-formulario',
@@ -19,6 +19,7 @@ import { firstValueFrom } from 'rxjs';
     PoContainerModule,
     PoLoadingModule,
     PoInfoModule,
+    PoDividerModule,
   ],
   templateUrl: './formulario.component.html',
   styleUrl: './formulario.component.css'
@@ -33,23 +34,25 @@ export class FormularioComponent {
 
   public headerData: any  = {};
   public rowData: any = {};
+  public copyModalHeaderData: any  = {};
   public mode: string = 'view';
   public location: string = ''
   public budgetId: string = ''
   public isHideLoading: boolean = true;
   public formTitle: string = 'Orçamentos'
-  public validateFieldsHeader: Array<string> = ['loadingLocation','freightType','customerId'];
+  public validateFieldsHeader: Array<string> = ['loadingLocation','freightType','customerId','budgetId'];
   public validateFieldsRow: Array<string> = ['productId','comissionPercentage','unitPrice','amount'];
   public fields: Array<PoDynamicFormField> = [];
   public generalDataFields: Array<PoDynamicFormField> = [];
   public logisticsDataFields: Array<PoDynamicFormField> = [];
+  public copyModalFields: Array<PoDynamicFormField> = [];
   public columns: Array<any> = [];
   public rowFormTitle: string = 'Item - Adicionar';
   public infoOrientation: PoInfoOrientation = PoInfoOrientation.Horizontal;
   public rows2Copy: Array<any> = []
 
   private selectedProductId: string = '';
-  private selectedCustomerId: string = '';
+  //private selectedCustomerId: string = '';
 
   public rows: Array<any> = [
     {
@@ -110,7 +113,7 @@ export class FormularioComponent {
         visible: true,
         required: true,
         showRequired: true,
-        readonly: !this.isAddMode() && !this.isCopyMode(),
+        readonly: !this.isAddMode(),
         noAutocomplete: true,
         gridColumns: 3,
         options: [
@@ -183,12 +186,36 @@ export class FormularioComponent {
         order: 1,
       },
       {
+        property: 'customerIdDisabled',
+        label: 'Cliente',
+        visible: false,
+        required: true,
+        showRequired: true,
+        disabled: true,
+        noAutocomplete: true,
+        minLength: 3,
+        maxLength: 6,
+        gridColumns: 4,
+        type: 'string',
+        searchService: 'https://192.168.100.249:8500/portal-do-representante/clientes',
+        columns: [
+          { property: 'codigo', label: 'Código' },
+          { property: 'cgc', label: 'CNPJ' },
+          { property: 'tipo', label: 'Tipo' },
+          { property: 'razaoSocial', label: 'Nome' },
+        ],
+        format: ['cgc', 'razaoSocial'],
+        fieldLabel: 'razaoSocial',
+        fieldValue: 'codigoLoja',
+        order: 1,
+      },
+      {
         property: 'paymentTerms',
         label: 'Cond. Pag.',
         visible: true,
         required: true,
         showRequired: true,
-        disabled: !this.isModifyMode(),
+        disabled: !this.isModifyMode() && !this.isCopyMode(),
         noAutocomplete: true,
         minLength: 3,
         maxLength: 40,
@@ -210,7 +237,7 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        readonly: !this.isModifyMode(),
+        readonly: !this.isModifyMode() && !this.isCopyMode(),
         noAutocomplete: true,
         maxLength: 120,
         gridColumns: 9,
@@ -476,6 +503,14 @@ export class FormularioComponent {
     
     this.generalDataFields = this.getFields(1);
     this.logisticsDataFields = this.getFields(2);
+    this.copyModalFields = this.fields
+      .filter((field) => field.property === 'loadingLocation' || field.property === 'customerId')
+      .map((field) => {
+        const copiedField = {...field};
+        copiedField.readonly = false;
+        copiedField.disabled = false;
+        return copiedField;
+      });
 
     this.gridRowActions = [
       { action: this.onModifyRow.bind(this),       icon: 'an an-note-pencil',   label: 'Alterar linha',     disabled: this.isViewMode() },
@@ -595,15 +630,22 @@ export class FormularioComponent {
     this.rowData = {};
   }
 
-  public async onSaveForm() {
-    if (this.validateHeader()) {
+  public async saveForm(isAutoSave: boolean, bkpRows?: Array<any>) {
+    if (this.validateHeader() && this.validateRows()) {
       this.isHideLoading = false;
       const res = await this.sendForm();
       if (res) {
         if (res.success) {
           this.poNotification.success(res.message);
-          this.router.navigate(['/','orcamentos']);
+          if (!isAutoSave) {
+            this.router.navigate(['/','orcamentos']);
+          } else {
+            !this.headerData.budgetId ? this.headerData.budgetId = res.orcamento : null;
+            this.modal.close();
+            this.modalCopy.close();
+          }
         } else {
+          bkpRows ? this.rows = bkpRows.map(item => ({ ...item })) : null;
           this.poNotification.error(res.message + ': ' + res.fix);
         }
       }
@@ -618,7 +660,7 @@ export class FormularioComponent {
       "cliente":        this.headerData.customerId.substring(0,6) ?? "",
       "lojaCliente":    this.headerData.customerId.slice(-2)      ?? "",
       "condPag":        this.headerData.paymentTerms              ?? "",
-      "observacao":     this.headerData.observation.trim()        ?? "",
+      "observacao":     this.headerData.observation ? this.headerData.observation.trim() : "",
       "vendedor":       localStorage.getItem('sellerId')          ?? "",
       "situacao":       this.headerData.budgetStatus              ?? "",
       "condPagFrete":   this.headerData.freightPaymentTerms       ?? "",
@@ -637,15 +679,15 @@ export class FormularioComponent {
       }))
     };
     try {
-      if (this.isAddMode() || this.isCopyMode()) {
+      if (!this.headerData.budgetId) {
         const res = await firstValueFrom( this.api.post('portal-do-representante/orcamentos/incluir/', body));
         return res;
       } else {
         const res = await firstValueFrom( this.api.put('portal-do-representante/orcamentos/alterar/', body));
         return res;
       }
-    } catch (error) {
-      this.poNotification.error('Erro ao buscar orçamento: ' + error);
+    } catch (error: any) {
+      this.poNotification.error('Erro ao buscar orçamento: ' + error.message);
       return null;
     }
   }
@@ -675,7 +717,7 @@ export class FormularioComponent {
       const missingFields = requiredFields.filter(field => {
         const value = row[field.property];
         if (field.property == 'amount' || field.property == 'unitPrice') {
-          return value === null || value === undefined || value === '' || value === 0;
+          return value === null || value === undefined || isNaN(Number(value)) || value === 0;
         } else {
           return value === null || value === undefined || value === '';
         }
@@ -702,7 +744,7 @@ export class FormularioComponent {
     const missingFields = requiredFields.filter(field => {
       const value = this.rowData[field.property];
       if (field.property == 'amount' || field.property == 'unitPrice') {
-        return value === null || value === undefined || value === '' || value === 0;
+        return value === null || value === undefined || isNaN(Number(value)) || value === 0;
       } else {
         return value === null || value === undefined || value === '';
       }
@@ -722,7 +764,7 @@ export class FormularioComponent {
   }
 
   public getRequiredHeaderFields(): Array<PoDynamicFormField> {
-      return this.fields.filter(field => field.required == true);
+      return this.fields.filter(field => field.required == true && !field.property.toLowerCase().includes('disabled'));
   }
 
   public getRequiredRowFields(): Array<PoDynamicFormField> {
@@ -755,6 +797,7 @@ export class FormularioComponent {
 
   public saveRow(row: any) {
     if (this.validateRowData()) {
+      const bkpRows = this.rows.map(item => ({ ...item }));
       if (row.operation === 'ADD') {
         this.rows = [...this.rows, row]
       } else if (row.operation === 'MOD') {
@@ -762,7 +805,7 @@ export class FormularioComponent {
           return existingRow.item === row.item ? { ...row } : existingRow;
         });
       }
-      this.modal.close()
+      this.saveForm(true, bkpRows);
     }
   }
 
@@ -793,17 +836,25 @@ export class FormularioComponent {
           { property: 'unloadingCost',        readonly: false },
         ]
       }
-    } else if (changedValue.property === 'customerId') {
-      if (!this.selectedCustomerId.trim()) {
+    } else if (changedValue.property === 'customerId' && !this.isCopyMode()) {
+      /*if (!this.headerData.budgetId) {
         this.selectedCustomerId = changedValue.value.customerId;
         return {}
       } else {
-        this.poNotification.warning('Não é possível alterar o cliente do orçamento uma vez que ele é selecionado.');
+        this.poNotification.warning('Não é possível alterar o cliente uma vez que o orçamento já está salvo.');
         return {
           value: { customerId: this.selectedCustomerId },
         }
+      }*/
+      setTimeout(() => {
+        this.headerData.customerIdDisabled = this.headerData.customerId;
+      }, 0);
+      return {
+        fields: [
+          { property: 'customerId',  visible: false },
+          { property: 'customerIdDisabled',  visible: true },
+        ]
       }
-      return {}
     } else {
       return {}
     }
@@ -844,8 +895,8 @@ export class FormularioComponent {
     try {
       const res = await firstValueFrom(this.api.get('portal-do-representante/orcamentos/dados?loadingLocation='+location+'&budget='+budgetId));
       return res; // Retorna os dados completos do orçamento
-    } catch (error) {
-      console.error('Erro ao buscar orçamento:', error);
+    } catch (error: any) {
+      console.error('Erro ao buscar orçamento:', error.message);
       return null;
     }
   }
@@ -860,8 +911,8 @@ export class FormularioComponent {
       }
       this.confirmRow.loading = false;
       return res
-    } catch (error) {
-      console.error('Erro ao buscar orçamento:', error);
+    } catch (error: any) {
+      console.error('Erro ao buscar orçamento:', error.message);
       this.confirmRow.loading = false;
       return null;
     }
@@ -916,29 +967,32 @@ export class FormularioComponent {
   }
 
   private openCopyModal(): any {
-    this.modalCopy.open()
-    this.tableCopy.selectRowItem(row => true)
+    this.modalCopy.open();
+    this.tableCopy.selectRowItem(row => true);
   }
 
   private saveRows2Copy(): any {
-    if (this.tableCopy.getSelectedRows().length > 0) {
-
-      let item = 0;
-      this.rows = [];
-      this.tableCopy.getSelectedRows().forEach((row) => {
-        item++;
-        row.item = item.toString().padStart(2, '0');
-        delete row.$selected;
-        delete row.tes;
-        this.rows.push(row);
-      })
-      this.modalCopy.close()
-
+    if (!!this.copyModalHeaderData.loadingLocation && !!this.copyModalHeaderData.customerId) {
+      this.headerData.loadingLocation = this.copyModalHeaderData.loadingLocation;
+      this.headerData.customerId = this.copyModalHeaderData.customerId;
+      this.headerData.budgetStatus = this.copyModalHeaderData.loadingLocation === '01010001' ? 'CP' : 'PP';
+      if (this.tableCopy.getSelectedRows().length > 0) {
+        let item = 0;
+        const bkpRows = this.rows.map(item => ({ ...item }));
+        this.rows = [];
+        this.tableCopy.getSelectedRows().forEach((row) => {
+          item++;
+          row.item = item.toString().padStart(2, '0');
+          delete row.$selected;
+          delete row.tes;
+          this.rows = [...this.rows,row];
+        })
+        this.saveForm(true,bkpRows);
+      } else {
+        this.modalCopy.close();
+      }
     } else {
-
-      this.modalCopy.close()
-
+      this.poNotification.warning('Preencha todos os campos obrigatórios: Unidade de Carregamento, Cliente.')
     }
   }
-
 }
