@@ -648,6 +648,8 @@ export class FormularioComponent {
           bkpRows ? this.rows = bkpRows.map(item => ({ ...item })) : null;
           this.poNotification.error(res.message + ': ' + res.fix);
         }
+      } else {
+        bkpRows ? this.rows = bkpRows.map(item => ({ ...item })) : null;
       }
       this.isHideLoading = true;
     }
@@ -687,7 +689,7 @@ export class FormularioComponent {
         return res;
       }
     } catch (error: any) {
-      this.poNotification.error('Erro ao buscar orçamento: ' + error.message);
+      this.poNotification.error('Erro ao atualizar orçamento: ' + error.message);
       return null;
     }
   }
