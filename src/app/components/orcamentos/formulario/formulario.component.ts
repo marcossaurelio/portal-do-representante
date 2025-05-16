@@ -54,10 +54,12 @@ export class FormularioComponent {
   public columns: Array<any> = [];
   public rowFormTitle: string = 'Item - Adicionar';
   public infoOrientation: PoInfoOrientation = PoInfoOrientation.Horizontal;
-  public rows2Copy: Array<any> = []
+  public rows2Copy: Array<any> = [];
+  
 
   private selectedProductId: string = '';
-  //private selectedCustomerId: string = '';
+  private pbrPalletWeight: number = 35;
+  private disposablePalletWeight: number = 19;
 
   public rows: Array<any> = [
     {
@@ -617,6 +619,42 @@ export class FormularioComponent {
         gridColumns: 2,
         format: 'BRL',
       },
+      {
+        property: 'productNetWeight',
+        label: 'Peso Neto Produto',
+        type: 'number',
+        required: false,
+        showRequired: false,
+        readonly: true,
+        visible: false,
+        noAutocomplete: true,
+        maxLength: 20,
+        gridColumns: 2,
+      },
+      {
+        property: 'productGrossWeight',
+        label: 'Peso Bruto Produto',
+        type: 'number',
+        required: false,
+        showRequired: false,
+        readonly: true,
+        visible: false,
+        noAutocomplete: true,
+        maxLength: 20,
+        gridColumns: 2,
+      },
+      {
+        property: 'packagingFormat',
+        label: 'Formato Embalagem',
+        type: 'string',
+        required: false,
+        showRequired: false,
+        readonly: false,
+        visible: false,
+        noAutocomplete: true,
+        maxLength: 3,
+        gridColumns: 2,
+      },
     ]
     
     this.generalDataFields = this.getFields(1);
@@ -644,14 +682,19 @@ export class FormularioComponent {
           budgetId:             !this.isCopyMode() ? res.orcamento : '',
           budgetStatus:         !this.isCopyMode() ? res.situacao : '',
           customerId:           !this.isCopyMode() ? res.cliente+res.loja : '',
-          paymentTerms:         res.condPag,
-          observation:          res.observacao.trim(),
-          freightType:          res.tipoFrete,
-          freightPaymentTerms:  res.condPagFrete,
-          freightCost:          res.valorFrete,
-          cargoType:            res.tipoCarga,
-          unloadingType:        res.tipoDescarga,
-          unloadingCost:        res.valorDescarga,
+          paymentTerms:         res.condPag               ?? '',
+          observation:          res.observacao.trim()     ?? '',
+          freightType:          res.tipoFrete             ?? '',
+          freightPaymentTerms:  res.condPagFrete          ?? '',
+          freightCost:          res.valorFrete            ?? 0,
+          cargoType:            res.tipoCarga             ?? '',
+          unloadingType:        res.tipoDescarga          ?? '',
+          unloadingCost:        res.valorDescarga         ?? 0,
+          maxLoad:              res.cargaMaxima           ?? 0,
+          palletPattern10x1:    res.paletizacao10x1       ?? 50,
+          palletPattern20x1:    res.paletizacao20x1       ?? 150,
+          palletPattern25kg:    res.paletizacao25kg       ?? 50,
+          transportationMode:   res.tipoVeiculo           ?? '',
         };
         
         if (!this.isCopyMode()) {
@@ -668,6 +711,9 @@ export class FormularioComponent {
             comissionPercentage:  item.comissao,
             comissionUnitValue:   item.valorUnitario * item.comissao / 100,
             comissionTotalValue:  item.valorTotal * item.comissao / 100,
+            productNetWeight:     item.pesoNeto,
+            productGrossWeight:   item.pesoBruto,
+            packagingFormat:      item.formatoEmbalagem,
           }));
           
         } else {
@@ -692,6 +738,7 @@ export class FormularioComponent {
 
         }
         
+        this.fillCustomerData()
 
       }
     }
@@ -727,10 +774,19 @@ export class FormularioComponent {
 
   public get totalLoadWeight(): number {
     const totalProductsWeight = this.rows.reduce((sum, row) => {
-      const price = Number(row.totalPrice);
-      return sum + (isNaN(price) ? 0 : price);
+      const weight = Number(row.productGrossWeight) * Number(row.amount);
+      return sum + (isNaN(weight) ? 0 : weight);
     }, 0);
     return totalProductsWeight;
+  }
+
+  public get totalLoadWeightFormatted(): string {
+    const totalWeight = this.totalLoadWeight;
+    return totalWeight.toLocaleString('pt-BR', {
+      style: 'decimal',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }) + ' kg';
   }
 
   public get weightStatusInformations(): Array<any> {
@@ -794,20 +850,25 @@ export class FormularioComponent {
 
   public async sendForm(): Promise<any> {
     const body = {
-      "filial":         this.headerData.loadingLocation           ?? "",
-      "orcamento":      this.headerData.budgetId                  ?? "",
-      "cliente":        this.headerData.customerId.substring(0,6) ?? "",
-      "lojaCliente":    this.headerData.customerId.slice(-2)      ?? "",
-      "condPag":        this.headerData.paymentTerms              ?? "",
-      "observacao":     this.headerData.observation ? this.headerData.observation.trim() : "",
-      "vendedor":       localStorage.getItem('sellerId')          ?? "",
-      "situacao":       this.headerData.budgetStatus              ?? "",
-      "condPagFrete":   this.headerData.freightPaymentTerms       ?? "",
-      "valorFrete":     this.headerData.freightCost               ?? 0,
-      "tipoCarga":      this.headerData.cargoType                 ?? "",
-      "tipoDescarga":   this.headerData.unloadingType             ?? "",
-      "valorDescarga":  this.headerData.unloadingCost             ?? 0,
-      "tipoFrete":      this.headerData.freightType               ?? "",
+      "filial":           this.headerData.loadingLocation           ?? "",
+      "orcamento":        this.headerData.budgetId                  ?? "",
+      "cliente":          this.headerData.customerId.substring(0,6) ?? "",
+      "lojaCliente":      this.headerData.customerId.slice(-2)      ?? "",
+      "condPag":          this.headerData.paymentTerms              ?? "",
+      "observacao":       this.headerData.observation ? this.headerData.observation.trim() : "",
+      "vendedor":         localStorage.getItem('sellerId')          ?? "",
+      "situacao":         this.headerData.budgetStatus              ?? "",
+      "condPagFrete":     this.headerData.freightPaymentTerms       ?? "",
+      "valorFrete":       this.headerData.freightCost               ?? 0,
+      "tipoCarga":        this.headerData.cargoType                 ?? "",
+      "tipoDescarga":     this.headerData.unloadingType             ?? "",
+      "valorDescarga":    this.headerData.unloadingCost             ?? 0,
+      "tipoFrete":        this.headerData.freightType               ?? "",
+      "cargaMaxima":      this.headerData.maxLoad                   ?? 0,
+      "paletizacao10x1":  this.headerData.palletPattern10x1         ?? 50,
+      "paletizacao20x1":  this.headerData.palletPattern20x1         ?? 150,
+      "paletizacao25kg":  this.headerData.palletPattern25kg         ?? 50,
+      "tipoVeiculo":      this.headerData.transportationMode        ?? "",
       "itens":          this.rows.map((item: any) => ({
         "item":           item.item                 ?? "",
         "produto":        item.productId            ?? "",
@@ -980,6 +1041,7 @@ export class FormularioComponent {
     } else if (changedValue.property === 'customerId' && !this.isCopyMode()) {
       setTimeout(() => {
         this.headerData.customerIdDisabled = this.headerData.customerId;
+        this.fillCustomerData();
       }, 0);
       return {
         fields: [
@@ -1067,11 +1129,29 @@ export class FormularioComponent {
       if (res) {
         this.rowData.productDescription = res.descricao;
         this.rowData.packagingType = res.unidade;
+        this.rowData.packagingFormat = res.formatoEmbalagem;
+        this.rowData.productNetWeight = res.pesoLiquido;
+        this.rowData.productGrossWeight = res.pesoBruto;
       }
       this.confirmRow.loading = false;
       return res
     } catch (error: any) {
       console.error('Erro ao buscar dados do produto:', error.message);
+      this.confirmRow.loading = false;
+      return null;
+    }
+  }
+
+  private async fillCustomerData(): Promise<any> {
+    try {
+      const res: any = await firstValueFrom(this.api.get('portal-do-representante/clientes/'+this.headerData.customerId));
+      if (res) {
+        this.headerData.destinationState = res.estado;
+        this.headerData.customerHasIE = !!res.ie;
+      }
+      return res
+    } catch (error: any) {
+      console.error('Erro ao buscar dados do cliente:', error.message);
       this.confirmRow.loading = false;
       return null;
     }
@@ -1150,6 +1230,7 @@ export class FormularioComponent {
       } else {
         this.modalCopy.close();
       }
+      this.fillCustomerData()
     } else {
       this.poNotification.warning('Preencha todos os campos obrigatórios: Unidade de Carregamento, Cliente.')
     }
