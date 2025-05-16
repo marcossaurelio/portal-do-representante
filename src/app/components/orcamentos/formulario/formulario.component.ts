@@ -1,5 +1,8 @@
 import { Component, ViewChild } from '@angular/core';
-import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent, PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged, PoInfoModule, PoInfoOrientation, PoTableComponent, PoDividerModule } from '@po-ui/ng-components';
+import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule } from '@po-ui/ng-components';
+import { PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent } from '@po-ui/ng-components';
+import { PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged, PoInfoModule } from '@po-ui/ng-components';
+import { PoInfoOrientation, PoTableComponent, PoDividerModule, PoTagModule, PoTagType } from '@po-ui/ng-components';
 import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
@@ -20,6 +23,7 @@ import { firstValueFrom, map } from 'rxjs';
     PoLoadingModule,
     PoInfoModule,
     PoDividerModule,
+    PoTagModule,
   ],
   templateUrl: './formulario.component.html',
   styleUrl: './formulario.component.css'
@@ -40,7 +44,8 @@ export class FormularioComponent {
   public budgetId: string = ''
   public isHideLoading: boolean = true;
   public formTitle: string = 'Orçamentos'
-  public validateFieldsHeader: Array<string> = ['loadingLocation','freightType','customerId','budgetId'];
+  public validateHeaderFields: Array<string> = ['loadingLocation','customerId','budgetId'];
+  public validateFreightFields: Array<string> = ['freightType','maxLoad','palletPattern10x1','palletPattern20x1','palletPattern25kg'];
   public validateFieldsRow: Array<string> = ['productId','comissionPercentage','unitPrice','amount'];
   public fields: Array<PoDynamicFormField> = [];
   public generalDataFields: Array<PoDynamicFormField> = [];
@@ -115,7 +120,7 @@ export class FormularioComponent {
         showRequired: true,
         readonly: !this.isAddMode(),
         noAutocomplete: true,
-        gridColumns: 3,
+        gridColumns: 4,
         options: [
           { loadingLocation: 'Rio Grande do Norte', code: "01010001" },
           { loadingLocation: 'Rio Grande do Norte', code: "01010001" },
@@ -135,7 +140,7 @@ export class FormularioComponent {
         showRequired: false,
         readonly: true,
         noAutocomplete: true,
-        gridColumns: 2,
+        gridColumns: 3,
         type: 'string',
         order: 1,
       },
@@ -147,7 +152,7 @@ export class FormularioComponent {
         showRequired: false,
         readonly: true,
         noAutocomplete: true,
-        gridColumns: 3,
+        gridColumns: 4,
         options: [
           { budgetStatus: 'Cotação pendente',     code: "CP" },
           { budgetStatus: 'Cotação rejeitada',    code: "CR" },
@@ -171,7 +176,7 @@ export class FormularioComponent {
         noAutocomplete: true,
         minLength: 3,
         maxLength: 6,
-        gridColumns: 4,
+        gridColumns: 6,
         type: 'string',
         searchService: 'https://192.168.100.249:8500/portal-do-representante/clientes',
         columns: [
@@ -195,7 +200,7 @@ export class FormularioComponent {
         noAutocomplete: true,
         minLength: 3,
         maxLength: 6,
-        gridColumns: 4,
+        gridColumns: 6,
         type: 'string',
         searchService: 'https://192.168.100.249:8500/portal-do-representante/clientes',
         columns: [
@@ -207,6 +212,27 @@ export class FormularioComponent {
         format: ['cgc', 'razaoSocial'],
         fieldLabel: 'razaoSocial',
         fieldValue: 'codigoLoja',
+        order: 1,
+      },
+      {
+        property: 'customerHasIE',
+        label: 'Possui IE?',
+        visible: true,
+        required: false,
+        showRequired: false,
+        readonly: true,
+        noAutocomplete: true,
+        maxLength: 3,
+        gridColumns: 2,
+        options: [
+          { label: 'Sim', code: true  },
+          { label: 'Sim', code: true  },
+          { label: 'Não', code: false },
+          { label: 'Não', code: false },
+        ],
+        type: 'boolean',
+        fieldValue: 'code',
+        fieldLabel: 'label',
         order: 1,
       },
       {
@@ -240,7 +266,7 @@ export class FormularioComponent {
         readonly: !this.isModifyMode() && !this.isCopyMode(),
         noAutocomplete: true,
         maxLength: 120,
-        gridColumns: 9,
+        gridColumns: 11,
         type: 'string',
         rows: 1,
         order: 1,
@@ -301,6 +327,98 @@ export class FormularioComponent {
         gridColumns: 2,
         format: 'BRL',
         order: 2
+      },
+      {
+        property: 'transportationMode',
+        label: 'Tipo de Veículo',
+        visible: true,
+        required: false,
+        showRequired: false,
+        readonly: this.isViewMode() || this.isAddMode(),
+        noAutocomplete: true,
+        minLength: 1,
+        maxLength: 1,
+        gridColumns: 2,
+        options: [
+          { cargoType: 'Rodoviário' , code: 'R' },
+          { cargoType: 'Rodoviário' , code: 'R' },
+          { cargoType: 'Marítimo'   , code: 'M' },
+          { cargoType: 'Marítimo'   , code: 'M' },
+        ],
+        type: 'string',
+        fieldValue: 'code',
+        fieldLabel: 'cargoType',
+        order: 2,
+      },
+      {
+        property: 'maxLoad',
+        label: 'Carga Máxima (kg)',
+        visible: true,
+        required: false,
+        showRequired: false,
+        noAutocomplete: true,
+        readonly: this.isViewMode() || this.isAddMode(),
+        type: 'number',
+        maxLength: 10,
+        gridColumns: 2,
+        format: '1.0-0',
+        order: 2
+      },
+      {
+        property: 'palletPattern10x1',
+        label: 'Padrão Palete 10x1',
+        visible: true,
+        required: false,
+        showRequired: false,
+        noAutocomplete: true,
+        readonly: this.isViewMode() || this.isAddMode(),
+        type: 'number',
+        maxLength: 3,
+        gridColumns: 2,
+        format: '1.0-0',
+        order: 2
+      },
+      {
+        property: 'palletPattern20x1',
+        label: 'Padrão Palete 20x1',
+        visible: true,
+        required: false,
+        showRequired: false,
+        noAutocomplete: true,
+        readonly: this.isViewMode() || this.isAddMode(),
+        type: 'number',
+        maxLength: 3,
+        gridColumns: 2,
+        format: '1.0-0',
+        order: 2
+      },
+      {
+        property: 'palletPattern25kg',
+        label: 'Padrão Palete 25kg',
+        visible: true,
+        required: false,
+        showRequired: false,
+        noAutocomplete: true,
+        readonly: this.isViewMode() || this.isAddMode(),
+        type: 'number',
+        maxLength: 3,
+        gridColumns: 2,
+        format: '1.0-0',
+        order: 2
+      },
+      {
+        property: 'destinationState',
+        label: 'UF Destino',
+        visible: true,
+        required: false,
+        showRequired: false,
+        readonly: true,
+        noAutocomplete: true,
+        maxLength: 2,
+        gridColumns: 2,
+        type: 'string',
+        rows: 1,
+        order: 2,
       },
       {
         property: 'cargoType',
@@ -517,7 +635,7 @@ export class FormularioComponent {
       { action: this.onAddRow.bind(this),          icon: 'an an-plus',          label: 'Adicionar linha',   disabled: this.isViewMode() },
     ];
         
-    if (this.mode != 'add' && this.location && this.budgetId) {
+    if (!this.isAddMode() && this.location && this.budgetId) {
       const res = await this.loadFormFields(this.location,this.budgetId);
 
       if (res) {
@@ -591,7 +709,6 @@ export class FormularioComponent {
       const price = Number(row.totalPrice);
       return sum + (isNaN(price) ? 0 : price);
     }, 0);
-
     return totalValue.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
@@ -602,11 +719,31 @@ export class FormularioComponent {
     const freightCost   = isNaN(Number(this.headerData.freightCost))    ? 0 : this.headerData.freightCost
     const unloadingCost = isNaN(Number(this.headerData.unloadingCost))  ? 0 : this.headerData.unloadingCost
     const totalValue = freightCost + unloadingCost
-
     return totalValue.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     });
+  }
+
+  public get totalLoadWeight(): number {
+    const totalProductsWeight = this.rows.reduce((sum, row) => {
+      const price = Number(row.totalPrice);
+      return sum + (isNaN(price) ? 0 : price);
+    }, 0);
+    return totalProductsWeight;
+  }
+
+  public get weightStatusInformations(): Array<any> {
+    const weightMargin = 3;
+    if (this.totalLoadWeight == 0 || !this.totalLoadWeight) {
+      return ['Descarregado', PoTagType.Neutral ]
+    } else if (this.totalLoadWeight > this.headerData.maxLoad*(1+weightMargin/100)) {
+      return ['Carga acima do limite',PoTagType.Danger]
+    } else if (this.totalLoadWeight < this.headerData.maxLoad*(1-weightMargin/100)) {
+      return ['Carga abaixo do limite',PoTagType.Warning]
+    } else {
+      return ['Carga dentro do limite',PoTagType.Success]
+    }
   }
 
   public fillRowData(row: any): void {
@@ -815,8 +952,20 @@ export class FormularioComponent {
     this.modal.close()
   }
 
-  public onChangeFieldsHeader(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
-    
+  public formatNumericHeaderValues() {
+    const numericFields: Array<string> = this.fields
+      .filter(field => field.type === 'number')
+      .map(field => field.property);
+    numericFields.forEach((field) => {
+      const value: number = this.headerData[field];
+      const decimalPlaces: number = Number(this.fields.find(f => f.property === field)?.format?.slice(-1)) ?? 2;
+      if (!isNaN(value)) {
+        this.headerData[field] = Number(value.toFixed(decimalPlaces));
+      }
+    });
+  }
+
+  public onChangeHeaderFields(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
     if (changedValue.property === 'loadingLocation') {
       const newBudgetStatus = changedValue.value.loadingLocation === '01010001' ? 'CP' : 'PP';
       return {
@@ -828,26 +977,7 @@ export class FormularioComponent {
           { property: 'observation',      readonly: false },
         ],
       }
-    } else if (changedValue.property === 'freightType') {
-      return {
-        fields: [
-          { property: 'freightPaymentTerms',  disabled: false },
-          { property: 'cargoType',            readonly: false },
-          { property: 'unloadingType',        readonly: false },
-          { property: 'freightCost',          readonly: false },
-          { property: 'unloadingCost',        readonly: false },
-        ]
-      }
     } else if (changedValue.property === 'customerId' && !this.isCopyMode()) {
-      /*if (!this.headerData.budgetId) {
-        this.selectedCustomerId = changedValue.value.customerId;
-        return {}
-      } else {
-        this.poNotification.warning('Não é possível alterar o cliente uma vez que o orçamento já está salvo.');
-        return {
-          value: { customerId: this.selectedCustomerId },
-        }
-      }*/
       setTimeout(() => {
         this.headerData.customerIdDisabled = this.headerData.customerId;
       }, 0);
@@ -856,6 +986,33 @@ export class FormularioComponent {
           { property: 'customerId',  visible: false },
           { property: 'customerIdDisabled',  visible: true },
         ]
+      }
+    } else {
+      return {}
+    }
+  };
+
+  public onChangeFreightFields(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
+    this.formatNumericHeaderValues();
+    if (changedValue.property === 'freightType') {
+      return {
+        fields: [
+          { property: 'freightPaymentTerms',  disabled: false },
+          { property: 'cargoType',            readonly: false },
+          { property: 'unloadingType',        readonly: false },
+          { property: 'freightCost',          readonly: false },
+          { property: 'unloadingCost',        readonly: false },
+          { property: 'transportationMode',   readonly: false },
+          { property: 'maxLoad',              readonly: false },
+          { property: 'palletPattern10x1',    readonly: false },
+          { property: 'palletPattern20x1',    readonly: false },
+          { property: 'palletPattern25kg',    readonly: false },
+        ],
+        value: {
+          palletPattern10x1: this.headerData.palletPattern10x1 ?? 50,
+          palletPattern20x1: this.headerData.palletPattern20x1 ?? 150,
+          palletPattern25kg: this.headerData.palletPattern25kg ?? 50,
+        }
       }
     } else {
       return {}
@@ -914,7 +1071,7 @@ export class FormularioComponent {
       this.confirmRow.loading = false;
       return res
     } catch (error: any) {
-      console.error('Erro ao buscar orçamento:', error.message);
+      console.error('Erro ao buscar dados do produto:', error.message);
       this.confirmRow.loading = false;
       return null;
     }
@@ -964,8 +1121,8 @@ export class FormularioComponent {
     }
   }
 
-  public isLoadingLocationEmpty(): boolean {
-    return !this.headerData.loadingLocation
+  public get isFreightTabDisabled(): boolean {
+    return !this.headerData.loadingLocation || !this.headerData.customerId;
   }
 
   private openCopyModal(): any {

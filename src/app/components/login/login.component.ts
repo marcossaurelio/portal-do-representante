@@ -43,20 +43,19 @@ export class LoginComponent {
     this.authService.login(credentials.login, credentials.password).subscribe({
       next: (res: any) => {
         if (res.auth === true) {
-          this.poNotification.success('Login realizado com sucesso.');
           localStorage.setItem('authToken', res.authToken);
           localStorage.setItem('authTokenExpiration', res.authTokenExpiration);
           localStorage.setItem('userName', this.capitalizeName(res.userName));
           localStorage.setItem('sellerId', res.sellerId);
           this.router.navigate(['/','home'])
-          this.loading = false;
+          this.poNotification.success(res.message);
         } else {
-          this.poNotification.error('Usuário ou senha inválidos.')
-          this.loading = false;
+          this.poNotification.error('Erro ao realizar o login: ' + res.message)
         }
+        this.loading = false;
       },
-      error: () => {
-        this.poNotification.error('Erro ao realizar o login.')
+      error: (error: any) => {
+        this.poNotification.error('Erro ao realizar o login: ' + error.message);
         this.loading = false;
       }
     });

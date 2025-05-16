@@ -9,17 +9,22 @@
 
 .total-values {
     display: flex;
-    justify-content: space-between;
-    gap: 15%; /* espaçamento entre os po-info */
+    flex-wrap: wrap;
+    justify-content: center;      /* Centraliza horizontalmente */
+    align-items: center;          /* Centraliza verticalmente */
+    gap: 8px;
     margin-top: 10px;
-    margin-left: 3%;
+    margin-left: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.total-values po-info {
-    flex: 1;               /* todos ocupam o mesmo espaço */
-    min-width: 0;          /* previne overflow em casos extremos */
-}
-
-.copy-info po-info {
-    margin-top: 50%;    
+.total-values > * {
+    flex: 1 1 200px;
+    min-width: 180px;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;          /* Centraliza conteúdo verticalmente */
+    justify-content: center;      /* Centraliza conteúdo horizontalmente */
 }
