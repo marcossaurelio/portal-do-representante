@@ -45,7 +45,7 @@ export class FormularioComponent {
   public isHideLoading: boolean = true;
   public formTitle: string = 'Orçamentos'
   public validateHeaderFields: Array<string> = ['loadingLocation','customerId','budgetId'];
-  public validateFreightFields: Array<string> = ['freightType','maxLoad','palletPattern10x1','palletPattern20x1','palletPattern25kg'];
+  public validateFreightFields: Array<string> = ['freightType','maxLoad','palletPattern10x1','palletPattern30x1','palletPattern25kg','freightCost','freightResponsible'];
   public validateFieldsRow: Array<string> = ['productId','comissionPercentage','unitPrice','amount'];
   public fields: Array<PoDynamicFormField> = [];
   public generalDataFields: Array<PoDynamicFormField> = [];
@@ -331,6 +331,20 @@ export class FormularioComponent {
         order: 2
       },
       {
+        property: 'freightResponsible',
+        label: 'Vendedor Responsável pelo Frete?',
+        visible: true,
+        required: false,
+        showRequired: false,
+        noAutocomplete: true,
+        readonly: this.isViewMode() || this.isAddMode(),
+        type: 'boolean',
+        booleanTrue: 'Sim',
+        booleanFalse: 'Não',
+        gridColumns: 3,
+        order: 2
+      },
+      {
         property: 'transportationMode',
         label: 'Tipo de Veículo',
         visible: true,
@@ -342,14 +356,14 @@ export class FormularioComponent {
         maxLength: 1,
         gridColumns: 2,
         options: [
-          { cargoType: 'Rodoviário' , code: 'R' },
-          { cargoType: 'Rodoviário' , code: 'R' },
-          { cargoType: 'Marítimo'   , code: 'M' },
-          { cargoType: 'Marítimo'   , code: 'M' },
+          { transportationMode: 'Rodoviário' , code: 'R' },
+          { transportationMode: 'Rodoviário' , code: 'R' },
+          { transportationMode: 'Marítimo'   , code: 'M' },
+          { transportationMode: 'Marítimo'   , code: 'M' },
         ],
         type: 'string',
         fieldValue: 'code',
-        fieldLabel: 'cargoType',
+        fieldLabel: 'transportationMode',
         order: 2,
       },
       {
@@ -381,8 +395,8 @@ export class FormularioComponent {
         order: 2
       },
       {
-        property: 'palletPattern20x1',
-        label: 'Padrão Palete 20x1',
+        property: 'palletPattern30x1',
+        label: 'Padrão Palete 30x1',
         visible: true,
         required: false,
         showRequired: false,
@@ -456,14 +470,14 @@ export class FormularioComponent {
         maxLength: 40,
         gridColumns: 3,
         options: [
-          { cargoType: 'Por conta do cliente'                 , code: '1' },
-          { cargoType: 'Por conta do cliente'                 , code: '1' },
-          { cargoType: 'Por conta do motorista (leva chapa)'  , code: '2' },
-          { cargoType: 'Por conta do motorista (paga taxa)'   , code: '3' },
+          { unloadingType: 'Por conta do cliente'                 , code: '1' },
+          { unloadingType: 'Por conta do cliente'                 , code: '1' },
+          { unloadingType: 'Por conta do motorista (leva chapa)'  , code: '2' },
+          { unloadingType: 'Por conta do motorista (paga taxa)'   , code: '3' },
         ],
         type: 'string',
         fieldValue: 'code',
-        fieldLabel: 'cargoType',
+        fieldLabel: 'unloadingType',
         order: 2,
       },
       {
@@ -691,8 +705,8 @@ export class FormularioComponent {
           unloadingType:        res.tipoDescarga          ?? '',
           unloadingCost:        res.valorDescarga         ?? 0,
           maxLoad:              res.cargaMaxima           ?? 0,
-          palletPattern10x1:    res.paletizacao10x1       ?? 50,
-          palletPattern20x1:    res.paletizacao20x1       ?? 150,
+          palletPattern10x1:    res.paletizacao10x1       ?? 150,
+          palletPattern30x1:    res.paletizacao30x1       ?? 50,
           palletPattern25kg:    res.paletizacao25kg       ?? 50,
           transportationMode:   res.tipoVeiculo           ?? '',
         };
@@ -772,12 +786,52 @@ export class FormularioComponent {
     });
   }
 
+  private get productsAmountPerPackagingFormat(): Array<number> {
+    const productsAmount10x1 = this.rows.reduce((sum, row) => {
+      const packagingFormat = row.packagingFormat;
+      if (packagingFormat === '10X1') {
+        return sum + (Number(row.amount) ?? 0);
+      }
+      return sum;
+    }, 0);
+    const productsAmount30x1 = this.rows.reduce((sum, row) => {
+      const packagingFormat = row.packagingFormat;
+      if (packagingFormat === '30X1') {
+        return sum + (Number(row.amount) ?? 0);
+      }
+      return sum;
+    }, 0);
+    const productsAmount25kg = this.rows.reduce((sum, row) => {
+      const packagingFormat = row.packagingFormat;
+      if (packagingFormat === '25KG') {
+        return sum + (Number(row.amount) ?? 0);
+      }
+      return sum;
+    }, 0);
+    return [productsAmount10x1, productsAmount30x1, productsAmount25kg];
+  }
+
+  private get palletsAmountPerPackagingFormat(): Array<number> {
+    const pallets10x1Amount = Math.ceil(this.productsAmountPerPackagingFormat[0]/(this.headerData.palletPattern10x1 ?? 150));
+    const pallets30x1Amount = Math.ceil(this.productsAmountPerPackagingFormat[1]/(this.headerData.palletPattern30x1 ?? 50));
+    const pallets25kgAmount = Math.ceil(this.productsAmountPerPackagingFormat[2]/(this.headerData.palletPattern25kg ?? 50));
+    return [pallets10x1Amount, pallets30x1Amount, pallets25kgAmount].map(item => isFinite(item) ? item : 0);
+  }
+
+  private get totalPalletsWeight(): number {
+    const palletUnitWeight = this.headerData.cargoType === '2' ? this.pbrPalletWeight : this.headerData.cargoType === '3' ? this.disposablePalletWeight : 0;
+    const totalPalletsAmount = this.palletsAmountPerPackagingFormat[0] + this.palletsAmountPerPackagingFormat[1] + this.palletsAmountPerPackagingFormat[2];
+    return totalPalletsAmount * palletUnitWeight;
+  }
+
   public get totalLoadWeight(): number {
     const totalProductsWeight = this.rows.reduce((sum, row) => {
-      const weight = Number(row.productGrossWeight) * Number(row.amount);
-      return sum + (isNaN(weight) ? 0 : weight);
+      const grossWeight = Number(row.productGrossWeight) ?? 0;
+      const amount = Number(row.amount) ?? 0;
+      const weight = grossWeight * amount;
+      return sum + (weight ?? 0);
     }, 0);
-    return totalProductsWeight;
+    return totalProductsWeight + this.totalPalletsWeight;
   }
 
   public get totalLoadWeightFormatted(): string {
@@ -794,11 +848,11 @@ export class FormularioComponent {
     if (this.totalLoadWeight == 0 || !this.totalLoadWeight) {
       return ['Descarregado', PoTagType.Neutral ]
     } else if (this.totalLoadWeight > this.headerData.maxLoad*(1+weightMargin/100)) {
-      return ['Carga acima do limite',PoTagType.Danger]
+      return ['Carga acima do limite', PoTagType.Danger]
     } else if (this.totalLoadWeight < this.headerData.maxLoad*(1-weightMargin/100)) {
-      return ['Carga abaixo do limite',PoTagType.Warning]
+      return ['Carga abaixo do limite', PoTagType.Warning]
     } else {
-      return ['Carga dentro do limite',PoTagType.Success]
+      return ['Carga dentro do limite', PoTagType.Success]
     }
   }
 
@@ -865,8 +919,8 @@ export class FormularioComponent {
       "valorDescarga":    this.headerData.unloadingCost             ?? 0,
       "tipoFrete":        this.headerData.freightType               ?? "",
       "cargaMaxima":      this.headerData.maxLoad                   ?? 0,
-      "paletizacao10x1":  this.headerData.palletPattern10x1         ?? 50,
-      "paletizacao20x1":  this.headerData.palletPattern20x1         ?? 150,
+      "paletizacao10x1":  this.headerData.palletPattern10x1         ?? 150,
+      "paletizacao30x1":  this.headerData.palletPattern30x1         ?? 50,
       "paletizacao25kg":  this.headerData.palletPattern25kg         ?? 50,
       "tipoVeiculo":      this.headerData.transportationMode        ?? "",
       "itens":          this.rows.map((item: any) => ({
@@ -1018,7 +1072,7 @@ export class FormularioComponent {
       .filter(field => field.type === 'number')
       .map(field => field.property);
     numericFields.forEach((field) => {
-      const value: number = this.headerData[field];
+      const value: number = Math.abs(Number(this.headerData[field])) ?? 0;
       const decimalPlaces: number = Number(this.fields.find(f => f.property === field)?.format?.slice(-1)) ?? 2;
       if (!isNaN(value)) {
         this.headerData[field] = Number(value.toFixed(decimalPlaces));
@@ -1067,13 +1121,35 @@ export class FormularioComponent {
           { property: 'transportationMode',   readonly: false },
           { property: 'maxLoad',              readonly: false },
           { property: 'palletPattern10x1',    readonly: false },
-          { property: 'palletPattern20x1',    readonly: false },
+          { property: 'palletPattern30x1',    readonly: false },
           { property: 'palletPattern25kg',    readonly: false },
         ],
         value: {
-          palletPattern10x1: this.headerData.palletPattern10x1 ?? 50,
-          palletPattern20x1: this.headerData.palletPattern20x1 ?? 150,
+          palletPattern10x1: this.headerData.palletPattern10x1 ?? 150,
+          palletPattern30x1: this.headerData.palletPattern30x1 ?? 50,
           palletPattern25kg: this.headerData.palletPattern25kg ?? 50,
+        }
+      }
+    } else if (changedValue.property === 'palletPattern10x1' || changedValue.property === 'palletPattern30x1' || changedValue.property === 'palletPattern25kg') {
+      return {
+        value: {
+          palletPattern10x1: this.headerData.palletPattern10x1 !== 0 ? this.headerData.palletPattern10x1 : 150,
+          palletPattern30x1: this.headerData.palletPattern30x1 !== 0 ? this.headerData.palletPattern30x1 : 50,
+          palletPattern25kg: this.headerData.palletPattern25kg !== 0 ? this.headerData.palletPattern25kg : 50,
+        }
+      }
+    } else if (changedValue.property === 'freightResponsible' || changedValue.property === 'freightCost') {
+      if (this.headerData.freightResponsible === true) {
+        return {
+          fields: [
+            { property: 'freightCost',  readonly: false },
+          ]
+        }
+      } else {
+        return {
+          fields: [
+            { property: 'freightCost',  readonly: true },
+          ]
         }
       }
     } else {
@@ -1118,6 +1194,7 @@ export class FormularioComponent {
       return res; // Retorna os dados completos do orçamento
     } catch (error: any) {
       console.error('Erro ao buscar orçamento:', error.message);
+      this.router.navigate(['/','orcamentos']); 
       return null;
     }
   }
