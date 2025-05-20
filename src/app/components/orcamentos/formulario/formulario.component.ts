@@ -37,6 +37,7 @@ export class FormularioComponent {
   @ViewChild('tableCopy', { static: true }) 'tableCopy': PoTableComponent;
 
   public headerData: any  = {};
+  public rows: Array<any> = [];
   public rowData: any = {};
   public copyModalHeaderData: any  = {};
   public mode: string = 'view';
@@ -45,7 +46,7 @@ export class FormularioComponent {
   public isHideLoading: boolean = true;
   public formTitle: string = 'Orçamentos'
   public validateHeaderFields: Array<string> = ['loadingLocation','customerId','budgetId'];
-  public validateFreightFields: Array<string> = ['freightType','maxLoad','palletPattern10x1','palletPattern30x1','palletPattern25kg','freightCost','freightResponsible'];
+  public validateFreightFields: Array<string> = ['freightType','maxLoad','palletPattern10x1','palletPattern30x1','palletPattern25kg','freightCost','freightResponsible','cargoType','transportationMode'];
   public validateFieldsRow: Array<string> = ['productId','comissionPercentage','unitPrice','amount'];
   public fields: Array<PoDynamicFormField> = [];
   public generalDataFields: Array<PoDynamicFormField> = [];
@@ -61,16 +62,6 @@ export class FormularioComponent {
   private pbrPalletWeight: number = 35;
   private disposablePalletWeight: number = 19;
 
-  public rows: Array<any> = [
-    {
-      item: '01',
-      amount: 1,
-      unitPrice: 0,
-      totalPrice: 0,
-      comissionUnitValue: 0,
-      comissionTotalValue: 0,
-    },
-  ];
 
   public readonly confirmRow: PoModalAction = {
     action: () => { this.saveRow(this.rowData); },
@@ -323,7 +314,7 @@ export class FormularioComponent {
         required: false,
         showRequired: false,
         noAutocomplete: true,
-        readonly: this.isViewMode() || this.isAddMode(),
+        readonly: true,
         type: 'currency',
         maxLength: 20,
         gridColumns: 2,
@@ -337,7 +328,7 @@ export class FormularioComponent {
         required: false,
         showRequired: false,
         noAutocomplete: true,
-        readonly: this.isViewMode() || this.isAddMode(),
+        disabled: this.isViewMode() || this.isAddMode(),
         type: 'boolean',
         booleanTrue: 'Sim',
         booleanFalse: 'Não',
@@ -381,45 +372,39 @@ export class FormularioComponent {
         order: 2
       },
       {
-        property: 'palletPattern10x1',
-        label: 'Padrão Palete 10x1',
+        property: 'unloadingType',
+        label: 'Tipo Descarga',
         visible: true,
         required: false,
         showRequired: false,
-        noAutocomplete: true,
         readonly: this.isViewMode() || this.isAddMode(),
-        type: 'number',
-        maxLength: 3,
-        gridColumns: 2,
-        format: '1.0-0',
-        order: 2
+        noAutocomplete: true,
+        minLength: 3,
+        maxLength: 40,
+        gridColumns: 3,
+        options: [
+          { unloadingType: 'Por conta do cliente'                 , code: '1' },
+          { unloadingType: 'Por conta do cliente'                 , code: '1' },
+          { unloadingType: 'Por conta do motorista (leva chapa)'  , code: '2' },
+          { unloadingType: 'Por conta do motorista (paga taxa)'   , code: '3' },
+        ],
+        type: 'string',
+        fieldValue: 'code',
+        fieldLabel: 'unloadingType',
+        order: 2,
       },
       {
-        property: 'palletPattern30x1',
-        label: 'Padrão Palete 30x1',
+        property: 'unloadingCost',
+        label: 'Valor Descarga',
         visible: true,
         required: false,
         showRequired: false,
-        noAutocomplete: true,
         readonly: this.isViewMode() || this.isAddMode(),
-        type: 'number',
-        maxLength: 3,
-        gridColumns: 2,
-        format: '1.0-0',
-        order: 2
-      },
-      {
-        property: 'palletPattern25kg',
-        label: 'Padrão Palete 25kg',
-        visible: true,
-        required: false,
-        showRequired: false,
         noAutocomplete: true,
-        readonly: this.isViewMode() || this.isAddMode(),
-        type: 'number',
-        maxLength: 3,
+        type: 'currency',
+        maxLength: 20,
         gridColumns: 2,
-        format: '1.0-0',
+        format: 'BRL',
         order: 2
       },
       {
@@ -459,39 +444,45 @@ export class FormularioComponent {
         order: 2,
       },
       {
-        property: 'unloadingType',
-        label: 'Tipo Descarga',
+        property: 'palletPattern10x1',
+        label: 'Padrão Palete 10x1',
         visible: true,
         required: false,
         showRequired: false,
-        readonly: this.isViewMode() || this.isAddMode(),
         noAutocomplete: true,
-        minLength: 3,
-        maxLength: 40,
-        gridColumns: 3,
-        options: [
-          { unloadingType: 'Por conta do cliente'                 , code: '1' },
-          { unloadingType: 'Por conta do cliente'                 , code: '1' },
-          { unloadingType: 'Por conta do motorista (leva chapa)'  , code: '2' },
-          { unloadingType: 'Por conta do motorista (paga taxa)'   , code: '3' },
-        ],
-        type: 'string',
-        fieldValue: 'code',
-        fieldLabel: 'unloadingType',
-        order: 2,
+        readonly: this.isViewMode() || this.isAddMode(),
+        type: 'number',
+        maxLength: 3,
+        gridColumns: 2,
+        format: '1.0-0',
+        order: 2
       },
       {
-        property: 'unloadingCost',
-        label: 'Valor Descarga',
+        property: 'palletPattern30x1',
+        label: 'Padrão Palete 30x1',
         visible: true,
         required: false,
         showRequired: false,
-        readonly: this.isViewMode() || this.isAddMode(),
         noAutocomplete: true,
-        type: 'currency',
-        maxLength: 20,
+        readonly: this.isViewMode() || this.isAddMode(),
+        type: 'number',
+        maxLength: 3,
         gridColumns: 2,
-        format: 'BRL',
+        format: '1.0-0',
+        order: 2
+      },
+      {
+        property: 'palletPattern25kg',
+        label: 'Padrão Palete 25kg',
+        visible: true,
+        required: false,
+        showRequired: false,
+        noAutocomplete: true,
+        readonly: this.isViewMode() || this.isAddMode(),
+        type: 'number',
+        maxLength: 3,
+        gridColumns: 2,
+        format: '1.0-0',
         order: 2
       },
     ]
@@ -688,73 +679,14 @@ export class FormularioComponent {
     ];
         
     if (!this.isAddMode() && this.location && this.budgetId) {
-      const res = await this.loadFormFields(this.location,this.budgetId);
-
-      if (res) {
-        this.headerData = {
-          loadingLocation:      !this.isCopyMode() ? res.filial : '',
-          budgetId:             !this.isCopyMode() ? res.orcamento : '',
-          budgetStatus:         !this.isCopyMode() ? res.situacao : '',
-          customerId:           !this.isCopyMode() ? res.cliente+res.loja : '',
-          paymentTerms:         res.condPag               ?? '',
-          observation:          res.observacao.trim()     ?? '',
-          freightType:          res.tipoFrete             ?? '',
-          freightPaymentTerms:  res.condPagFrete          ?? '',
-          freightCost:          res.valorFrete            ?? 0,
-          cargoType:            res.tipoCarga             ?? '',
-          unloadingType:        res.tipoDescarga          ?? '',
-          unloadingCost:        res.valorDescarga         ?? 0,
-          maxLoad:              res.cargaMaxima           ?? 0,
-          palletPattern10x1:    res.paletizacao10x1       ?? 150,
-          palletPattern30x1:    res.paletizacao30x1       ?? 50,
-          palletPattern25kg:    res.paletizacao25kg       ?? 50,
-          transportationMode:   res.tipoVeiculo           ?? '',
-        };
-        
-        if (!this.isCopyMode()) {
-
-          this.rows = res.itens.map((item: any) => ({
-            item:                 item.item,
-            productId:            item.produto.trim(),
-            productDescription:   item.descProduto.trim(),
-            amount:               item.quantidade,
-            packagingType:        item.embalagem,
-            unitPrice:            item.valorUnitario,
-            totalPrice:           item.valorTotal,
-            tes:                  item.tes,
-            comissionPercentage:  item.comissao,
-            comissionUnitValue:   item.valorUnitario * item.comissao / 100,
-            comissionTotalValue:  item.valorTotal * item.comissao / 100,
-            productNetWeight:     item.pesoNeto,
-            productGrossWeight:   item.pesoBruto,
-            packagingFormat:      item.formatoEmbalagem,
-          }));
-          
-        } else {
-
-          this.rows2Copy = res.itens.map((item: any) => ({
-            item:                 item.item,
-            productId:            item.produto.trim(),
-            productDescription:   item.descProduto.trim(),
-            amount:               item.quantidade,
-            packagingType:        item.embalagem,
-            unitPrice:            item.valorUnitario,
-            totalPrice:           item.valorTotal,
-            tes:                  item.tes,
-            comissionPercentage:  item.comissao,
-            comissionUnitValue:   item.valorUnitario * item.comissao / 100,
-            comissionTotalValue:  item.valorTotal * item.comissao / 100,
-          }));
-
-          setTimeout(() => {
-            this.openCopyModal();
-          }, 0);
-
-        }
-        
-        this.fillCustomerData()
-
+      const res = await this.loadBudgetData(this.location,this.budgetId);
+      if (res) {        
+        this.fillCustomerData();
+      } else {
+        this.router.navigate(['/','orcamentos']);
       }
+    } else {
+      this.loadDefaultData();
     }
 
     this.isHideLoading = true;
@@ -826,8 +758,8 @@ export class FormularioComponent {
 
   public get totalLoadWeight(): number {
     const totalProductsWeight = this.rows.reduce((sum, row) => {
-      const grossWeight = Number(row.productGrossWeight) ?? 0;
-      const amount = Number(row.amount) ?? 0;
+      const grossWeight = row.productGrossWeight ?? 0;
+      const amount = row.amount ?? 0;
       const weight = grossWeight * amount;
       return sum + (weight ?? 0);
     }, 0);
@@ -923,7 +855,8 @@ export class FormularioComponent {
       "paletizacao30x1":  this.headerData.palletPattern30x1         ?? 50,
       "paletizacao25kg":  this.headerData.palletPattern25kg         ?? 50,
       "tipoVeiculo":      this.headerData.transportationMode        ?? "",
-      "itens":          this.rows.map((item: any) => ({
+      "responsavelFrete": this.headerData.freightResponsible        ?? false,
+      "itens":            this.rows.map((item: any) => ({
         "item":           item.item                 ?? "",
         "produto":        item.productId            ?? "",
         "quantidade":     item.amount               ?? 0,
@@ -1116,19 +1049,25 @@ export class FormularioComponent {
           { property: 'freightPaymentTerms',  disabled: false },
           { property: 'cargoType',            readonly: false },
           { property: 'unloadingType',        readonly: false },
-          { property: 'freightCost',          readonly: false },
           { property: 'unloadingCost',        readonly: false },
           { property: 'transportationMode',   readonly: false },
           { property: 'maxLoad',              readonly: false },
-          { property: 'palletPattern10x1',    readonly: false },
-          { property: 'palletPattern30x1',    readonly: false },
-          { property: 'palletPattern25kg',    readonly: false },
+          { property: 'maxLoad',              readonly: false },
+          { property: 'freightResponsible',   disabled: false },
         ],
         value: {
           palletPattern10x1: this.headerData.palletPattern10x1 ?? 150,
           palletPattern30x1: this.headerData.palletPattern30x1 ?? 50,
           palletPattern25kg: this.headerData.palletPattern25kg ?? 50,
         }
+      }
+    } else if (changedValue.property === 'cargoType') {
+      return {
+        fields: [
+          { property: 'palletPattern10x1',    readonly: this.headerData.cargoType === '1' },
+          { property: 'palletPattern30x1',    readonly: this.headerData.cargoType === '1' },
+          { property: 'palletPattern25kg',    readonly: this.headerData.cargoType === '1' },
+        ],
       }
     } else if (changedValue.property === 'palletPattern10x1' || changedValue.property === 'palletPattern30x1' || changedValue.property === 'palletPattern25kg') {
       return {
@@ -1139,19 +1078,11 @@ export class FormularioComponent {
         }
       }
     } else if (changedValue.property === 'freightResponsible' || changedValue.property === 'freightCost') {
-      if (this.headerData.freightResponsible === true) {
         return {
           fields: [
-            { property: 'freightCost',  readonly: false },
+            { property: 'freightCost',  readonly: !this.headerData.freightResponsible },
           ]
         }
-      } else {
-        return {
-          fields: [
-            { property: 'freightCost',  readonly: true },
-          ]
-        }
-      }
     } else {
       return {}
     }
@@ -1188,13 +1119,69 @@ export class FormularioComponent {
     }
   };
 
-  private async loadFormFields(location: string, budgetId: string): Promise<any> {
+  private async loadBudgetData(location: string, budgetId: string): Promise<any> {
     try {
-      const res = await firstValueFrom(this.api.get('portal-do-representante/orcamentos/dados?loadingLocation='+location+'&budget='+budgetId));
+      const res: any = await firstValueFrom(this.api.get('portal-do-representante/orcamentos/dados?loadingLocation='+location+'&budget='+budgetId));
+      if (res) {
+        this.headerData = {
+          loadingLocation:      !this.isCopyMode() ? res.filial : '',
+          budgetId:             !this.isCopyMode() ? res.orcamento : '',
+          budgetStatus:         !this.isCopyMode() ? res.situacao : '',
+          customerId:           !this.isCopyMode() ? res.cliente+res.loja : '',
+          paymentTerms:         res.condPag               ?? '',
+          observation:          res.observacao.trim()     ?? '',
+          freightType:          res.tipoFrete             ?? '',
+          freightPaymentTerms:  res.condPagFrete          ?? '',
+          freightCost:          res.valorFrete            ?? 0,
+          cargoType:            res.tipoCarga             ?? '',
+          unloadingType:        res.tipoDescarga          ?? '',
+          unloadingCost:        res.valorDescarga         ?? 0,
+          maxLoad:              res.cargaMaxima           ?? 0,
+          palletPattern10x1:    res.paletizacao10x1       ?? 150,
+          palletPattern30x1:    res.paletizacao30x1       ?? 50,
+          palletPattern25kg:    res.paletizacao25kg       ?? 50,
+          transportationMode:   res.tipoVeiculo           ?? '',
+          freightResponsible:   res.freteResponsavel      ?? false,
+        };
+        if (!this.isCopyMode()) {
+          this.rows = res.itens.map((item: any) => ({
+            item:                 item.item,
+            productId:            item.produto.trim(),
+            productDescription:   item.descProduto.trim(),
+            amount:               item.quantidade,
+            packagingType:        item.embalagem,
+            unitPrice:            item.valorUnitario,
+            totalPrice:           item.valorTotal,
+            tes:                  item.tes,
+            comissionPercentage:  item.comissao,
+            comissionUnitValue:   item.valorUnitario * item.comissao / 100,
+            comissionTotalValue:  item.valorTotal * item.comissao / 100,
+            productNetWeight:     item.pesoNeto,
+            productGrossWeight:   item.pesoBruto,
+            packagingFormat:      item.formatoEmbalagem,
+          }));
+        } else {
+          this.rows2Copy = res.itens.map((item: any) => ({
+            item:                 item.item,
+            productId:            item.produto.trim(),
+            productDescription:   item.descProduto.trim(),
+            amount:               item.quantidade,
+            packagingType:        item.embalagem,
+            unitPrice:            item.valorUnitario,
+            totalPrice:           item.valorTotal,
+            tes:                  item.tes,
+            comissionPercentage:  item.comissao,
+            comissionUnitValue:   item.valorUnitario * item.comissao / 100,
+            comissionTotalValue:  item.valorTotal * item.comissao / 100,
+          }));
+          setTimeout(() => {
+            this.openCopyModal();
+          }, 0);
+        }
+      }
       return res; // Retorna os dados completos do orçamento
     } catch (error: any) {
-      console.error('Erro ao buscar orçamento:', error.message);
-      this.router.navigate(['/','orcamentos']); 
+      this.poNotification.error('Erro ao carregar orçamento: ' + error.message);
       return null;
     }
   }
@@ -1232,6 +1219,30 @@ export class FormularioComponent {
       this.confirmRow.loading = false;
       return null;
     }
+  }
+
+  private loadDefaultData(): void {
+    this.headerData = {
+      paymentTerms:         '001',
+      freightPaymentTerms:  '001',
+      cargoType:            '1',
+      unloadingType:        '1',
+      palletPattern10x1:    150,
+      palletPattern30x1:    50,
+      palletPattern25kg:    50,
+      transportationMode:   'R',
+      freightResponsible:   false,
+    };
+    this.rows = [
+    {
+      item: '01',
+      amount: 1,
+      unitPrice: 0,
+      totalPrice: 0,
+      comissionUnitValue: 0,
+      comissionTotalValue: 0,
+    },
+    ];
   }
   
   private getModeDescription(mode: string): string {

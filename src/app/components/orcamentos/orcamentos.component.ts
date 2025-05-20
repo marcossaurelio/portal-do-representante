@@ -114,7 +114,7 @@ export class OrcamentosComponent {
 
     } catch (e: any) {
 
-      this.poNotification.error('Falha ao buscar os dados: ' + e.message);
+      this.poNotification.error('Falha ao buscar os orçamentos: ' + e.message);
       return [];
 
     }
