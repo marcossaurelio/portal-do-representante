@@ -44,10 +44,11 @@ export class FormularioComponent {
   public location: string = ''
   public budgetId: string = ''
   public isHideLoading: boolean = true;
+  public loadingText: string = 'Carregando';
   public formTitle: string = 'Orçamentos'
   public validateHeaderFields: Array<string> = ['loadingLocation','customerId','budgetId'];
   public validateFreightFields: Array<string> = ['freightType','maxLoad','palletPattern10x1','palletPattern30x1','palletPattern25kg','freightCost','freightResponsible','cargoType','transportationMode'];
-  public validateFieldsRow: Array<string> = ['productId','comissionPercentage','unitPrice','amount'];
+  public validateFieldsRow: Array<string> = ['productId','comissionPercentage','fobBasePrice','unitPrice','amount'];
   public fields: Array<PoDynamicFormField> = [];
   public generalDataFields: Array<PoDynamicFormField> = [];
   public logisticsDataFields: Array<PoDynamicFormField> = [];
@@ -224,6 +225,27 @@ export class FormularioComponent {
           { label: 'Não', code: false },
         ],
         type: 'boolean',
+        fieldValue: 'code',
+        fieldLabel: 'label',
+        order: 1,
+      },
+      {
+        property: 'customerCategory',
+        label: 'Categoria Cliente',
+        visible: true,
+        required: false,
+        showRequired: false,
+        readonly: true,
+        noAutocomplete: true,
+        maxLength: 20,
+        gridColumns: 4,
+        options: [
+          { label: 'Sim', code: true  },
+          { label: 'Sim', code: true  },
+          { label: 'Não', code: false },
+          { label: 'Não', code: false },
+        ],
+        type: 'string',
         fieldValue: 'code',
         fieldLabel: 'label',
         order: 1,
@@ -433,10 +455,10 @@ export class FormularioComponent {
         maxLength: 40,
         gridColumns: 4,
         options: [
-          { cargoType: 'Batida'                             , code: '1' },
-          { cargoType: 'Batida'                             , code: '1' },
-          { cargoType: 'Paletizada COM Devolucao do Palete' , code: '2' },
-          { cargoType: 'Paletizada SEM Devolucao do Palete' , code: '3' },
+          { cargoType: 'Batida'                 , code: '1' },
+          { cargoType: 'Batida'                 , code: '1' },
+          { cargoType: 'Paletizada PBR'         , code: '2' },
+          { cargoType: 'Paletizada Descartável' , code: '3' },
         ],
         type: 'string',
         fieldValue: 'code',
@@ -447,7 +469,7 @@ export class FormularioComponent {
         property: 'palletPattern10x1',
         label: 'Padrão Palete 10x1',
         visible: true,
-        required: false,
+        required: true,
         showRequired: false,
         noAutocomplete: true,
         readonly: this.isViewMode() || this.isAddMode(),
@@ -461,7 +483,7 @@ export class FormularioComponent {
         property: 'palletPattern30x1',
         label: 'Padrão Palete 30x1',
         visible: true,
-        required: false,
+        required: true,
         showRequired: false,
         noAutocomplete: true,
         readonly: this.isViewMode() || this.isAddMode(),
@@ -475,7 +497,7 @@ export class FormularioComponent {
         property: 'palletPattern25kg',
         label: 'Padrão Palete 25kg',
         visible: true,
-        required: false,
+        required: true,
         showRequired: false,
         noAutocomplete: true,
         readonly: this.isViewMode() || this.isAddMode(),
@@ -553,13 +575,25 @@ export class FormularioComponent {
         gridColumns: 2,
       },
       {
-        property: 'unitPrice',
-        label: 'Valor Unit.',
+        property: 'fobBasePrice',
+        label: 'Valor FOB Base',
         type: 'currency',
-        required: true,
+        required: false,
         showRequired: false,
-        //readonly: true,
+        visible: false,
         readonly: this.isViewMode(),
+        noAutocomplete: true,
+        maxLength: 20,
+        gridColumns: 2,
+        format: 'BRL',
+      },
+      {
+        property: 'unitPrice',
+        label: 'Valor Unit. Efetivo',
+        type: 'currency',
+        required: false,
+        showRequired: false,
+        readonly: true,
         noAutocomplete: true,
         maxLength: 20,
         gridColumns: 2,
@@ -569,7 +603,7 @@ export class FormularioComponent {
         property: 'totalPrice',
         label: 'Valor Total',
         type: 'currency',
-        required: true,
+        required: false,
         showRequired: false,
         readonly: true,
         noAutocomplete: true,
@@ -593,9 +627,9 @@ export class FormularioComponent {
         property: 'comissionPercentage',
         label: 'Comissão (%)',
         type: 'number',
-        required: true,
+        required: false,
         showRequired: false,
-        readonly: this.isViewMode(),
+        readonly: true,
         noAutocomplete: true,
         maxLength: 3,
         gridColumns: 2,
@@ -697,22 +731,30 @@ export class FormularioComponent {
     return this.fields.filter(field => field.order == order);
   }
 
-  public get budgetTotalValue(): string {
+  public get budgetTotalValue(): number {
     const totalValue = this.rows.reduce((sum, row) => {
       const price = Number(row.totalPrice);
       return sum + (isNaN(price) ? 0 : price);
     }, 0);
-    return totalValue.toLocaleString('pt-BR', {
+    return totalValue;
+  }
+
+  public get budgetTotalValueFormatted(): string {
+    return this.budgetTotalValue.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     });
   }
 
-  public get budgetFreightValue(): string {
+  public get budgetFreightValue(): number {
     const freightCost   = isNaN(Number(this.headerData.freightCost))    ? 0 : this.headerData.freightCost
     const unloadingCost = isNaN(Number(this.headerData.unloadingCost))  ? 0 : this.headerData.unloadingCost
     const totalValue = freightCost + unloadingCost
-    return totalValue.toLocaleString('pt-BR', {
+    return totalValue;
+  }
+
+  public get budgetFreightValueFormatted(): string {
+    return this.budgetFreightValue.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     });
@@ -793,7 +835,7 @@ export class FormularioComponent {
     this.rowData.operation = 'MOD';
   }
 
-  public fillRowNextItem(row: any): void {
+  public fillRowNextItem(): void {
     const item = this.rows[this.rows.length-1].item;
     const newItem = parseInt(item, 10)+1;
     this.rowData.item = newItem.toString().padStart(item.length, '0');
@@ -809,29 +851,33 @@ export class FormularioComponent {
     this.rowData = {};
   }
 
-  public async saveForm(isAutoSave: boolean, bkpRows?: Array<any>) {
-    if (this.validateHeader() && this.validateRows()) {
-      this.isHideLoading = false;
-      const res = await this.sendForm();
-      if (res) {
-        if (res.success) {
-          this.poNotification.success(res.message);
-          if (!isAutoSave) {
-            this.router.navigate(['/','orcamentos']);
-          } else {
-            !this.headerData.budgetId ? this.headerData.budgetId = res.orcamento : null;
-            this.modal.close();
-            this.modalCopy.close();
-          }
-        } else {
-          bkpRows ? this.rows = bkpRows.map(item => ({ ...item })) : null;
-          this.poNotification.error(res.message + ': ' + res.fix);
-        }
-      } else {
-        bkpRows ? this.rows = bkpRows.map(item => ({ ...item })) : null;
-      }
-      this.isHideLoading = true;
+  public async saveForm(isAutoSave: boolean, bkpRows?: Array<any>): Promise<any> {
+    if (!(this.validateHeader() && this.validateRows())) {
+      return;
     }
+    this.isHideLoading = false;
+    this.updateAllRowsPrices();
+    const res = await this.sendForm();
+    if (!res) {
+      bkpRows ? this.rows = bkpRows.map(item => ({ ...item })) : null;
+      this.isHideLoading = true;
+      return;
+    }
+    if (!res.success) {
+      bkpRows ? this.rows = bkpRows.map(item => ({ ...item })) : null;
+      this.poNotification.error(res.message + ': ' + res.fix);
+      this.isHideLoading = true;
+      return;
+    }
+    this.poNotification.success(res.message);
+    if (!isAutoSave) {
+      this.router.navigate(['/','orcamentos']);
+    } else {
+      !this.headerData.budgetId ? this.headerData.budgetId = res.orcamento : null;
+      this.modal.close();
+      this.modalCopy.close();
+    }
+    this.isHideLoading = true;
   }
 
   public async sendForm(): Promise<any> {
@@ -860,6 +906,7 @@ export class FormularioComponent {
         "item":           item.item                 ?? "",
         "produto":        item.productId            ?? "",
         "quantidade":     item.amount               ?? 0,
+        "precoFOB":       item.fobBasePrice         ?? 0,
         "precoUnitario":  item.unitPrice            ?? 0,
         "comissao":       item.comissionPercentage  ?? 0,
         "tes":            item.tes                  ?? "",
@@ -877,6 +924,60 @@ export class FormularioComponent {
       this.poNotification.error('Erro ao atualizar orçamento: ' + error.message);
       return null;
     }
+  }
+
+  private async getItemPriceInfo(row: any): Promise<any> {
+    const body = {
+      "filial":           this.headerData.loadingLocation           ?? "",
+      "orcamento":        this.headerData.budgetId                  ?? "",
+      "cliente":          this.headerData.customerId.substring(0,6) ?? "",
+      "lojaCliente":      this.headerData.customerId.slice(-2)      ?? "",
+      "condPagamento":    this.headerData.paymentTerms              ?? "",
+      "vendedor":         localStorage.getItem('sellerId')          ?? "",
+      "situacao":         this.headerData.budgetStatus              ?? "",
+      "condPagFrete":     this.headerData.freightPaymentTerms       ?? "",
+      "valorFrete":       this.headerData.freightCost               ?? 0,
+      "tipoCarga":        this.headerData.cargoType                 ?? "",
+      "tipoDescarga":     this.headerData.unloadingType             ?? "",
+      "valorDescarga":    this.headerData.unloadingCost             ?? 0,
+      "tipoFrete":        this.headerData.freightType               ?? "",
+      "cargaMaxima":      this.headerData.maxLoad                   ?? 0,
+      "tipoVeiculo":      this.headerData.transportationMode        ?? "",
+      "responsavelFrete": this.headerData.freightResponsible        ?? false,
+      "categoriaCliente": this.headerData.customerCategory          ?? "", 
+      "item":             row.item                                  ?? "",
+      "produto":          row.productId                             ?? "",
+      "quantidade":       row.amount                                ?? 0,
+      "precoFOB":         row.fobBasePrice                          ?? 0,
+      "precoUnitario":    row.unitPrice                             ?? 0,
+      "comissao":         row.comissionPercentage                   ?? 0,
+      "totalFaturamento": this.budgetTotalValue                     ?? 0,
+      "totalFrete":       this.budgetFreightValue                   ?? 0,
+      "volumeTotal":      this.totalLoadWeight                      ?? 0,
+    };
+    try {
+      const res: any = await firstValueFrom( this.api.post('portal-do-representante/precificacao/produto/', body));
+      if (!res.success) {
+        this.poNotification.error('Item ' + row.item + ' - ' + res.message + ': ' + res.fix);
+        return null;
+      }
+      return {
+        ...row,
+        unitPrice: res.precoUnitario,
+        comissionPercentage: res.comissao,
+      }
+    } catch (error: any) {
+      this.poNotification.error('Item ' + row.item + ' - ' + 'Erro ao consultar precificação: ' + error.message);
+      return null;
+    }
+  }
+
+  private async updateAllRowsPrices(): Promise<void> {
+    const updatedRows = await Promise.all(this.rows.map(async (row) => {
+      const updatedRow = await this.getItemPriceInfo(row);
+      return updatedRow ? updatedRow : row;
+    }));
+    this.rows = updatedRows;
   }
 
   private validateHeader(): boolean {
@@ -968,6 +1069,7 @@ export class FormularioComponent {
       this.fillRowData(row)
       this.selectedProductId = this.rowData.productId
       this.rowFormTitle = 'Item - Alterar'
+      this.updateColumnsProperties();
       this.modal.open()
     }
   }
@@ -975,25 +1077,27 @@ export class FormularioComponent {
   public onAddRow(row: any) {
     if (this.validateHeader() && this.validateRows()) {
       this.eraseRowData();
-      this.fillRowNextItem(row)
+      this.fillRowNextItem()
       this.selectedProductId = this.rowData.productId
       this.rowFormTitle = 'Item - Adicionar'
+      this.updateColumnsProperties();
       this.modal.open()
     }
   }
 
   public saveRow(row: any) {
-    if (this.validateRowData()) {
-      const bkpRows = this.rows.map(item => ({ ...item }));
-      if (row.operation === 'ADD') {
-        this.rows = [...this.rows, row]
-      } else if (row.operation === 'MOD') {
-        this.rows = this.rows.map(existingRow => {
-          return existingRow.item === row.item ? { ...row } : existingRow;
-        });
-      }
-      this.saveForm(true, bkpRows);
+    if (!this.validateRowData()) {
+      return;
     }
+    const bkpRows = this.rows.map(item => ({ ...item }));
+    if (row.operation === 'ADD') {
+      this.rows = [...this.rows, row]
+    } else if (row.operation === 'MOD') {
+      this.rows = this.rows.map(existingRow => {
+        return existingRow.item === row.item ? { ...row } : existingRow;
+      });
+    }
+    this.saveForm(true, bkpRows);
   }
 
   public closeRow() {
@@ -1221,6 +1325,27 @@ export class FormularioComponent {
     }
   }
 
+  public get isQuotationBranch(): boolean {
+    return this.headerData.loadingLocation === '01010001';
+  }
+
+  private updateColumnsProperties(): void {
+    this.columns = this.columns.map(column => {
+      if (column.property === 'fobBasePrice') {
+        return {
+          ...column,
+          readonly: !this.isQuotationBranch,
+          visible:  this.isQuotationBranch,
+          required: this.isQuotationBranch,
+        }
+      }
+      if (column.property === 'productId') {
+        return { ...column, disabled: !!this.rowData.productId }
+      }
+      return column;
+    });
+  }
+
   private loadDefaultData(): void {
     this.headerData = {
       paymentTerms:         '001',
@@ -1237,6 +1362,7 @@ export class FormularioComponent {
     {
       item: '01',
       amount: 1,
+      fobBasePrice: 0,
       unitPrice: 0,
       totalPrice: 0,
       comissionUnitValue: 0,
@@ -1298,29 +1424,33 @@ export class FormularioComponent {
     this.tableCopy.selectRowItem(row => true);
   }
 
-  private saveRows2Copy(): any {
-    if (!!this.copyModalHeaderData.loadingLocation && !!this.copyModalHeaderData.customerId) {
-      this.headerData.loadingLocation = this.copyModalHeaderData.loadingLocation;
-      this.headerData.customerId = this.copyModalHeaderData.customerId;
-      this.headerData.budgetStatus = this.copyModalHeaderData.loadingLocation === '01010001' ? 'CP' : 'PP';
-      if (this.tableCopy.getSelectedRows().length > 0) {
-        let item = 0;
-        const bkpRows = this.rows.map(item => ({ ...item }));
-        this.rows = [];
-        this.tableCopy.getSelectedRows().forEach((row) => {
-          item++;
-          row.item = item.toString().padStart(2, '0');
-          delete row.$selected;
-          delete row.tes;
-          this.rows = [...this.rows,row];
-        })
-        this.saveForm(true,bkpRows);
-      } else {
-        this.modalCopy.close();
-      }
-      this.fillCustomerData()
-    } else {
+  private async saveRows2Copy(): Promise<any> {
+    if (!this.copyModalHeaderData.loadingLocation || !this.copyModalHeaderData.customerId) {
       this.poNotification.warning('Preencha todos os campos obrigatórios: Unidade de Carregamento, Cliente.')
+      return null;
     }
+    this.headerData.loadingLocation = this.copyModalHeaderData.loadingLocation;
+    this.headerData.customerId = this.copyModalHeaderData.customerId;
+    this.headerData.budgetStatus = this.copyModalHeaderData.loadingLocation === '01010001' ? 'CP' : 'PP';
+    if (this.tableCopy.getSelectedRows().length <= 0) {
+      this.modalCopy.close();
+      return null;
+    }
+    let item = 0;
+    const bkpRows = this.rows.map(item => ({ ...item }));
+    this.rows = [];
+    for (const row of this.tableCopy.getSelectedRows()) {
+      const newPriceRow = await this.getItemPriceInfo(row);
+      if (!newPriceRow) {
+        continue;
+      }
+      item++;
+      newPriceRow.item = item.toString().padStart(2, '0');
+      delete newPriceRow.$selected;
+      delete newPriceRow.tes;
+      this.rows = [...this.rows, newPriceRow];
+    }
+    this.saveForm(true,bkpRows);
+    this.fillCustomerData()
   }
 }
