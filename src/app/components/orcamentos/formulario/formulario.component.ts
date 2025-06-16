@@ -816,6 +816,15 @@ export class FormularioComponent {
     return totalPalletsAmount * palletUnitWeight;
   }
 
+  private get totalProductsNetWeight(): number {
+    return this.rows.reduce((sum, row) => {
+      const netWeight = row.productNetWeight ?? 0;
+      const amount = row.amount ?? 0;
+      const weight = netWeight * amount;
+      return sum + (weight ?? 0);
+    }, 0);
+  }
+
   private get totalProductsWeight(): number {
     return this.rows.reduce((sum, row) => {
       const grossWeight = row.productGrossWeight ?? 0;
@@ -972,7 +981,7 @@ export class FormularioComponent {
       "totalFaturamento":   this.budgetTotalValue                     ?? 0,
       "totalFrete":         this.budgetFreightValue                   ?? 0,
       "volumeTotal":        this.totalLoadWeight                      ?? 0,
-      "pesoTotalProdutos":  this.totalProductsWeight                  ?? 0,
+      "pesoTotalProdutos":  this.totalProductsNetWeight               ?? 0,
       "qtdTotalPaletes":    this.totalPalletsAmount                   ?? 0,
       "devolucaoPalete":    false,
     };
