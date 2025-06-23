@@ -22,7 +22,7 @@ import {
     PoToolbarModule,
     PoMenuModule,
     PoButtonModule,
-    PoPageModule
+    PoPageModule,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],

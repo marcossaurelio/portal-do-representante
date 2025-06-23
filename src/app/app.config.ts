@@ -9,13 +9,16 @@ import { PoHttpRequestModule } from '@po-ui/ng-components';
 
 import { registerLocaleData } from '@angular/common';
 import ptBr from '@angular/common/locales/pt';
+
+//import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
 registerLocaleData(ptBr);
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(),
-    importProvidersFrom([PoHttpRequestModule]),
+    importProvidersFrom([PoHttpRequestModule, /*BrowserAnimationsModule*/]),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideHttpClient(withInterceptorsFromDi()),
     { provide: LOCALE_ID, useValue: 'pt-BR' }

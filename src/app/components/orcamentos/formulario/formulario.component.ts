@@ -6,6 +6,7 @@ import { PoInfoOrientation, PoTableComponent, PoDividerModule, PoTagModule, PoTa
 import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
+import { CustomersService } from '../../../services/customers.service';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -30,7 +31,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class FormularioComponent {
   
-  constructor(private router: Router, private route: ActivatedRoute, private api: ApiService, private poNotification: PoNotificationService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private api: ApiService, private poNotification: PoNotificationService, private customersService: CustomersService) {}
 
   @ViewChild('modal', { static: true }) 'modal': PoModalComponent;
   @ViewChild('modalCopy', { static: true }) 'modalCopy': PoModalComponent;
@@ -61,8 +62,8 @@ export class FormularioComponent {
   private selectedProductId: string = '';
   private pbrPalletWeight: number = 35;
   private disposablePalletWeight: number = 19;
-  private budgetPaymentDueDays: any = 0;
-  private freightPaymentDueDays: any = 0;
+  //private budgetPaymentDueDays: any = 0;
+  //private freightPaymentDueDays: any = 0;
 
 
   public readonly confirmRow: PoModalAction = {
@@ -92,6 +93,36 @@ export class FormularioComponent {
     disabled: false,
     loading: false,
   }
+
+  public readonly states: Array<any> = [
+    { code: 'AC', label: 'Acre' },
+    { code: 'AL', label: 'Alagoas' },
+    { code: 'AP', label: 'Amapá' },
+    { code: 'AM', label: 'Amazonas' },
+    { code: 'BA', label: 'Bahia' },
+    { code: 'CE', label: 'Ceará' },
+    { code: 'DF', label: 'Distrito Federal' },
+    { code: 'ES', label: 'Espírito Santo' },
+    { code: 'GO', label: 'Goiás' },
+    { code: 'MA', label: 'Maranhão' },
+    { code: 'MT', label: 'Mato Grosso' },
+    { code: 'MS', label: 'Mato Grosso do Sul' },
+    { code: 'MG', label: 'Minas Gerais' },
+    { code: 'PA', label: 'Pará' },
+    { code: 'PB', label: 'Paraíba' },
+    { code: 'PR', label: 'Paraná' },
+    { code: 'PE', label: 'Pernambuco' },
+    { code: 'PI', label: 'Piauí' },
+    { code: 'RJ', label: 'Rio de Janeiro' },
+    { code: 'RN', label: 'Rio Grande do Norte' },
+    { code: 'RS', label: 'Rio Grande do Sul' },
+    { code: 'RO', label: 'Rondônia' },
+    { code: 'RR', label: 'Roraima' },
+    { code: 'SC', label: 'Santa Catarina' },
+    { code: 'SP', label: 'São Paulo' },
+    { code: 'SE', label: 'Sergipe' },
+    { code: 'TO', label: 'Tocantins' }
+  ]
 
   public gridRowActions: Array<PoTableAction> = [];
 
@@ -173,7 +204,7 @@ export class FormularioComponent {
         maxLength: 6,
         gridColumns: 6,
         type: 'string',
-        searchService: 'https://192.168.100.249:8500/portal-do-representante/clientes',
+        searchService: this.customersService,
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'cgc', label: 'CNPJ' },
@@ -183,6 +214,9 @@ export class FormularioComponent {
         format: ['cgc', 'razaoSocial'],
         fieldLabel: 'razaoSocial',
         fieldValue: 'codigoLoja',
+        //errorMessage: 'Selecione um cliente válido',
+        //requiredFieldErrorMessage: true,
+        //pattern: '^(?!\s*$).+',
         order: 1,
       },
       {
@@ -241,10 +275,20 @@ export class FormularioComponent {
         maxLength: 20,
         gridColumns: 4,
         options: [
-          { label: 'Sim', code: true  },
-          { label: 'Sim', code: true  },
-          { label: 'Não', code: false },
-          { label: 'Não', code: false },
+          { code: 'DT', label: 'Distribuidor'               },
+          { code: 'AT', label: 'Atacado'                    },
+          { code: 'VR', label: 'Varejo'                     },
+          { code: 'AJ', label: 'Atacarejo'                  },
+          { code: 'CB', label: 'Cesta Básica'               },
+          { code: 'FS', label: 'Food Service'               },
+          { code: 'IA', label: 'Indústria de Alimentos'     },
+          { code: 'IT', label: 'Indústria Têxtil'           },
+          { code: 'IL', label: 'Indústria de Limpeza'       },
+          { code: 'IG', label: 'Indústria Geral'            },
+          { code: 'IR', label: 'Indústria de Ração Animal'  },
+          { code: 'CH', label: 'Charqueadas'                },
+          { code: 'PC', label: 'Pecuaristas e Avicultores'  },
+          { code: 'TA', label: 'Tratamento de Água'         },
         ],
         type: 'string',
         fieldValue: 'code',
@@ -332,7 +376,7 @@ export class FormularioComponent {
       },
       {
         property: 'freightCost',
-        label: 'Valor Frete',
+        label: 'Frete Base (R$/Ton)',
         visible: true,
         required: false,
         showRequired: false,
@@ -418,7 +462,7 @@ export class FormularioComponent {
       },
       {
         property: 'unloadingCost',
-        label: 'Valor Descarga',
+        label: 'Vlr. Descarga (R$/Ton)',
         visible: true,
         required: false,
         showRequired: false,
@@ -436,12 +480,15 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        readonly: true,
+        readonly: this.isViewMode() || this.isAddMode(),
         noAutocomplete: true,
         maxLength: 2,
         gridColumns: 2,
         type: 'string',
         rows: 1,
+        options: this.states,
+        fieldValue: 'code',
+        fieldLabel: 'code',
         order: 2,
       },
       {
@@ -714,11 +761,12 @@ export class FormularioComponent {
     ];
         
     if (!this.isAddMode() && this.location && this.budgetId) {
-      this.budgetPaymentDueDays = await this.getDueDaysByPaymentTerms(this.headerData.paymentTerms) ?? this.budgetPaymentDueDays;
-      this.freightPaymentDueDays = await this.getDueDaysByPaymentTerms(this.headerData.freightPaymentTerms) ?? this.freightPaymentDueDays;
+      //this.budgetPaymentDueDays = await this.getDueDaysByPaymentTerms(this.headerData.paymentTerms) ?? this.budgetPaymentDueDays;
+      //this.freightPaymentDueDays = await this.getDueDaysByPaymentTerms(this.headerData.freightPaymentTerms) ?? this.freightPaymentDueDays;
       const res = await this.loadBudgetData(this.location,this.budgetId);
       if (res) {        
         this.fillCustomerData();
+        this.updateFieldsProperties();
       } else {
         this.router.navigate(['/','orcamentos']);
       }
@@ -748,27 +796,25 @@ export class FormularioComponent {
       currency: 'BRL',
     });
   }
-
-  public get budgetFreightValue(): number {
+  
+  public get budgetFreightPerTon(): number {
     const freightCost   = isNaN(Number(this.headerData.freightCost))    ? 0 : this.headerData.freightCost
     const unloadingCost = isNaN(Number(this.headerData.unloadingCost))  ? 0 : this.headerData.unloadingCost
     const totalValue = freightCost + unloadingCost
     return totalValue;
   }
 
-  /*
-  private get effectiveFreightValue(): number {
-    const freightCost = this.budgetFreightValue;
-    const effectiveInterestRate = this.interestRate / 30 * this.freightPaymentDueDays;
-    const effectivefreightMarkupRate = this.freightMarkupRate / 30 * this.freightPaymentDueDays;
-    const freightTaxesRate = this.federalTaxesRate + this.stateTaxesRate + effectiveInterestRate + effectivefreightMarkupRate;
-    const effectiveFreightValue = freightCost / (1 - freightTaxesRate);
-    return effectiveFreightValue;
+  public get budgetFreightTotalValue(): number {
+    const netWeight = this.totalProductsNetWeight ?? 0;
+    const maxLoad = this.headerData.maxLoad ?? 0;
+    const freightCostPerTon = this.headerData.freightCost ?? 0;
+    const overweightCost = netWeight >= maxLoad ? 0 : freightCostPerTon * (maxLoad/netWeight) - freightCostPerTon;
+    //const icmsValue = netWeight >= maxLoad ? freightCostPerTon : freightCostPerTon * (maxLoad/netWeight);
+    return (this.budgetFreightPerTon + overweightCost) * (maxLoad/1000);
   }
-  */
 
   public get budgetFreightValueFormatted(): string {
-    return this.budgetFreightValue.toLocaleString('pt-BR', {
+    return this.budgetFreightTotalValue.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     });
@@ -881,7 +927,13 @@ export class FormularioComponent {
     this.rowData = {};
   }
 
-  public async saveForm(isAutoSave: boolean, bkpRows?: Array<any>): Promise<any> {
+  public async onSaveForm(isAutoSave: boolean): Promise<void> {
+    this.isHideLoading = false;
+    await this.saveForm(isAutoSave);
+    this.isHideLoading = true;
+  }
+
+  private async saveForm(isAutoSave: boolean, bkpRows?: Array<any>): Promise<any> {
     if (!(this.validateHeader() && this.validateRows())) {
       return;
     }
@@ -927,7 +979,8 @@ export class FormularioComponent {
       "paletizacao30x1":  this.headerData.palletPattern30x1         ?? 50,
       "paletizacao25kg":  this.headerData.palletPattern25kg         ?? 50,
       "tipoVeiculo":      this.headerData.transportationMode        ?? "",
-      "responsavelFrete": this.headerData.freightResponsible        ?? false,
+      "estadoDestino":    this.headerData.destinationState          ?? "",
+      "responsavelFrete": this.headerData.freightResponsible        ? "1" : "0",
       "itens":            this.rows.map((item: any) => ({
         "item":           item.item                 ?? "",
         "produto":        item.productId            ?? "",
@@ -962,7 +1015,7 @@ export class FormularioComponent {
       "vendedor":           localStorage.getItem('sellerId')          ?? "",
       "situacao":           this.headerData.budgetStatus              ?? "",
       "condPagFrete":       this.headerData.freightPaymentTerms       ?? "",
-      "valorFrete":         this.headerData.freightCost               ?? 0,
+      "valorFreteBase":     this.headerData.freightCost               ?? 0,
       "tipoCarga":          this.headerData.cargoType                 ?? "",
       "tipoDescarga":       this.headerData.unloadingType             ?? "",
       "valorDescarga":      this.headerData.unloadingCost             ?? 0,
@@ -979,7 +1032,7 @@ export class FormularioComponent {
       "precoUnitario":      row.unitPrice                             ?? 0,
       "comissao":           row.comissionPercentage                   ?? 0,
       "totalFaturamento":   this.budgetTotalValue                     ?? 0,
-      "totalFrete":         this.budgetFreightValue                   ?? 0,
+      "totalFrete":         this.budgetFreightPerTon                  ?? 0,
       "volumeTotal":        this.totalLoadWeight                      ?? 0,
       "pesoTotalProdutos":  this.totalProductsNetWeight               ?? 0,
       "qtdTotalPaletes":    this.totalPalletsAmount                   ?? 0,
@@ -1208,7 +1261,7 @@ export class FormularioComponent {
         ]
       }
     } else if (changedValue.property === 'paymentTerms') {
-      this.budgetPaymentDueDays = this.getDueDaysByPaymentTerms(changedValue.value.paymentTerms) ?? this.budgetPaymentDueDays;
+      //this.budgetPaymentDueDays = this.getDueDaysByPaymentTerms(changedValue.value.paymentTerms) ?? this.budgetPaymentDueDays;
       return {}
     } else {
       return {}
@@ -1226,8 +1279,8 @@ export class FormularioComponent {
           { property: 'unloadingCost',        readonly: false },
           { property: 'transportationMode',   readonly: false },
           { property: 'maxLoad',              readonly: false },
-          { property: 'maxLoad',              readonly: false },
           { property: 'freightResponsible',   disabled: false },
+          { property: 'destinationState',     readonly: false },
         ],
         value: {
           palletPattern10x1: this.headerData.palletPattern10x1 ?? 150,
@@ -1258,7 +1311,7 @@ export class FormularioComponent {
           ]
         }
     } else if (changedValue.property === 'freightPaymentTerms') {
-      this.freightPaymentDueDays = this.getDueDaysByPaymentTerms(changedValue.value.freightPaymentTerms) ?? this.freightPaymentDueDays;
+      //this.freightPaymentDueDays = this.getDueDaysByPaymentTerms(changedValue.value.freightPaymentTerms) ?? this.freightPaymentDueDays;
       return {}
     } else {
       return {}
@@ -1318,7 +1371,7 @@ export class FormularioComponent {
           palletPattern30x1:    res.paletizacao30x1       ?? 50,
           palletPattern25kg:    res.paletizacao25kg       ?? 50,
           transportationMode:   res.tipoVeiculo           ?? '',
-          freightResponsible:   res.freteResponsavel      ?? false,
+          freightResponsible:   res.responsavelFrete      ?? false,
         };
         if (!this.isCopyMode()) {
           this.rows = res.itens.map((item: any) => ({
@@ -1391,6 +1444,7 @@ export class FormularioComponent {
       if (res) {
         this.headerData.destinationState = res.estado;
         this.headerData.customerHasIE = !!res.ie;
+        this.headerData.customerCategory = res.categoria;
       }
       return res
     } catch (error: any) {
@@ -1403,6 +1457,19 @@ export class FormularioComponent {
   public get isQuotationBranch(): boolean {
     return this.headerData.loadingLocation === '01010001';
   }
+
+  private updateFieldsProperties(): void {
+    this.fields = this.fields.map(field => {
+      if (field.property === 'freightCost') {
+        return {
+          ...field,
+          readonly: !this.headerData.freightResponsible,
+          disabled: !this.headerData.freightResponsible,
+        }
+      }
+      return field;
+    })
+  };
 
   private updateColumnsProperties(): void {
     this.columns = this.columns.map(column => {
