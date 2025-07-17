@@ -2,12 +2,13 @@ import { Component, ViewChild } from '@angular/core';
 import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule } from '@po-ui/ng-components';
 import { PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent } from '@po-ui/ng-components';
 import { PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged, PoInfoModule } from '@po-ui/ng-components';
-import { PoInfoOrientation, PoTableComponent, PoDividerModule, PoTagModule, PoTagType } from '@po-ui/ng-components';
+import { PoInfoOrientation, PoTableComponent, PoDividerModule, PoTagModule, PoTagType, PoLookupFilteredItemsParams } from '@po-ui/ng-components';
 import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
-import { CustomersService } from '../../../services/customers.service';
-import { firstValueFrom } from 'rxjs';
+import { CustomerService } from '../../../services/domain/customer.service';
+import { CityService } from '../../../services/domain/city.service';
+import { firstValueFrom, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-formulario',
@@ -31,7 +32,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class FormularioComponent {
   
-  constructor(private router: Router, private route: ActivatedRoute, private api: ApiService, private poNotification: PoNotificationService, private customersService: CustomersService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private api: ApiService, private poNotification: PoNotificationService, private customerService: CustomerService, private cityService: CityService) {}
 
   @ViewChild('modal', { static: true }) 'modal': PoModalComponent;
   @ViewChild('modalCopy', { static: true }) 'modalCopy': PoModalComponent;
@@ -48,7 +49,7 @@ export class FormularioComponent {
   public loadingText: string = 'Carregando';
   public formTitle: string = 'Orçamentos'
   public validateHeaderFields: Array<string> = ['loadingLocation','customerId','budgetId','paymentTerms'];
-  public validateFreightFields: Array<string> = ['freightType','maxLoad','palletPattern10x1','palletPattern30x1','palletPattern25kg','freightCost','freightResponsible','cargoType','transportationMode','freightPaymentTerms'];
+  public validateFreightFields: Array<string> = ['freightType','maxLoad','palletPattern10x1','palletPattern30x1','palletPattern25kg','freightCost','freightResponsible','cargoType','transportationMode','freightPaymentTerms','destinationState','destinationCity'];
   public validateFieldsRow: Array<string> = ['productId','comissionPercentage','fobBasePrice','unitPrice','amount'];
   public fields: Array<PoDynamicFormField> = [];
   public generalDataFields: Array<PoDynamicFormField> = [];
@@ -62,9 +63,6 @@ export class FormularioComponent {
   private selectedProductId: string = '';
   private pbrPalletWeight: number = 35;
   private disposablePalletWeight: number = 19;
-  //private budgetPaymentDueDays: any = 0;
-  //private freightPaymentDueDays: any = 0;
-
 
   public readonly confirmRow: PoModalAction = {
     action: () => { this.saveRow(this.rowData); },
@@ -204,7 +202,7 @@ export class FormularioComponent {
         maxLength: 6,
         gridColumns: 6,
         type: 'string',
-        searchService: this.customersService,
+        searchService: this.customerService,
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'cgc', label: 'CNPJ' },
@@ -214,9 +212,6 @@ export class FormularioComponent {
         format: ['cgc', 'razaoSocial'],
         fieldLabel: 'razaoSocial',
         fieldValue: 'codigoLoja',
-        //errorMessage: 'Selecione um cliente válido',
-        //requiredFieldErrorMessage: true,
-        //pattern: '^(?!\s*$).+',
         order: 1,
       },
       {
@@ -231,7 +226,7 @@ export class FormularioComponent {
         maxLength: 6,
         gridColumns: 6,
         type: 'string',
-        searchService: 'https://192.168.100.249:8500/portal-do-representante/clientes',
+        searchService: this.customerService,
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'cgc', label: 'CNPJ' },
@@ -485,10 +480,30 @@ export class FormularioComponent {
         maxLength: 2,
         gridColumns: 2,
         type: 'string',
-        rows: 1,
         options: this.states,
         fieldValue: 'code',
         fieldLabel: 'code',
+        order: 2,
+      },
+      {
+        property: 'destinationCity',
+        label: 'Cidade Destino',
+        visible: true,
+        required: false,
+        showRequired: false,
+        disabled: this.isViewMode() || this.isAddMode(),
+        gridColumns: 4,
+        type: 'string',
+        searchService: this.cityServiceWrapper,
+        //params: { state: this.destinationState },
+        columns: [
+          { property: 'codigo', label: 'Código IBGE' },
+          { property: 'cidade', label: 'Cidade' },
+          { property: 'estado', label: 'Estado' },
+        ],
+        format: ['codigo', 'cidade'],
+        fieldLabel: 'cidade',
+        fieldValue: 'codigo',
         order: 2,
       },
       {
@@ -761,11 +776,9 @@ export class FormularioComponent {
     ];
         
     if (!this.isAddMode() && this.location && this.budgetId) {
-      //this.budgetPaymentDueDays = await this.getDueDaysByPaymentTerms(this.headerData.paymentTerms) ?? this.budgetPaymentDueDays;
-      //this.freightPaymentDueDays = await this.getDueDaysByPaymentTerms(this.headerData.freightPaymentTerms) ?? this.freightPaymentDueDays;
       const res = await this.loadBudgetData(this.location,this.budgetId);
       if (res) {        
-        this.fillCustomerData();
+        //this.fillCustomerData();
         this.updateFieldsProperties();
       } else {
         this.router.navigate(['/','orcamentos']);
@@ -773,6 +786,8 @@ export class FormularioComponent {
     } else {
       this.loadDefaultData();
     }
+
+    this.fillFreightCost()
 
     this.isHideLoading = true;
 
@@ -1281,11 +1296,13 @@ export class FormularioComponent {
           { property: 'maxLoad',              readonly: false },
           { property: 'freightResponsible',   disabled: false },
           { property: 'destinationState',     readonly: false },
+          { property: 'destinationCity',     disabled: false },
         ],
         value: {
           palletPattern10x1: this.headerData.palletPattern10x1 ?? 150,
           palletPattern30x1: this.headerData.palletPattern30x1 ?? 50,
           palletPattern25kg: this.headerData.palletPattern25kg ?? 50,
+          freightCost: this.headerData.freightType === 'F' ? 0 : this.headerData.freightCost ?? 0,
         }
       }
     } else if (changedValue.property === 'cargoType') {
@@ -1304,15 +1321,19 @@ export class FormularioComponent {
           palletPattern25kg: this.headerData.palletPattern25kg !== 0 ? this.headerData.palletPattern25kg : 50,
         }
       }
-    } else if (changedValue.property === 'freightResponsible' || changedValue.property === 'freightCost') {
+    } else if (changedValue.property === 'freightResponsible' || changedValue.property === 'freightCost' || changedValue.property === 'destinationCity') {
+      this.fillFreightCost()
         return {
           fields: [
             { property: 'freightCost',  readonly: !this.headerData.freightResponsible },
           ]
         }
-    } else if (changedValue.property === 'freightPaymentTerms') {
-      //this.freightPaymentDueDays = this.getDueDaysByPaymentTerms(changedValue.value.freightPaymentTerms) ?? this.freightPaymentDueDays;
-      return {}
+    } else if (changedValue.property === 'destinationState') {
+      return {
+        value: {
+          destinationCity: '',
+        }
+      }
     } else {
       return {}
     }
@@ -1438,19 +1459,14 @@ export class FormularioComponent {
     }
   }
 
-  private async fillCustomerData(): Promise<any> {
-    try {
-      const res: any = await firstValueFrom(this.api.get('portal-do-representante/clientes/'+this.headerData.customerId));
-      if (res) {
-        this.headerData.destinationState = res.estado;
-        this.headerData.customerHasIE = !!res.ie;
-        this.headerData.customerCategory = res.categoria;
-      }
-      return res
-    } catch (error: any) {
-      console.error('Erro ao buscar dados do cliente:', error.message);
-      this.confirmRow.loading = false;
-      return null;
+  private async fillCustomerData(): Promise<void> {
+    const customerData = await this.customerService.getCustomerData(this.headerData.customerId);
+    if (customerData) {
+      this.headerData.destinationState  = customerData.destinationState;
+      this.headerData.customerHasIE     = customerData.customerHasIE;
+      this.headerData.customerCategory  = customerData.customerCategory;
+    } else {
+      this.poNotification.warning('Erro ao carregar dados do cliente.');
     }
   }
 
@@ -1494,6 +1510,9 @@ export class FormularioComponent {
       freightPaymentTerms:  '001',
       cargoType:            '1',
       unloadingType:        '1',
+      freightCost:          0,
+      unloadingCost:        0,
+      maxLoad:              0,
       palletPattern10x1:    150,
       palletPattern30x1:    50,
       palletPattern25kg:    50,
@@ -1594,8 +1613,54 @@ export class FormularioComponent {
       this.rows = [...this.rows, newPriceRow];
     }
     await this.saveForm(true,bkpRows);
-    await this.fillCustomerData()
+    await this.fillCustomerData();
     this.modalCopy.close();
     this.isHideLoading = true;
   }
+
+  public destinationState(): string {
+    return this.headerData.destinationState ?? '';
+  }
+
+  // Criar um wrapper service que sempre usa o valor atual do destinationState
+  public cityServiceWrapper = {
+    getFilteredItems: (filteredParams: PoLookupFilteredItemsParams): Observable<any> => {
+      // Adiciona o estado atual aos parâmetros
+      const enhancedParams = {
+        ...filteredParams,
+        filterParams: {
+          ...filteredParams.filterParams,
+          state: this.headerData.destinationState || ''
+        }
+      };
+      return this.cityService.getFilteredItems(enhancedParams);
+    },
+    
+    getObjectByValue: (value: string): Observable<any> => {
+      return this.cityService.getObjectByValue(this.headerData.destinationState+value);
+    }
+  };
+
+  private async fillFreightCost(): Promise<void> {
+    const loadingLocation = this.headerData.loadingLocation;
+    const destinationState = this.headerData.destinationState;
+    const destinationCity = this.headerData.destinationCity;
+    if (this.headerData.freightType !== 'C' || this.headerData.freightResponsible) {
+      return;
+    }
+    try {
+      const res: any = await firstValueFrom(this.api.get(`portal-do-representante/frete/valor?filialOrigem=${loadingLocation}&cidadeDestino=${destinationCity}&estadoDestino=${destinationState}`));
+      if (res.success) {
+        if (this.headerData.freightCost !== res.valorFrete) {
+          this.headerData.freightCost = res.valorFrete;
+          this.poNotification.success('Custo de frete atualizado');
+        }
+      } else {
+        this.poNotification.error('Erro ao atualizar custo de frete: ' + res.message);
+      }
+    } catch (error: any) {
+      this.poNotification.error('Erro ao atualizar custo de frete: ' + error.message);
+    }
+  }
+
 }

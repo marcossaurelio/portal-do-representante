@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { PoLookupFilter, PoLookupFilteredItemsParams } from '@po-ui/ng-components';
-import { ApiService } from './api.service';
+import { ApiService } from '../../services/api.service';
+import { firstValueFrom } from 'rxjs';
 import { PoNotificationService } from '@po-ui/ng-components';
 
 @Injectable({
   providedIn: 'root'
 })
-export class CustomersService implements PoLookupFilter {
+export class CustomerService implements PoLookupFilter {
 
   constructor(private api: ApiService, private poNotification: PoNotificationService) { }
 
@@ -29,6 +30,22 @@ export class CustomersService implements PoLookupFilter {
         }
       })
     );
+  }
+
+  public async getCustomerData(customerId: string): Promise<any> {
+    try {
+      const res: any = await firstValueFrom(this.api.get('portal-do-representante/clientes/'+customerId));
+      if (res?.success) {
+        return {
+          destinationState: res.estado,
+          customerHasIE: !!res.ie,
+          customerCategory: res.categoria,
+        }
+      }
+      return null;
+    } catch (error: any) {
+      return null;
+    }
   }
 
 }
