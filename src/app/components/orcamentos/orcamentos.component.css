@@ -14,6 +14,7 @@
     --border-color-hover: #045B8F;
     --background-selected: #B4E2FD;
     --border-color-selected: #045B8F;
+    --color-widget-primary-background-color: #b4e2fd6e !important;
     margin-left: -10px;
     margin-right: 10px;
     margin-bottom: 20px;

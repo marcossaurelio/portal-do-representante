@@ -321,7 +321,7 @@ export class FormularioComponent {
         readonly: !this.isModifyMode() && !this.isCopyMode(),
         noAutocomplete: true,
         maxLength: 120,
-        gridColumns: 11,
+        gridColumns: 12,
         type: 'string',
         rows: 1,
         order: 1,
@@ -434,28 +434,6 @@ export class FormularioComponent {
         order: 2
       },
       {
-        property: 'unloadingType',
-        label: 'Tipo Descarga',
-        visible: true,
-        required: false,
-        showRequired: false,
-        readonly: this.isViewMode() || this.isAddMode(),
-        noAutocomplete: true,
-        minLength: 3,
-        maxLength: 40,
-        gridColumns: 3,
-        options: [
-          { unloadingType: 'Por conta do cliente'                 , code: '1' },
-          { unloadingType: 'Por conta do cliente'                 , code: '1' },
-          { unloadingType: 'Por conta do motorista (leva chapa)'  , code: '2' },
-          { unloadingType: 'Por conta do motorista (paga taxa)'   , code: '3' },
-        ],
-        type: 'string',
-        fieldValue: 'code',
-        fieldLabel: 'unloadingType',
-        order: 2,
-      },
-      {
         property: 'unloadingCost',
         label: 'Vlr. Descarga (R$/Ton)',
         visible: true,
@@ -495,7 +473,6 @@ export class FormularioComponent {
         gridColumns: 4,
         type: 'string',
         searchService: this.cityServiceWrapper,
-        //params: { state: this.destinationState },
         columns: [
           { property: 'codigo', label: 'Código IBGE' },
           { property: 'cidade', label: 'Cidade' },
@@ -778,7 +755,7 @@ export class FormularioComponent {
     if (!this.isAddMode() && this.location && this.budgetId) {
       const res = await this.loadBudgetData(this.location,this.budgetId);
       if (res) {        
-        //this.fillCustomerData();
+        await this.fillCustomerData();
         this.updateFieldsProperties();
       } else {
         this.router.navigate(['/','orcamentos']);
@@ -787,9 +764,11 @@ export class FormularioComponent {
       this.loadDefaultData();
     }
 
-    this.fillFreightCost()
+    await this.updateFreightCost()
 
-    this.isHideLoading = true;
+    setTimeout(() => {
+      this.isHideLoading = true;
+    }, 0);
 
   }
 
@@ -824,7 +803,6 @@ export class FormularioComponent {
     const maxLoad = this.headerData.maxLoad ?? 0;
     const freightCostPerTon = this.headerData.freightCost ?? 0;
     const overweightCost = netWeight >= maxLoad ? 0 : freightCostPerTon * (maxLoad/netWeight) - freightCostPerTon;
-    //const icmsValue = netWeight >= maxLoad ? freightCostPerTon : freightCostPerTon * (maxLoad/netWeight);
     return (this.budgetFreightPerTon + overweightCost) * (maxLoad/1000);
   }
 
@@ -986,7 +964,6 @@ export class FormularioComponent {
       "condPagFrete":     this.headerData.freightPaymentTerms       ?? "",
       "valorFrete":       this.headerData.freightCost               ?? 0,
       "tipoCarga":        this.headerData.cargoType                 ?? "",
-      "tipoDescarga":     this.headerData.unloadingType             ?? "",
       "valorDescarga":    this.headerData.unloadingCost             ?? 0,
       "tipoFrete":        this.headerData.freightType               ?? "",
       "cargaMaxima":      this.headerData.maxLoad                   ?? 0,
@@ -995,6 +972,7 @@ export class FormularioComponent {
       "paletizacao25kg":  this.headerData.palletPattern25kg         ?? 50,
       "tipoVeiculo":      this.headerData.transportationMode        ?? "",
       "estadoDestino":    this.headerData.destinationState          ?? "",
+      "cidadeDestino":    this.headerData.destinationCity           ?? "",
       "responsavelFrete": this.headerData.freightResponsible        ? "1" : "0",
       "itens":            this.rows.map((item: any) => ({
         "item":           item.item                 ?? "",
@@ -1032,7 +1010,6 @@ export class FormularioComponent {
       "condPagFrete":       this.headerData.freightPaymentTerms       ?? "",
       "valorFreteBase":     this.headerData.freightCost               ?? 0,
       "tipoCarga":          this.headerData.cargoType                 ?? "",
-      "tipoDescarga":       this.headerData.unloadingType             ?? "",
       "valorDescarga":      this.headerData.unloadingCost             ?? 0,
       "tipoFrete":          this.headerData.freightType               ?? "",
       "cargaMaxima":        this.headerData.maxLoad                   ?? 0,
@@ -1040,6 +1017,7 @@ export class FormularioComponent {
       "responsavelFrete":   this.headerData.freightResponsible        ?? false,
       "categoriaCliente":   this.headerData.customerCategory          ?? "", 
       "estadoDestino":      this.headerData.destinationState          ?? "",
+      "cidadeDestino":      this.headerData.destinationCity           ?? "",
       "item":               row.item                                  ?? "",
       "produto":            row.productId                             ?? "",
       "quantidade":         row.amount                                ?? 0,
@@ -1173,7 +1151,7 @@ export class FormularioComponent {
   }
 
   public getRequiredHeaderFields(): Array<PoDynamicFormField> {
-      return this.fields.filter(field => field.required == true && !field.property.toLowerCase().includes('disabled'));
+    return this.fields.filter(field => field.required == true && !field.property.toLowerCase().includes('disabled'));
   }
 
   public getRequiredRowFields(): Array<PoDynamicFormField> {
@@ -1288,15 +1266,14 @@ export class FormularioComponent {
     if (changedValue.property === 'freightType') {
       return {
         fields: [
-          { property: 'freightPaymentTerms',  disabled: false },
-          { property: 'cargoType',            readonly: false },
-          { property: 'unloadingType',        readonly: false },
+          { property: 'freightPaymentTerms',  disabled: false, required: changedValue.value.freightType === 'C' },
+          { property: 'cargoType',            readonly: false, required: changedValue.value.freightType === 'C' },
           { property: 'unloadingCost',        readonly: false },
-          { property: 'transportationMode',   readonly: false },
-          { property: 'maxLoad',              readonly: false },
+          { property: 'transportationMode',   readonly: false, required: changedValue.value.freightType === 'C' },
+          { property: 'maxLoad',              readonly: false, required: changedValue.value.freightType === 'C' },
           { property: 'freightResponsible',   disabled: false },
           { property: 'destinationState',     readonly: false },
-          { property: 'destinationCity',     disabled: false },
+          { property: 'destinationCity',      disabled: false, required: changedValue.value.freightType === 'C' },
         ],
         value: {
           palletPattern10x1: this.headerData.palletPattern10x1 ?? 150,
@@ -1322,7 +1299,7 @@ export class FormularioComponent {
         }
       }
     } else if (changedValue.property === 'freightResponsible' || changedValue.property === 'freightCost' || changedValue.property === 'destinationCity') {
-      this.fillFreightCost()
+      this.updateFreightCost()
         return {
           fields: [
             { property: 'freightCost',  readonly: !this.headerData.freightResponsible },
@@ -1332,6 +1309,7 @@ export class FormularioComponent {
       return {
         value: {
           destinationCity: '',
+          freightCost: this.headerData.freightType === 'C' && !this.headerData.freightResponsible ? 0 : this.headerData.freightCost ?? 0,
         }
       }
     } else {
@@ -1385,7 +1363,6 @@ export class FormularioComponent {
           freightPaymentTerms:  res.condPagFrete          ?? '',
           freightCost:          res.valorFrete            ?? 0,
           cargoType:            res.tipoCarga             ?? '',
-          unloadingType:        res.tipoDescarga          ?? '',
           unloadingCost:        res.valorDescarga         ?? 0,
           maxLoad:              res.cargaMaxima           ?? 0,
           palletPattern10x1:    res.paletizacao10x1       ?? 150,
@@ -1393,6 +1370,8 @@ export class FormularioComponent {
           palletPattern25kg:    res.paletizacao25kg       ?? 50,
           transportationMode:   res.tipoVeiculo           ?? '',
           freightResponsible:   res.responsavelFrete      ?? false,
+          destinationState:     res.estadoDestino         ?? '',
+          destinationCity:      res.cidadeDestino         ?? '',
         };
         if (!this.isCopyMode()) {
           this.rows = res.itens.map((item: any) => ({
@@ -1462,7 +1441,7 @@ export class FormularioComponent {
   private async fillCustomerData(): Promise<void> {
     const customerData = await this.customerService.getCustomerData(this.headerData.customerId);
     if (customerData) {
-      this.headerData.destinationState  = customerData.destinationState;
+      this.headerData.destinationState  = !this.isModifyMode() ? customerData.destinationState : this.headerData.destinationState;
       this.headerData.customerHasIE     = customerData.customerHasIE;
       this.headerData.customerCategory  = customerData.customerCategory;
     } else {
@@ -1509,7 +1488,6 @@ export class FormularioComponent {
       paymentTerms:         '001',
       freightPaymentTerms:  '001',
       cargoType:            '1',
-      unloadingType:        '1',
       freightCost:          0,
       unloadingCost:        0,
       maxLoad:              0,
@@ -1641,7 +1619,7 @@ export class FormularioComponent {
     }
   };
 
-  private async fillFreightCost(): Promise<void> {
+  private async updateFreightCost(): Promise<void> {
     const loadingLocation = this.headerData.loadingLocation;
     const destinationState = this.headerData.destinationState;
     const destinationCity = this.headerData.destinationCity;
@@ -1656,6 +1634,7 @@ export class FormularioComponent {
           this.poNotification.success('Custo de frete atualizado');
         }
       } else {
+        this.headerData.freightCost = 0;
         this.poNotification.error('Erro ao atualizar custo de frete: ' + res.message);
       }
     } catch (error: any) {
