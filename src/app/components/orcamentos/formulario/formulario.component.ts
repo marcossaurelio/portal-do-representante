@@ -178,12 +178,12 @@ export class FormularioComponent {
         noAutocomplete: true,
         gridColumns: 4,
         options: [
-          { budgetStatus: 'Cotação pendente',     code: "CP" },
-          { budgetStatus: 'Cotação rejeitada',    code: "CR" },
-          { budgetStatus: 'Pré Pedido pendente',  code: "PP" },
-          { budgetStatus: 'Pré Pedido cancelado', code: "PC" },
-          { budgetStatus: 'Pré Pedido rejeitado', code: "PR" },
-          { budgetStatus: 'Pré Pedido aprovado',  code: "PA" },
+          { budgetStatus: 'Cotação pendente',         code: "CP" },
+          { budgetStatus: 'Cotação rejeitada',        code: "CR" },
+          { budgetStatus: 'Pré Pedido pendente',      code: "PP" },
+          { budgetStatus: 'Pré pedido em aprovação',  code: "PE" },
+          { budgetStatus: 'Pré Pedido rejeitado',     code: "PR" },
+          { budgetStatus: 'Pré Pedido aprovado',      code: "PA" },
         ],
         type: 'string',
         fieldValue: 'code',
@@ -493,12 +493,13 @@ export class FormularioComponent {
         noAutocomplete: true,
         minLength: 3,
         maxLength: 40,
-        gridColumns: 4,
+        gridColumns: 3,
         options: [
-          { cargoType: 'Batida'                 , code: '1' },
-          { cargoType: 'Batida'                 , code: '1' },
-          { cargoType: 'Paletizada PBR'         , code: '2' },
-          { cargoType: 'Paletizada Descartável' , code: '3' },
+          { cargoType: 'Batida'                       , code: 'BT' },
+          { cargoType: 'Pallet PBR com Forro'         , code: 'PC' },
+          { cargoType: 'Pallet PBR sem Forro'         , code: 'PS' },
+          { cargoType: 'Pallet Descartável com Forro' , code: 'DC' },
+          { cargoType: 'Pallet Descartável sem Forro' , code: 'DS' },
         ],
         type: 'string',
         fieldValue: 'code',
@@ -798,11 +799,17 @@ export class FormularioComponent {
     return totalValue;
   }
 
-  public get budgetFreightTotalValue(): number {
+  public get overweightCost(): number {
     const netWeight = this.totalProductsNetWeight ?? 0;
     const maxLoad = this.headerData.maxLoad ?? 0;
     const freightCostPerTon = this.headerData.freightCost ?? 0;
     const overweightCost = netWeight >= maxLoad ? 0 : freightCostPerTon * (maxLoad/netWeight) - freightCostPerTon;
+    return overweightCost;
+  }
+
+  public get budgetFreightTotalValue(): number {
+    const maxLoad = this.headerData.maxLoad ?? 0;
+    const overweightCost = this.overweightCost;
     return (this.budgetFreightPerTon + overweightCost) * (maxLoad/1000);
   }
 
@@ -850,7 +857,7 @@ export class FormularioComponent {
   }
 
   private get totalPalletsWeight(): number {
-    const palletUnitWeight = this.headerData.cargoType === '2' ? this.pbrPalletWeight : this.headerData.cargoType === '3' ? this.disposablePalletWeight : 0;
+    const palletUnitWeight = this.headerData.cargoType.charAt(0) === 'P' ? this.pbrPalletWeight : this.headerData.cargoType.charAt(0) === 'D' ? this.disposablePalletWeight : 0;
     const totalPalletsAmount = this.totalPalletsAmount;
     return totalPalletsAmount * palletUnitWeight;
   }
@@ -927,10 +934,12 @@ export class FormularioComponent {
   }
 
   private async saveForm(isAutoSave: boolean, bkpRows?: Array<any>): Promise<any> {
+    const budgetStatus = this.headerData.loadingLocation === '01010001' ? 'CP' : 'PP';
     if (!(this.validateHeader() && this.validateRows())) {
       return;
     }
     await this.updateAllRowsPrices();
+    await this.updateFreightCost()
     const res = await this.sendForm();
     if (!res) {
       bkpRows ? this.rows = bkpRows.map(item => ({ ...item })) : null;
@@ -942,6 +951,7 @@ export class FormularioComponent {
       return;
     }
     this.poNotification.success(res.message);
+    this.headerData.budgetStatus = budgetStatus;
     if (!isAutoSave) {
       this.router.navigate(['/','orcamentos']);
     } else {
@@ -952,6 +962,7 @@ export class FormularioComponent {
   }
 
   public async sendForm(): Promise<any> {
+    const budgetStatus = this.headerData.loadingLocation === '01010001' ? 'CP' : 'PP';
     const body = {
       "filial":           this.headerData.loadingLocation           ?? "",
       "orcamento":        this.headerData.budgetId                  ?? "",
@@ -960,7 +971,7 @@ export class FormularioComponent {
       "condPag":          this.headerData.paymentTerms              ?? "",
       "observacao":       this.headerData.observation ? this.headerData.observation.trim() : "",
       "vendedor":         localStorage.getItem('sellerId')          ?? "",
-      "situacao":         this.headerData.budgetStatus              ?? "",
+      "situacao":         budgetStatus                              ?? "",
       "condPagFrete":     this.headerData.freightPaymentTerms       ?? "",
       "valorFrete":       this.headerData.freightCost               ?? 0,
       "tipoCarga":        this.headerData.cargoType                 ?? "",
@@ -973,6 +984,7 @@ export class FormularioComponent {
       "tipoVeiculo":      this.headerData.transportationMode        ?? "",
       "estadoDestino":    this.headerData.destinationState          ?? "",
       "cidadeDestino":    this.headerData.destinationCity           ?? "",
+      "custoSobrepeso":   this.overweightCost                       ?? 0,
       "responsavelFrete": this.headerData.freightResponsible        ? "1" : "0",
       "itens":            this.rows.map((item: any) => ({
         "item":           item.item                 ?? "",
@@ -1059,24 +1071,6 @@ export class FormularioComponent {
     }));
     this.rows = updatedRows;
     this.loadingText = 'Carregando';
-  }
-
-  private async getDueDaysByPaymentTerms(paymentTerms: string): Promise<any> {
-    if (!paymentTerms) {
-      return null;
-    }
-    try {
-      const res: any = await firstValueFrom(this.api.get(`portal-do-representante/condicoes/${paymentTerms}`));
-      if (res && res.success) {
-        return res.dias;
-      } else {
-        this.poNotification.error('Erro ao obter dias de vencimento: ' + res.message);
-        return null;
-      }
-    } catch (error: any) {
-      this.poNotification.error('Erro ao obter dias de vencimento: ' + error.message);
-      return null;
-    }
   }
 
   private validateHeader(): boolean {
@@ -1285,9 +1279,9 @@ export class FormularioComponent {
     } else if (changedValue.property === 'cargoType') {
       return {
         fields: [
-          { property: 'palletPattern10x1',    readonly: this.headerData.cargoType === '1' },
-          { property: 'palletPattern30x1',    readonly: this.headerData.cargoType === '1' },
-          { property: 'palletPattern25kg',    readonly: this.headerData.cargoType === '1' },
+          { property: 'palletPattern10x1',    readonly: this.headerData.cargoType === 'BT' },
+          { property: 'palletPattern30x1',    readonly: this.headerData.cargoType === 'BT' },
+          { property: 'palletPattern25kg',    readonly: this.headerData.cargoType === 'BT' },
         ],
       }
     } else if (changedValue.property === 'palletPattern10x1' || changedValue.property === 'palletPattern30x1' || changedValue.property === 'palletPattern25kg') {
@@ -1405,6 +1399,9 @@ export class FormularioComponent {
             comissionPercentage:  item.comissao,
             comissionUnitValue:   item.valorUnitario * item.comissao / 100,
             comissionTotalValue:  item.valorTotal * item.comissao / 100,
+            productNetWeight:     item.pesoNeto,
+            productGrossWeight:   item.pesoBruto,
+            packagingFormat:      item.formatoEmbalagem,
           }));
           setTimeout(() => {
             this.openCopyModal();
@@ -1426,7 +1423,7 @@ export class FormularioComponent {
         this.rowData.productDescription = res.descricao;
         this.rowData.packagingType = res.unidade;
         this.rowData.packagingFormat = res.formatoEmbalagem;
-        this.rowData.productNetWeight = res.pesoLiquido;
+        this.rowData.productNetWeight = res.pesoNeto;
         this.rowData.productGrossWeight = res.pesoBruto;
       }
       this.confirmRow.loading = false;
@@ -1487,7 +1484,7 @@ export class FormularioComponent {
     this.headerData = {
       paymentTerms:         '001',
       freightPaymentTerms:  '001',
-      cargoType:            '1',
+      cargoType:            'BT',
       freightCost:          0,
       unloadingCost:        0,
       maxLoad:              0,
@@ -1619,7 +1616,7 @@ export class FormularioComponent {
     }
   };
 
-  private async updateFreightCost(): Promise<void> {
+  private async updateFreightCost(silent: boolean = false): Promise<void> {
     const loadingLocation = this.headerData.loadingLocation;
     const destinationState = this.headerData.destinationState;
     const destinationCity = this.headerData.destinationCity;
@@ -1631,14 +1628,20 @@ export class FormularioComponent {
       if (res.success) {
         if (this.headerData.freightCost !== res.valorFrete) {
           this.headerData.freightCost = res.valorFrete;
-          this.poNotification.success('Custo de frete atualizado');
+          if (!silent) {
+            this.poNotification.success('Custo de frete atualizado: ' + res.valorFrete);
+          }
         }
       } else {
         this.headerData.freightCost = 0;
-        this.poNotification.error('Erro ao atualizar custo de frete: ' + res.message);
+        if (!silent) {
+          this.poNotification.warning('Custo de frete não encontrado: ' + res.message);
+        }
       }
     } catch (error: any) {
-      this.poNotification.error('Erro ao atualizar custo de frete: ' + error.message);
+      if (!silent) {
+        this.poNotification.error('Erro ao atualizar custo de frete: ' + error.message);
+      }
     }
   }
 

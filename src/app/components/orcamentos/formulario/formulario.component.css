@@ -4,7 +4,7 @@
 }
 
 ::ng-deep .po-tab-button {
-    min-width: 48% !important; /* Largura mínima do botão de seleção da aba */
+    min-width: 47% !important; /* Largura mínima do botão de seleção da aba */
 }
 
 .total-values {
