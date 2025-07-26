@@ -3,9 +3,11 @@
     --color-grid-head-content-border-bottom-color: #B4E2FD; /* Cor da barra horizontal do po-grid */
 }
 
+/*
 ::ng-deep .po-tab-button {
-    min-width: 47% !important; /* Largura mínima do botão de seleção da aba */
+    min-width: 47% !important;
 }
+*/
 
 .total-values {
     display: flex;

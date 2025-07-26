@@ -302,7 +302,7 @@ export class FormularioComponent {
         maxLength: 40,
         gridColumns: 3,
         type: 'string',
-        searchService: 'https://192.168.100.249:8500/portal-do-representante/condicoes',
+        searchService: this.api.baseUrl+'portal-do-representante/condicoes',
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'descricao', label: 'Descrição' },
@@ -359,7 +359,7 @@ export class FormularioComponent {
         maxLength: 40,
         gridColumns: 3,
         type: 'string',
-        searchService: 'https://192.168.100.249:8500/portal-do-representante/condicoes',
+        searchService: this.api.baseUrl+'portal-do-representante/condicoes',
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'descricao', label: 'Descrição' },
@@ -417,6 +417,28 @@ export class FormularioComponent {
         type: 'string',
         fieldValue: 'code',
         fieldLabel: 'transportationMode',
+        order: 2,
+      },
+      {
+        property: 'containerType',
+        label: 'Tipo de Container',
+        visible: false,
+        required: false,
+        showRequired: false,
+        readonly: true,
+        noAutocomplete: true,
+        minLength: 2,
+        maxLength: 2,
+        gridColumns: 2,
+        options: [
+          { containerType: 'Container 20'    , code: 'C20' },
+          { containerType: 'Container 20'    , code: 'C20' },
+          { containerType: 'Container 40'    , code: 'C40' },
+          { containerType: 'Container 40'    , code: 'C40' },
+        ],
+        type: 'string',
+        fieldValue: 'code',
+        fieldLabel: 'containerType',
         order: 2,
       },
       {
@@ -491,8 +513,8 @@ export class FormularioComponent {
         showRequired: false,
         readonly: this.isViewMode() || this.isAddMode(),
         noAutocomplete: true,
-        minLength: 3,
-        maxLength: 40,
+        minLength: 2,
+        maxLength: 2,
         gridColumns: 3,
         options: [
           { cargoType: 'Batida'                       , code: 'BT' },
@@ -572,7 +594,7 @@ export class FormularioComponent {
         disabled: this.isViewMode(),
         noAutocomplete: true,
         maxLength: 20,
-        searchService: 'https://192.168.100.249:8500/portal-do-representante/produtos',
+        searchService: this.api.baseUrl+'portal-do-representante/produtos',
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'descricao', label: 'Descrição' },
@@ -756,7 +778,8 @@ export class FormularioComponent {
     if (!this.isAddMode() && this.location && this.budgetId) {
       const res = await this.loadBudgetData(this.location,this.budgetId);
       if (res) {        
-        await this.fillCustomerData();
+        !!this.headerData.customerId ? await this.fillCustomerData() : null;
+        !this.isViewMode() ? await this.updateFreightCost() : null;
         this.updateFieldsProperties();
       } else {
         this.router.navigate(['/','orcamentos']);
@@ -764,8 +787,6 @@ export class FormularioComponent {
     } else {
       this.loadDefaultData();
     }
-
-    await this.updateFreightCost()
 
     setTimeout(() => {
       this.isHideLoading = true;
@@ -1263,7 +1284,7 @@ export class FormularioComponent {
           { property: 'freightPaymentTerms',  disabled: false, required: changedValue.value.freightType === 'C' },
           { property: 'cargoType',            readonly: false, required: changedValue.value.freightType === 'C' },
           { property: 'unloadingCost',        readonly: false },
-          { property: 'transportationMode',   readonly: false, required: changedValue.value.freightType === 'C' },
+          { property: 'transportationMode',   readonly: this.headerData.loadingLocation !== '01010001', required: changedValue.value.freightType === 'C' },
           { property: 'maxLoad',              readonly: false, required: changedValue.value.freightType === 'C' },
           { property: 'freightResponsible',   disabled: false },
           { property: 'destinationState',     readonly: false },
@@ -1274,6 +1295,7 @@ export class FormularioComponent {
           palletPattern30x1: this.headerData.palletPattern30x1 ?? 50,
           palletPattern25kg: this.headerData.palletPattern25kg ?? 50,
           freightCost: this.headerData.freightType === 'F' ? 0 : this.headerData.freightCost ?? 0,
+          transportationMode: this.headerData.loadingLocation !== '01010001' ? 'R' : this.headerData.transportationMode ?? 'R',
         }
       }
     } else if (changedValue.property === 'cargoType') {
@@ -1292,11 +1314,13 @@ export class FormularioComponent {
           palletPattern25kg: this.headerData.palletPattern25kg !== 0 ? this.headerData.palletPattern25kg : 50,
         }
       }
-    } else if (changedValue.property === 'freightResponsible' || changedValue.property === 'freightCost' || changedValue.property === 'destinationCity') {
+    } else if (changedValue.property === 'freightResponsible' || changedValue.property === 'freightCost' || changedValue.property === 'destinationCity' || changedValue.property === 'transportationMode') {
       this.updateFreightCost()
         return {
           fields: [
-            { property: 'freightCost',  readonly: !this.headerData.freightResponsible },
+            { property: 'freightCost',    readonly: !this.headerData.freightResponsible },
+            { property: 'containerType',  visible:  this.headerData.transportationMode === 'M' },
+            { property: 'maxLoad',        readonly: this.headerData.transportationMode === 'M' },
           ]
         }
     } else if (changedValue.property === 'destinationState') {
@@ -1438,7 +1462,7 @@ export class FormularioComponent {
   private async fillCustomerData(): Promise<void> {
     const customerData = await this.customerService.getCustomerData(this.headerData.customerId);
     if (customerData) {
-      this.headerData.destinationState  = !this.isModifyMode() ? customerData.destinationState : this.headerData.destinationState;
+      this.headerData.destinationState  = !this.isModifyMode() && !this.isCopyMode() ? customerData.destinationState : this.headerData.destinationState;
       this.headerData.customerHasIE     = customerData.customerHasIE;
       this.headerData.customerCategory  = customerData.customerCategory;
     } else {
@@ -1455,6 +1479,14 @@ export class FormularioComponent {
       if (field.property === 'freightCost') {
         return {
           ...field,
+          readonly: !this.headerData.freightResponsible,
+          disabled: !this.headerData.freightResponsible,
+        }
+      }
+      if (field.property === 'containerType') {
+        return {
+          ...field,
+          visible: this.headerData.transportationMode === 'M',
           readonly: !this.headerData.freightResponsible,
           disabled: !this.headerData.freightResponsible,
         }
@@ -1620,17 +1652,29 @@ export class FormularioComponent {
     const loadingLocation = this.headerData.loadingLocation;
     const destinationState = this.headerData.destinationState;
     const destinationCity = this.headerData.destinationCity;
+    const totalWeight = this.totalLoadWeight;
+    const body = {
+      filialOrigem: loadingLocation,
+      cidadeDestino: destinationCity,
+      estadoDestino: destinationState,
+      pesoTotal: totalWeight,
+    }
+    const transportationMode = this.headerData.transportationMode === 'M' ? 'maritimo' : 'rodoviario';
     if (this.headerData.freightType !== 'C' || this.headerData.freightResponsible) {
       return;
     }
     try {
-      const res: any = await firstValueFrom(this.api.get(`portal-do-representante/frete/valor?filialOrigem=${loadingLocation}&cidadeDestino=${destinationCity}&estadoDestino=${destinationState}`));
+      const res: any = await firstValueFrom(this.api.post(`portal-do-representante/frete/valor/` + transportationMode, body));
       if (res.success) {
         if (this.headerData.freightCost !== res.valorFrete) {
           this.headerData.freightCost = res.valorFrete;
           if (!silent) {
-            this.poNotification.success('Custo de frete atualizado: ' + res.valorFrete);
+            this.poNotification.success('Custo de frete atualizado.');
           }
+        }
+        if (this.headerData.transportationMode === 'M') {
+          this.headerData.maxLoad = res.pesoMaximo ?? this.headerData.maxLoad;
+          this.headerData.containerType = res.tipoContainer ?? this.headerData.containerType;
         }
       } else {
         this.headerData.freightCost = 0;

@@ -34,7 +34,7 @@ export class CustomerService implements PoLookupFilter {
 
   public async getCustomerData(customerId: string): Promise<any> {
     try {
-      const res: any = await firstValueFrom(this.api.get('portal-do-representante/clientes/'+customerId));
+      const res: any = await firstValueFrom(this.api.get( `portal-do-representante/clientes/${customerId}?sellerId=${localStorage.getItem('sellerId')}`));
       if (res?.success) {
         return {
           destinationState: res.estado,
