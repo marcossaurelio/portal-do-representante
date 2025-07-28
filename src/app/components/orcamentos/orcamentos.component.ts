@@ -37,12 +37,13 @@ export class OrcamentosComponent {
   ]
   
   public readonly itemActions: Array<PoTableAction> = [
-    {action: this.modifyBudget.bind(this),      icon: 'an an-note-pencil',        label: 'Alterar',               disabled: (item: any) => !this.isModifiable(item)       },
-    {action: this.viewBudget.bind(this),        icon: 'an an-magnifying-glass',   label: 'Visualizar',            disabled: false                                         },
-    {action: this.copyBudget.bind(this),        icon: 'an an-copy',               label: 'Copiar',                disabled: false                                         },
-    {action: this.sendToApproval.bind(this),    icon: 'an an-paper-plane-tilt',   label: 'Enviar para Aprovação', disabled: (item: any) => !this.isPendingOrder(item)     },
-    {action: this.approveQuotation.bind(this),  icon: 'an an-check',              label: 'Aprovar cotação',       disabled: (item: any) => !this.isPendingQuotation(item) },
-    {action: this.rejectQuotation.bind(this),   icon: 'an an-x',                  label: 'Rejeitar cotação',      disabled: (item: any) => !this.isPendingQuotation(item) },
+    { action: this.modifyBudget.bind(this),      icon: 'an an-note-pencil',        label: 'Alterar',               disabled: (item: any) => !this.isModifiable(item), visible: (item: any) => !this.isExpired(item)  },
+    { action: this.modifyBudget.bind(this),      icon: 'an an-note-pencil',        label: 'Renovar',               disabled: (item: any) => !this.isModifiable(item), visible: (item: any) => this.isExpired(item)   },
+    { action: this.viewBudget.bind(this),        icon: 'an an-magnifying-glass',   label: 'Visualizar',            disabled: false                                           },
+    { action: this.copyBudget.bind(this),        icon: 'an an-copy',               label: 'Copiar',                disabled: false                                           },
+    { action: this.sendToApproval.bind(this),    icon: 'an an-paper-plane-tilt',   label: 'Enviar para Aprovação', disabled: (item: any) => !this.isPendingOrder(item)       },
+    { action: this.approveQuotation.bind(this),  icon: 'an an-check',              label: 'Aprovar cotação',       disabled: (item: any) => !this.isPendingQuotation(item)   },
+    { action: this.rejectQuotation.bind(this),   icon: 'an an-x',                  label: 'Rejeitar cotação',      disabled: (item: any) => !this.isPendingQuotation(item)   },
   ]
 
   public readonly filters: Array<PoPageDynamicSearchFilters> = [
@@ -110,6 +111,7 @@ export class OrcamentosComponent {
           { value: 'PE',  type: PoTagType.Info,       label: 'Pré pedido em aprovação', icon: true  },
           { value: 'PR',  type: PoTagType.Danger,     label: 'Pré pedido rejeitado',    icon: true  },
           { value: 'PA',  type: PoTagType.Success,    label: 'Pré pedido aprovado',     icon: true  },
+          { value: 'EX',  type: PoTagType.Neutral,    label: 'Orçamento expirado',      icon: true  },
         ]
       },
       {property: 'order', label: 'Pedido'},
@@ -123,8 +125,8 @@ export class OrcamentosComponent {
         ]
       },
       { property: 'customer',       label: 'Cliente'  },
-      //{ property: 'totalValue',     label: 'Valor Total',   type: 'numeric'  },
-      { property: 'inclusionDate',  label: 'Data Inclusão', type: 'date'     },
+      { property: 'inclusionDate',  label: 'Data Inclusão', type: 'date'  },
+      { property: 'expirationDate', label: 'Data Validade', type: 'date'  },
     ]
   }
 
@@ -143,6 +145,7 @@ export class OrcamentosComponent {
         customer:             item.nomeCliente,
         totalValue:           item.valorTotal,
         inclusionDate:        this.dateFormat(item.dataEmissao),
+        expirationDate:       this.dateFormat(item.dataVencimento),
       }));
     } catch (e: any) {
       this.poNotification.error('Falha ao buscar os orçamentos: ' + e.message);
@@ -226,6 +229,14 @@ export class OrcamentosComponent {
 
   private isModifiable(item: any): boolean {
     return item.budgetStatus !== 'PA';
+  }
+
+  private isExpired(item: any): boolean {
+    return item.budgetStatus === 'EX';
+  }
+
+  private isQuotation(item: any): boolean {
+    return item.budgetStatus.charAt(0) === 'C';
   }
 
   public async onBlockClick(order: number) {

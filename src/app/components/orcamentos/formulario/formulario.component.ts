@@ -184,6 +184,7 @@ export class FormularioComponent {
           { budgetStatus: 'Pré pedido em aprovação',  code: "PE" },
           { budgetStatus: 'Pré Pedido rejeitado',     code: "PR" },
           { budgetStatus: 'Pré Pedido aprovado',      code: "PA" },
+          { budgetStatus: 'Orçamento expirado',       code: "EX" },
         ],
         type: 'string',
         fieldValue: 'code',
@@ -824,7 +825,7 @@ export class FormularioComponent {
     const netWeight = this.totalProductsNetWeight ?? 0;
     const maxLoad = this.headerData.maxLoad ?? 0;
     const freightCostPerTon = this.headerData.freightCost ?? 0;
-    const overweightCost = netWeight >= maxLoad ? 0 : freightCostPerTon * (maxLoad/netWeight) - freightCostPerTon;
+    const overweightCost = netWeight >= maxLoad || netWeight <= 0 ? 0 : freightCostPerTon * (maxLoad/netWeight) - freightCostPerTon;
     return overweightCost;
   }
 
@@ -1315,14 +1316,20 @@ export class FormularioComponent {
         }
       }
     } else if (changedValue.property === 'freightResponsible' || changedValue.property === 'freightCost' || changedValue.property === 'destinationCity' || changedValue.property === 'transportationMode') {
-      this.updateFreightCost()
-        return {
-          fields: [
-            { property: 'freightCost',    readonly: !this.headerData.freightResponsible },
-            { property: 'containerType',  visible:  this.headerData.transportationMode === 'M' },
-            { property: 'maxLoad',        readonly: this.headerData.transportationMode === 'M' },
-          ]
+      if (!!this.headerData.destinationState && !!this.headerData.destinationCity) {
+        this.updateFreightCost();
+      }
+      return {
+        fields: [
+          { property: 'freightCost',        readonly: !this.headerData.freightResponsible },
+          { property: 'containerType',      visible:  this.headerData.transportationMode === 'M' },
+          { property: 'maxLoad',            readonly: this.headerData.transportationMode === 'M' },
+          { property: 'transportationMode', readonly: this.headerData.loadingLocation !== '01010001' },
+        ],
+        value: {
+          transportationMode: this.headerData.loadingLocation !== '01010001' ? 'R' : this.headerData.transportationMode ?? 'R',
         }
+      }
     } else if (changedValue.property === 'destinationState') {
       return {
         value: {
