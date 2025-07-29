@@ -5,13 +5,14 @@ import { PoLookupFilter, PoLookupFilteredItemsParams } from '@po-ui/ng-component
 import { ApiService } from '../../services/api.service';
 import { firstValueFrom } from 'rxjs';
 import { PoNotificationService } from '@po-ui/ng-components';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CustomerService implements PoLookupFilter {
 
-  constructor(private api: ApiService, private poNotification: PoNotificationService) { }
+  constructor(private api: ApiService, private poNotification: PoNotificationService, private http: HttpClient) { }
 
   getFilteredItems(filteredParams: PoLookupFilteredItemsParams): Observable<any> {
     const { filterParams, advancedFilters, ...restFilteredItemsParams } = filteredParams;
@@ -45,6 +46,43 @@ export class CustomerService implements PoLookupFilter {
       return null;
     } catch (error: any) {
       return null;
+    }
+  }
+
+  public async getCustomerPublicData(cnpj: string): Promise<any> {
+    const endpoint: string = 'portal-do-representante/clientes/dados-publicos/';
+    try {
+      const res: any = await firstValueFrom(this.api.get( endpoint + cnpj));
+      return res;
+    } catch (error: any) {
+      return {message: error};
+    }
+  }
+
+  public async createCustomer(customerData: any): Promise<any> {
+    const endpoint: string = 'portal-do-representante/clientes/incluir';
+    const body: any = {
+      cnpj:           customerData.cnpj,
+      razaoSocial:    customerData.name,
+      nomeFantasia:   customerData.fantasyName,
+      endereco:       customerData.address,
+      estado:         customerData.state,
+      municipio:      customerData.city,
+      bairro:         customerData.neighborhood,
+      cep:            customerData.zipCode,
+      ddd:            customerData.ddd,
+      telefone:       customerData.phone,
+      email:          customerData.email,
+      categoria:      customerData.category,
+      observacao:     customerData.observation,
+      vendedor:       localStorage.getItem('sellerId'),
+      ie:             customerData.ie,
+    };
+    try {
+      const res: any = await firstValueFrom(this.api.post(endpoint, body));
+      return res;
+    } catch (error: any) {
+      return { success: false, message: error.message };
     }
   }
 

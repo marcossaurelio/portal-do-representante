@@ -95,4 +95,21 @@
 
     </po-table>
 
+    <po-modal #modal
+    [p-click-out]="false"
+    [p-hide-close]="true"
+    p-icon="an an-user-plus"
+    [p-primary-action]="confirmCustomer"
+    [p-secondary-action]="cancelCustomer"
+    p-size="xl"
+    [p-title]="customerModalTitle" >
+        <po-dynamic-form #rowForm
+        [p-fields]="customerModalFields"
+        [p-value]="customerModalData"
+        [p-validate-fields]="this.customerModalValidateFields"
+        [p-validate]="this.onChangeCustomerFields.bind(this)" >
+            
+        </po-dynamic-form>
+    </po-modal>
+
 </po-page-dynamic-search>
