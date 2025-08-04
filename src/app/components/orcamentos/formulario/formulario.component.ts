@@ -303,7 +303,7 @@ export class FormularioComponent {
         maxLength: 40,
         gridColumns: 3,
         type: 'string',
-        searchService: this.api.baseUrl+'portal-do-representante/condicoes',
+        searchService: this.api.baseUrl+'/portal-do-representante/condicoes',
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'descricao', label: 'Descrição' },
@@ -360,7 +360,7 @@ export class FormularioComponent {
         maxLength: 40,
         gridColumns: 3,
         type: 'string',
-        searchService: this.api.baseUrl+'portal-do-representante/condicoes',
+        searchService: this.api.baseUrl+'/portal-do-representante/condicoes',
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'descricao', label: 'Descrição' },
@@ -595,7 +595,7 @@ export class FormularioComponent {
         disabled: this.isViewMode(),
         noAutocomplete: true,
         maxLength: 20,
-        searchService: this.api.baseUrl+'portal-do-representante/produtos',
+        searchService: this.api.baseUrl+'/portal-do-representante/produtos',
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'descricao', label: 'Descrição' },
@@ -1470,6 +1470,7 @@ export class FormularioComponent {
     const customerData = await this.customerService.getCustomerData(this.headerData.customerId);
     if (customerData) {
       this.headerData.destinationState  = !this.isModifyMode() && !this.isCopyMode() ? customerData.destinationState : this.headerData.destinationState;
+      this.headerData.destinationCity   = !this.isModifyMode() && !this.isCopyMode() ? customerData.destinationCity : this.headerData.destinationCity;
       this.headerData.customerHasIE     = customerData.customerHasIE;
       this.headerData.customerCategory  = customerData.customerCategory;
     } else {

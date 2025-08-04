@@ -39,6 +39,7 @@ export class CustomerService implements PoLookupFilter {
       if (res?.success) {
         return {
           destinationState: res.estado,
+          destinationCity: res.municipio,
           customerHasIE: !!res.ie,
           customerCategory: res.categoria,
         }
@@ -62,21 +63,24 @@ export class CustomerService implements PoLookupFilter {
   public async createCustomer(customerData: any): Promise<any> {
     const endpoint: string = 'portal-do-representante/clientes/incluir';
     const body: any = {
-      cnpj:           customerData.cnpj,
-      razaoSocial:    customerData.name,
-      nomeFantasia:   customerData.fantasyName,
-      endereco:       customerData.address,
-      estado:         customerData.state,
-      municipio:      customerData.city,
-      bairro:         customerData.neighborhood,
-      cep:            customerData.zipCode,
-      ddd:            customerData.ddd,
-      telefone:       customerData.phone,
-      email:          customerData.email,
-      categoria:      customerData.category,
-      observacao:     customerData.observation,
-      vendedor:       localStorage.getItem('sellerId'),
-      ie:             customerData.ie,
+      cnpj:             customerData.cnpj                   ?? '',
+      razaoSocial:      customerData.name                   ?? '',
+      nomeFantasia:     customerData.fantasyName            ?? '',
+      endereco:         customerData.address                ?? '',
+      estado:           customerData.state                  ?? '',
+      municipio:        customerData.city                   ?? '',
+      bairro:           customerData.neighborhood           ?? '',
+      cep:              customerData.zipCode                ?? '',
+      ddd:              customerData.ddd                    ?? '',
+      telefone:         customerData.phone                  ?? '',
+      email:            customerData.email                  ?? '',
+      categoria:        customerData.category               ?? '',
+      observacao:       customerData.observation            ?? '',
+      vendedor:         localStorage.getItem('sellerId')    ?? '',
+      ie:               customerData.ie                     ?? '',
+      tipo:             customerData.type                   ?? '',
+      simplesNacional:  customerData.simplesNacional        ? '1' : '2',
+      contribuinte:     customerData.hasIe                  ? '1' : '2',
     };
     try {
       const res: any = await firstValueFrom(this.api.post(endpoint, body));

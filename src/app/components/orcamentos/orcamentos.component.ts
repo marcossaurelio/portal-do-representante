@@ -161,7 +161,7 @@ export class OrcamentosComponent {
     },
     {
       property: 'hasIe',
-      label: 'Possui IE?',
+      label: 'Contribuinte ICMS?',
       visible: true,
       required: true,
       showRequired: false,
@@ -183,6 +183,19 @@ export class OrcamentosComponent {
       maxLength: 18,
       gridColumns: 3,
       type: 'string',
+    },
+    {
+      property: 'simplesNacional',
+      label: 'Simples Nacional?',
+      visible: false,
+      required: true,
+      showRequired: false,
+      readonly: false,
+      noAutocomplete: true,
+      gridColumns: 2,
+      booleanTrue: 'Sim',
+      booleanFalse: 'Não',
+      type: 'boolean',
     },
     {
       property: 'address',
@@ -302,7 +315,7 @@ export class OrcamentosComponent {
       readonly: false,
       noAutocomplete: true,
       maxLength: 100,
-      gridColumns: 5,
+      gridColumns: 3,
       type: 'string',
     },
     {
@@ -314,7 +327,7 @@ export class OrcamentosComponent {
       readonly: false,
       noAutocomplete: true,
       maxLength: 2,
-      gridColumns: 4,
+      gridColumns: 3,
       options: [
         { code: 'DT', label: 'Distribuidor'               },
         { code: 'AT', label: 'Atacado'                    },
@@ -330,6 +343,26 @@ export class OrcamentosComponent {
         { code: 'CH', label: 'Charqueadas'                },
         { code: 'PC', label: 'Pecuaristas e Avicultores'  },
         { code: 'TA', label: 'Tratamento de Água'         },
+      ],
+      type: 'string',
+      fieldValue: 'code',
+      fieldLabel: 'label',
+    },
+    {
+      property: 'type',
+      label: 'Tipo',
+      visible: true,
+      required: true,
+      showRequired: false,
+      readonly: false,
+      noAutocomplete: true,
+      maxLength: 1,
+      gridColumns: 3,
+      options: [
+        { code: 'F', label: 'Consumidor Final'  },
+        { code: 'L', label: 'Produtor Rural'    },
+        { code: 'R', label: 'Revendedor'        },
+        { code: 'S', label: 'Solidário'         },
       ],
       type: 'string',
       fieldValue: 'code',
@@ -627,7 +660,7 @@ export class OrcamentosComponent {
 
   public onChangeCustomerFields(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
     if (changedValue.property === 'cnpj') {
-      !!this.customerModalData.cnpj ? this.fillCustomerData(): this.customerModalData = {};
+      !!this.customerModalData.cnpj ? this.fillCustomerData() : null;
       return {
         fields: [
           { property: 'city', disabled: !this.customerModalData.cnpj },
@@ -657,15 +690,17 @@ export class OrcamentosComponent {
       return;
     }
     this.confirmCustomer.loading = true;
+    this.isHideLoading = false;
     const res: any = await this.customerService.createCustomer(customerData);
     if (res.success) {
-      this.poNotification.success('Cliente cadastrado com sucesso! Código: ' + res.codigo);
+      this.poNotification.success('Cliente cadastrado com sucesso. Código: ' + res.codigo);
       this.closeCustomerModal();
       this.customerModalData = {};
     } else {
-      this.poNotification.error('Falha ao cadastrar cliente: ' + res.message);
+      this.poNotification.error('Falha ao cadastrar cliente: ' + res.fix);
     }
     this.confirmCustomer.loading = false;
+    this.isHideLoading = true;
   }
 
   private async fillCustomerData(): Promise<void> {
@@ -674,30 +709,30 @@ export class OrcamentosComponent {
     const res: any = await this.customerService.getCustomerPublicData(cnpj);
     if (!res.success) {
       this.poNotification.error('Falha ao buscar dados do cliente: ' + res.message);
-      this.customerModalData = {};
+      this.customerModalData.cnpj = '';
       this.confirmCustomer.loading = false;
       return;
     }
     if (res.jaCadastrado) {
       this.poNotification.warning('CNPJ já cadastrado na base de dados. Não será possível realizar um novo cadastro.');
-      this.customerModalData = {};
+      this.customerModalData.cnpj = '';
       this.confirmCustomer.loading = false;
       return;
     }
     this.customerModalData = {
       ...this.customerModalData,
-      name:           res.razaoSocial,
-      fantasyName:    res.nomeFantasia,
-      address:        res.endereco,
-      state:          res.uf,
-      city:           res.municipio,
-      neighborhood:   res.bairro,
-      zipCode:        res.cep,
-      complement:     res.complemento,
-      ddd:            res.ddd,
-      phone:          res.telefone,
-      email:          res.email,
-      category:       res.categoria
+      name:             res.razaoSocial,
+      fantasyName:      res.nomeFantasia,
+      address:          res.endereco,
+      state:            res.uf,
+      city:             res.municipio,
+      neighborhood:     res.bairro,
+      zipCode:          res.cep,
+      complement:       res.complemento,
+      ddd:              res.ddd,
+      phone:            res.telefone,
+      email:            res.email,
+      simplesNacional:  res.simplesNacional,
     }
     this.confirmCustomer.loading = false;
     return;
@@ -708,7 +743,7 @@ export class OrcamentosComponent {
   const emptyFields = requiredFields
     .filter(field => {
       const value = this.customerModalData[field.property];
-      return !value || (typeof value === 'string' && value.trim() === '') || typeof value !== 'boolean';
+      return (!value || (typeof value === 'string' && value.trim() === '')) && typeof value !== 'boolean';
     })
     .map(field => field.label);
   if (emptyFields.length > 0) {
