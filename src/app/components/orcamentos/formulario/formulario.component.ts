@@ -142,7 +142,7 @@ export class FormularioComponent {
         visible: true,
         required: true,
         showRequired: true,
-        readonly: !this.isAddMode(),
+        disabled: !this.isAddMode(),
         noAutocomplete: true,
         gridColumns: 4,
         options: [
@@ -162,7 +162,7 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         noAutocomplete: true,
         gridColumns: 3,
         type: 'string',
@@ -174,7 +174,7 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         noAutocomplete: true,
         gridColumns: 4,
         options: [
@@ -245,7 +245,7 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         noAutocomplete: true,
         maxLength: 3,
         gridColumns: 2,
@@ -266,7 +266,7 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         noAutocomplete: true,
         maxLength: 20,
         gridColumns: 4,
@@ -314,12 +314,26 @@ export class FormularioComponent {
         order: 1,
       },
       {
+        property: 'financialDiscount',
+        label: 'Desconto Financ. (%)',
+        visible: true,
+        required: false,
+        showRequired: false,
+        disabled: this.isViewMode() || this.isAddMode(),
+        noAutocomplete: true,
+        type: 'currency',
+        maxLength: 4,
+        gridColumns: 2,
+        format: 'BRL',
+        order: 1
+      },
+      {
         property: 'observation',
         label: 'Observação',
         visible: true,
         required: false,
         showRequired: false,
-        readonly: !this.isModifyMode() && !this.isCopyMode(),
+        disabled: !this.isModifyMode() && !this.isCopyMode(),
         noAutocomplete: true,
         maxLength: 120,
         gridColumns: 12,
@@ -333,7 +347,7 @@ export class FormularioComponent {
         visible: true,
         required: true,
         showRequired: true,
-        readonly: this.isViewMode(),
+        disabled: this.isViewMode(),
         noAutocomplete: true,
         maxLength: 3,
         gridColumns: 3,
@@ -377,7 +391,7 @@ export class FormularioComponent {
         required: false,
         showRequired: false,
         noAutocomplete: true,
-        readonly: true,
+        disabled: true,
         type: 'currency',
         maxLength: 20,
         gridColumns: 2,
@@ -404,7 +418,7 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        readonly: this.isViewMode() || this.isAddMode(),
+        disabled: this.isViewMode() || this.isAddMode(),
         noAutocomplete: true,
         minLength: 1,
         maxLength: 1,
@@ -426,7 +440,7 @@ export class FormularioComponent {
         visible: false,
         required: false,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         noAutocomplete: true,
         minLength: 2,
         maxLength: 2,
@@ -449,7 +463,7 @@ export class FormularioComponent {
         required: false,
         showRequired: false,
         noAutocomplete: true,
-        readonly: this.isViewMode() || this.isAddMode(),
+        disabled: this.isViewMode() || this.isAddMode(),
         type: 'number',
         maxLength: 10,
         gridColumns: 2,
@@ -462,7 +476,7 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        readonly: this.isViewMode() || this.isAddMode(),
+        disabled: this.isViewMode() || this.isAddMode(),
         noAutocomplete: true,
         type: 'currency',
         maxLength: 20,
@@ -476,7 +490,7 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        readonly: this.isViewMode() || this.isAddMode(),
+        disabled: this.isViewMode() || this.isAddMode(),
         noAutocomplete: true,
         maxLength: 2,
         gridColumns: 2,
@@ -512,7 +526,7 @@ export class FormularioComponent {
         visible: true,
         required: false,
         showRequired: false,
-        readonly: this.isViewMode() || this.isAddMode(),
+        disabled: this.isViewMode() || this.isAddMode(),
         noAutocomplete: true,
         minLength: 2,
         maxLength: 2,
@@ -536,7 +550,7 @@ export class FormularioComponent {
         required: true,
         showRequired: false,
         noAutocomplete: true,
-        readonly: this.isViewMode() || this.isAddMode(),
+        disabled: this.isViewMode() || this.isAddMode(),
         type: 'number',
         maxLength: 3,
         gridColumns: 2,
@@ -550,7 +564,7 @@ export class FormularioComponent {
         required: true,
         showRequired: false,
         noAutocomplete: true,
-        readonly: this.isViewMode() || this.isAddMode(),
+        disabled: this.isViewMode() || this.isAddMode(),
         type: 'number',
         maxLength: 3,
         gridColumns: 2,
@@ -564,7 +578,7 @@ export class FormularioComponent {
         required: true,
         showRequired: false,
         noAutocomplete: true,
-        readonly: this.isViewMode() || this.isAddMode(),
+        disabled: this.isViewMode() || this.isAddMode(),
         type: 'number',
         maxLength: 3,
         gridColumns: 2,
@@ -580,7 +594,7 @@ export class FormularioComponent {
         type: 'string',
         required: true,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         noAutocomplete: true,
         minLength: 2,
         maxLength: 4,
@@ -610,7 +624,7 @@ export class FormularioComponent {
         type: 'string',
         required: false,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         noAutocomplete: true,
         maxLength: 60,
         gridColumns: 6,
@@ -621,7 +635,7 @@ export class FormularioComponent {
         type: 'number',
         required: true,
         showRequired: false,
-        readonly: this.isViewMode(),
+        disabled: this.isViewMode(),
         noAutocomplete: true,
         maxLength: 10,
         gridColumns: 2,
@@ -633,7 +647,7 @@ export class FormularioComponent {
         type: 'string',
         required: false,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         noAutocomplete: true,
         maxLength: 20,
         gridColumns: 2,
@@ -645,7 +659,7 @@ export class FormularioComponent {
         required: false,
         showRequired: false,
         visible: false,
-        readonly: this.isViewMode(),
+        disabled: this.isViewMode(),
         noAutocomplete: true,
         maxLength: 20,
         gridColumns: 2,
@@ -657,7 +671,7 @@ export class FormularioComponent {
         type: 'currency',
         required: false,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         noAutocomplete: true,
         maxLength: 20,
         gridColumns: 2,
@@ -669,7 +683,7 @@ export class FormularioComponent {
         type: 'currency',
         required: false,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         noAutocomplete: true,
         maxLength: 20,
         gridColumns: 2,
@@ -681,7 +695,7 @@ export class FormularioComponent {
         type: 'string',
         required: false,
         showRequired: false,
-        readonly: false,
+        disabled: false,
         visible: false,
         noAutocomplete: true,
         maxLength: 3,
@@ -693,7 +707,7 @@ export class FormularioComponent {
         type: 'number',
         required: false,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         noAutocomplete: true,
         maxLength: 3,
         gridColumns: 2,
@@ -704,7 +718,7 @@ export class FormularioComponent {
         type: 'currency',
         required: false,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         noAutocomplete: true,
         maxLength: 20,
         gridColumns: 2,
@@ -716,7 +730,7 @@ export class FormularioComponent {
         type: 'currency',
         required: false,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         noAutocomplete: true,
         maxLength: 20,
         gridColumns: 2,
@@ -728,7 +742,7 @@ export class FormularioComponent {
         type: 'number',
         required: false,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         visible: false,
         noAutocomplete: true,
         maxLength: 20,
@@ -740,7 +754,7 @@ export class FormularioComponent {
         type: 'number',
         required: false,
         showRequired: false,
-        readonly: true,
+        disabled: true,
         visible: false,
         noAutocomplete: true,
         maxLength: 20,
@@ -752,7 +766,7 @@ export class FormularioComponent {
         type: 'string',
         required: false,
         showRequired: false,
-        readonly: false,
+        disabled: false,
         visible: false,
         noAutocomplete: true,
         maxLength: 3,
@@ -766,7 +780,7 @@ export class FormularioComponent {
       .filter((field) => field.property === 'loadingLocation' || field.property === 'customerId')
       .map((field) => {
         const copiedField = {...field};
-        copiedField.readonly = false;
+        copiedField.disabled = false;
         copiedField.disabled = false;
         return copiedField;
       });
@@ -972,9 +986,9 @@ export class FormularioComponent {
       this.poNotification.error(res.message + ': ' + res.fix);
       return;
     }
-    this.poNotification.success(res.message);
     this.headerData.budgetStatus = budgetStatus;
     if (!isAutoSave) {
+      this.poNotification.success(res.message);
       this.router.navigate(['/','orcamentos']);
     } else {
       !this.headerData.budgetId ? this.headerData.budgetId = res.orcamento : null;
@@ -984,46 +998,48 @@ export class FormularioComponent {
   }
 
   public async sendForm(): Promise<any> {
-    const budgetStatus = this.headerData.loadingLocation === '01010001' ? 'CP' : 'PP';
-    const body = {
-      "filial":           this.headerData.loadingLocation           ?? "",
-      "orcamento":        this.headerData.budgetId                  ?? "",
-      "cliente":          this.headerData.customerId.substring(0,6) ?? "",
-      "lojaCliente":      this.headerData.customerId.slice(-2)      ?? "",
-      "condPag":          this.headerData.paymentTerms              ?? "",
-      "observacao":       this.headerData.observation ? this.headerData.observation.trim() : "",
-      "vendedor":         localStorage.getItem('sellerId')          ?? "",
-      "situacao":         budgetStatus                              ?? "",
-      "condPagFrete":     this.headerData.freightPaymentTerms       ?? "",
-      "valorFrete":       this.headerData.freightCost               ?? 0,
-      "tipoCarga":        this.headerData.cargoType                 ?? "",
-      "valorDescarga":    this.headerData.unloadingCost             ?? 0,
-      "tipoFrete":        this.headerData.freightType               ?? "",
-      "cargaMaxima":      this.headerData.maxLoad                   ?? 0,
-      "paletizacao10x1":  this.headerData.palletPattern10x1         ?? 150,
-      "paletizacao30x1":  this.headerData.palletPattern30x1         ?? 50,
-      "paletizacao25kg":  this.headerData.palletPattern25kg         ?? 50,
-      "tipoVeiculo":      this.headerData.transportationMode        ?? "",
-      "estadoDestino":    this.headerData.destinationState          ?? "",
-      "cidadeDestino":    this.headerData.destinationCity           ?? "",
-      "custoSobrepeso":   this.overweightCost                       ?? 0,
-      "responsavelFrete": this.headerData.freightResponsible        ? "1" : "0",
-      "itens":            this.rows.map((item: any) => ({
-        "item":           item.item                 ?? "",
-        "produto":        item.productId            ?? "",
-        "quantidade":     item.amount               ?? 0,
-        "precoFOB":       item.fobBasePrice         ?? 0,
-        "precoUnitario":  item.unitPrice            ?? 0,
-        "comissao":       item.comissionPercentage  ?? 0,
-        "tes":            item.tes                  ?? "",
+    const loadingLocation = this.headerData.loadingLocation ?? '01010001';
+    const budgetStatus = loadingLocation === '01010001' ? 'CP' : 'PP';
+    const body = {    
+      "filial":               this.headerData.loadingLocation           ?? "",
+      "orcamento":            this.headerData.budgetId                  ?? "",
+      "cliente":              this.headerData.customerId.substring(0,6) ?? "",
+      "lojaCliente":          this.headerData.customerId.slice(-2)      ?? "",
+      "condPag":              this.headerData.paymentTerms              ?? "",
+      "observacao":           this.headerData.observation ? this.headerData.observation.trim() : "",
+      "vendedor":             localStorage.getItem('sellerId')          ?? "",
+      "situacao":             budgetStatus                              ?? "",
+      "condPagFrete":         this.headerData.freightPaymentTerms       ?? "",
+      "valorFrete":           this.headerData.freightCost               ?? 0,
+      "tipoCarga":            this.headerData.cargoType                 ?? "",
+      "valorDescarga":        this.headerData.unloadingCost             ?? 0,
+      "tipoFrete":            this.headerData.freightType               ?? "",
+      "cargaMaxima":          this.headerData.maxLoad                   ?? 0,
+      "paletizacao10x1":      this.headerData.palletPattern10x1         ?? 150,
+      "paletizacao30x1":      this.headerData.palletPattern30x1         ?? 50,
+      "paletizacao25kg":      this.headerData.palletPattern25kg         ?? 50,
+      "tipoVeiculo":          this.headerData.transportationMode        ?? "",
+      "estadoDestino":        this.headerData.destinationState          ?? "",
+      "cidadeDestino":        this.headerData.destinationCity           ?? "",
+      "custoSobrepeso":       this.overweightCost                       ?? 0,
+      "descontoFinanceiro":   this.headerData.financialDiscount         ?? 0,
+      "responsavelFrete":     this.headerData.freightResponsible        ? "1" : "0",
+      "itens":                this.rows.map((item: any) => ({
+        "item":               item.item                 ?? "",
+        "produto":            item.productId            ?? "",
+        "quantidade":         item.amount               ?? 0,
+        "precoFOB":           item.fobBasePrice         ?? 0,
+        "precoUnitario":      item.unitPrice            ?? 0,
+        "comissao":           item.comissionPercentage  ?? 0,
+        "tes":                item.tes                  ?? "",
       }))
     };
     try {
       if (!this.headerData.budgetId) {
-        const res = await firstValueFrom( this.api.post('portal-do-representante/orcamentos/incluir/', body));
+        const res = await firstValueFrom( this.api.post('portal-do-representante/orcamentos/incluir/', body, loadingLocation));
         return res;
       } else {
-        const res = await firstValueFrom( this.api.put('portal-do-representante/orcamentos/alterar/', body));
+        const res = await firstValueFrom( this.api.put('portal-do-representante/orcamentos/alterar/', body, loadingLocation));
         return res;
       }
     } catch (error: any) {
@@ -1033,6 +1049,7 @@ export class FormularioComponent {
   }
 
   private async getItemPriceInfo(row: any): Promise<any> {
+    const loadingLocation = this.headerData.loadingLocation ?? '01010001';
     const body = {
       "filial":             this.headerData.loadingLocation           ?? "",
       "orcamento":          this.headerData.budgetId                  ?? "",
@@ -1066,7 +1083,7 @@ export class FormularioComponent {
       "devolucaoPalete":    false,
     };
     try {
-      const res: any = await firstValueFrom( this.api.post('portal-do-representante/precificacao/produto/', body));
+      const res: any = await firstValueFrom( this.api.post('portal-do-representante/precificacao/produto/', body, loadingLocation));
       if (!res.success) {
         this.poNotification.error('Item ' + row.item + ' - ' + res.message + ': ' + res.fix);
         return null;
@@ -1076,8 +1093,8 @@ export class FormularioComponent {
         unitPrice: res.precoUnitario,
         comissionPercentage: res.comissao,
         totalPrice: res.precoUnitario * row.amount,
-        comissionUnitValue: res.precoUnitario * (res.comissao / 100),
-        comissionTotalValue: res.precoUnitario * (res.comissao / 100) * row.amount,
+        comissionUnitValue: res.precoUnitario * (1-this.headerData.financialDiscount/100) * (res.comissao / 100),
+        comissionTotalValue: res.precoUnitario * (1-this.headerData.financialDiscount/100) * (res.comissao / 100) * row.amount,
       }
     } catch (error: any) {
       this.poNotification.error('Item ' + row.item + ' - ' + 'Erro ao consultar precificação: ' + error.message);
@@ -1252,10 +1269,11 @@ export class FormularioComponent {
       return {
         value: { budgetStatus: newBudgetStatus},
         fields: [
-          { property: 'loadingLocation',  readonly: true },
-          { property: 'customerId',       disabled: false },
-          { property: 'paymentTerms',     disabled: false },
-          { property: 'observation',      readonly: false },
+          { property: 'loadingLocation',    disabled: true },
+          { property: 'customerId',         disabled: false },
+          { property: 'paymentTerms',       disabled: false },
+          { property: 'observation',        disabled: false },
+          { property: 'financialDiscount',  disabled: false },
         ],
       }
     } else if (changedValue.property === 'customerId' && !this.isCopyMode()) {
@@ -1280,15 +1298,18 @@ export class FormularioComponent {
   public onChangeFreightFields(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
     this.formatNumericHeaderValues();
     if (changedValue.property === 'freightType') {
+      if (this.headerData.freightType === 'C') {
+        this.updateFreightCost()
+      }
       return {
         fields: [
           { property: 'freightPaymentTerms',  disabled: false, required: changedValue.value.freightType === 'C' },
-          { property: 'cargoType',            readonly: false, required: changedValue.value.freightType === 'C' },
-          { property: 'unloadingCost',        readonly: false },
-          { property: 'transportationMode',   readonly: this.headerData.loadingLocation !== '01010001', required: changedValue.value.freightType === 'C' },
-          { property: 'maxLoad',              readonly: false, required: changedValue.value.freightType === 'C' },
+          { property: 'cargoType',            disabled: false, required: changedValue.value.freightType === 'C' },
+          { property: 'unloadingCost',        disabled: false },
+          { property: 'transportationMode',   disabled: this.headerData.loadingLocation !== '01010001', required: changedValue.value.freightType === 'C' },
+          { property: 'maxLoad',              disabled: false, required: changedValue.value.freightType === 'C' },
           { property: 'freightResponsible',   disabled: false },
-          { property: 'destinationState',     readonly: false },
+          { property: 'destinationState',     disabled: false },
           { property: 'destinationCity',      disabled: false, required: changedValue.value.freightType === 'C' },
         ],
         value: {
@@ -1302,9 +1323,9 @@ export class FormularioComponent {
     } else if (changedValue.property === 'cargoType') {
       return {
         fields: [
-          { property: 'palletPattern10x1',    readonly: this.headerData.cargoType === 'BT' },
-          { property: 'palletPattern30x1',    readonly: this.headerData.cargoType === 'BT' },
-          { property: 'palletPattern25kg',    readonly: this.headerData.cargoType === 'BT' },
+          { property: 'palletPattern10x1',    disabled: this.headerData.cargoType === 'BT' },
+          { property: 'palletPattern30x1',    disabled: this.headerData.cargoType === 'BT' },
+          { property: 'palletPattern25kg',    disabled: this.headerData.cargoType === 'BT' },
         ],
       }
     } else if (changedValue.property === 'palletPattern10x1' || changedValue.property === 'palletPattern30x1' || changedValue.property === 'palletPattern25kg') {
@@ -1321,10 +1342,10 @@ export class FormularioComponent {
       }
       return {
         fields: [
-          { property: 'freightCost',        readonly: !this.headerData.freightResponsible },
+          { property: 'freightCost',        disabled: !this.headerData.freightResponsible },
           { property: 'containerType',      visible:  this.headerData.transportationMode === 'M' },
-          { property: 'maxLoad',            readonly: this.headerData.transportationMode === 'M' },
-          { property: 'transportationMode', readonly: this.headerData.loadingLocation !== '01010001' },
+          { property: 'maxLoad',            disabled: this.headerData.transportationMode === 'M' },
+          { property: 'transportationMode', disabled: this.headerData.loadingLocation !== '01010001' },
         ],
         value: {
           transportationMode: this.headerData.loadingLocation !== '01010001' ? 'R' : this.headerData.transportationMode ?? 'R',
@@ -1364,8 +1385,8 @@ export class FormularioComponent {
       return {
         value: {
           totalPrice:           Math.abs(this.rowData.unitPrice*this.rowData.amount),
-          comissionUnitValue:   Math.abs(this.rowData.unitPrice*(this.rowData.comissionPercentage/100)),
-          comissionTotalValue:  Math.abs(this.rowData.unitPrice*this.rowData.amount*(this.rowData.comissionPercentage/100)),
+          comissionUnitValue:   Math.abs(this.rowData.unitPrice*(1-this.headerData.financialDiscount/100)*(this.rowData.comissionPercentage/100)),
+          comissionTotalValue:  Math.abs(this.rowData.unitPrice*(1-this.headerData.financialDiscount/100)*this.rowData.amount*(this.rowData.comissionPercentage/100)),
         }
       }
     } else {
@@ -1375,7 +1396,7 @@ export class FormularioComponent {
 
   private async loadBudgetData(location: string, budgetId: string): Promise<any> {
     try {
-      const res: any = await firstValueFrom(this.api.get('portal-do-representante/orcamentos/dados?loadingLocation='+location+'&budget='+budgetId));
+      const res: any = await firstValueFrom(this.api.get('portal-do-representante/orcamentos/dados?loadingLocation='+location+'&budget='+budgetId, location));
       if (res) {
         this.headerData = {
           loadingLocation:      !this.isCopyMode() ? res.filial : '',
@@ -1397,6 +1418,7 @@ export class FormularioComponent {
           freightResponsible:   res.responsavelFrete      ?? false,
           destinationState:     res.estadoDestino         ?? '',
           destinationCity:      res.cidadeDestino         ?? '',
+          financialDiscount:    res.descontoFinanceiro    ?? 0,
         };
         if (!this.isCopyMode()) {
           this.rows = res.itens.map((item: any) => ({
@@ -1410,8 +1432,8 @@ export class FormularioComponent {
             totalPrice:           item.valorTotal,
             tes:                  item.tes,
             comissionPercentage:  item.comissao,
-            comissionUnitValue:   item.valorUnitario * item.comissao / 100,
-            comissionTotalValue:  item.valorTotal * item.comissao / 100,
+            comissionUnitValue:   item.valorUnitario * (1-res.descontoFinanceiro/100) * item.comissao / 100,
+            comissionTotalValue:  item.valorTotal * (1-res.descontoFinanceiro/100) * item.comissao / 100,
             productNetWeight:     item.pesoNeto,
             productGrossWeight:   item.pesoBruto,
             packagingFormat:      item.formatoEmbalagem,
@@ -1428,8 +1450,8 @@ export class FormularioComponent {
             totalPrice:           item.valorTotal,
             tes:                  item.tes,
             comissionPercentage:  item.comissao,
-            comissionUnitValue:   item.valorUnitario * item.comissao / 100,
-            comissionTotalValue:  item.valorTotal * item.comissao / 100,
+            comissionUnitValue:   item.valorUnitario * (1-res.descontoFinanceiro/100) * item.comissao / 100,
+            comissionTotalValue:  item.valorTotal * (1-res.descontoFinanceiro/100) * item.comissao / 100,
             productNetWeight:     item.pesoNeto,
             productGrossWeight:   item.pesoBruto,
             packagingFormat:      item.formatoEmbalagem,
@@ -1448,8 +1470,9 @@ export class FormularioComponent {
 
   private async fillProductData(codigoProduto: string): Promise<any> {
     this.confirmRow.loading = true;
+    const loadingLocation = this.headerData.loadingLocation ?? '01010001';
     try {
-      const res: any = await firstValueFrom(this.api.get('portal-do-representante/produtos/'+codigoProduto));
+      const res: any = await firstValueFrom(this.api.get('portal-do-representante/produtos/'+codigoProduto, loadingLocation));
       if (res) {
         this.rowData.productDescription = res.descricao;
         this.rowData.packagingType = res.unidade;
@@ -1487,7 +1510,6 @@ export class FormularioComponent {
       if (field.property === 'freightCost') {
         return {
           ...field,
-          readonly: !this.headerData.freightResponsible,
           disabled: !this.headerData.freightResponsible,
         }
       }
@@ -1495,7 +1517,6 @@ export class FormularioComponent {
         return {
           ...field,
           visible: this.headerData.transportationMode === 'M',
-          readonly: !this.headerData.freightResponsible,
           disabled: !this.headerData.freightResponsible,
         }
       }
@@ -1508,7 +1529,7 @@ export class FormularioComponent {
       if (column.property === 'fobBasePrice') {
         return {
           ...column,
-          readonly: !this.isQuotationBranch,
+          disabled: !this.isQuotationBranch,
           visible:  this.isQuotationBranch,
           required: this.isQuotationBranch,
         }
@@ -1522,7 +1543,9 @@ export class FormularioComponent {
 
   private loadDefaultData(): void {
     this.headerData = {
+      customerId:           '',
       paymentTerms:         '001',
+      financialDiscount:    0,
       freightPaymentTerms:  '001',
       cargoType:            'BT',
       freightCost:          0,
@@ -1672,13 +1695,13 @@ export class FormularioComponent {
       return;
     }
     try {
-      const res: any = await firstValueFrom(this.api.post(`portal-do-representante/frete/valor/` + transportationMode, body));
+      const res: any = await firstValueFrom(this.api.post(`portal-do-representante/frete/valor/` + transportationMode, body, loadingLocation));
       if (res.success) {
         if (this.headerData.freightCost !== res.valorFrete) {
           this.headerData.freightCost = res.valorFrete;
-          if (!silent) {
-            this.poNotification.success('Custo de frete atualizado.');
-          }
+          //if (!silent) {
+          //  this.poNotification.success('Custo de frete atualizado.');
+          //}
         }
         if (this.headerData.transportationMode === 'M') {
           this.headerData.maxLoad = res.pesoMaximo ?? this.headerData.maxLoad;

@@ -128,7 +128,7 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       maxLength: 18,
       gridColumns: 3,
@@ -141,7 +141,7 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: true,
+      disabled: true,
       noAutocomplete: true,
       maxLength: 60,
       gridColumns: 5,
@@ -153,7 +153,7 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: true,
+      disabled: true,
       noAutocomplete: true,
       maxLength: 35,
       gridColumns: 4,
@@ -165,7 +165,7 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       gridColumns: 2,
       booleanTrue: 'Sim',
@@ -178,7 +178,7 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       maxLength: 18,
       gridColumns: 3,
@@ -190,7 +190,7 @@ export class OrcamentosComponent {
       visible: false,
       required: true,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       gridColumns: 2,
       booleanTrue: 'Sim',
@@ -203,7 +203,7 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       maxLength: 40,
       gridColumns: 6,
@@ -214,7 +214,7 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       maxLength: 2,
       gridColumns: 1,
@@ -229,7 +229,6 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: false,
       disabled: true,
       noAutocomplete: true,
       maxLength: 60,
@@ -251,7 +250,7 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       maxLength: 30,
       gridColumns: 3,
@@ -263,7 +262,7 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       maxLength: 9,
       gridColumns: 2,
@@ -276,7 +275,7 @@ export class OrcamentosComponent {
       visible: true,
       required: false,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       maxLength: 50,
       gridColumns: 4,
@@ -288,7 +287,7 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       maxLength: 2,
       gridColumns: 1,
@@ -300,7 +299,7 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       maxLength: 9,
       gridColumns: 2,
@@ -312,7 +311,7 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       maxLength: 100,
       gridColumns: 3,
@@ -324,7 +323,7 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       maxLength: 2,
       gridColumns: 3,
@@ -354,7 +353,7 @@ export class OrcamentosComponent {
       visible: true,
       required: true,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       maxLength: 1,
       gridColumns: 3,
@@ -374,7 +373,7 @@ export class OrcamentosComponent {
       visible: true,
       required: false,
       showRequired: false,
-      readonly: false,
+      disabled: false,
       noAutocomplete: true,
       maxLength: 100,
       gridColumns: 12,
@@ -600,7 +599,7 @@ export class OrcamentosComponent {
     const budget = item.budget;
     const body = { filial: loadingLocationId, orcamento: budget }
     try {
-      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/cotacao/aprovar', body));
+      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/cotacao/aprovar', body, loadingLocationId));
       if (res.success) {
         this.poNotification.success('Cotação aprovada com sucesso!');
         this.items = await this.getItems();
@@ -621,7 +620,7 @@ export class OrcamentosComponent {
     const budget = item.budget;
     const body = { filial: loadingLocationId, orcamento: budget }
     try {
-      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/cotacao/rejeitar', body));
+      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/cotacao/rejeitar', body, loadingLocationId));
       if (res.success) {
         this.poNotification.success('Cotação rejeitada com sucesso!');
         this.items = await this.getItems();
@@ -643,7 +642,7 @@ export class OrcamentosComponent {
     const budget = item.budget;
     const body = { filial: loadingLocationId, orcamento: budget }
     try {
-      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/pre-pedido/aprovar', body));
+      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/pre-pedido/aprovar', body, loadingLocationId));
       if (res.success) {
         this.poNotification.success('Pré pedido enviado para aprovação com sucesso!');
         this.items = await this.getItems();
@@ -675,7 +674,7 @@ export class OrcamentosComponent {
       this.customerModalFields
       return {
         fields: [
-          { property: 'ie', required: this.customerModalData.hasIe, readonly: !this.customerModalData.hasIe },
+          { property: 'ie', required: this.customerModalData.hasIe, disabled: !this.customerModalData.hasIe },
         ],
         value: {
           ie: this.customerModalData.hasIe ? this.customerModalData.ie : '',
