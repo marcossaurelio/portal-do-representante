@@ -40,7 +40,7 @@ export class ApiService {
     return this.http.put<T>(`${this.baseUrl}/${endpoint}`, body, options);
   }
 
-  delete<T>(endpoint: string, tenantId: string, options: {
+  delete<T>(endpoint: string, tenantId: string = '01010001', options: {
     headers?: { [header: string]: string | string[] },
     params?: HttpParams | { [param: string]: string | number | boolean | ReadonlyArray<string | number | boolean> }
   } = {}): Observable<T> {
