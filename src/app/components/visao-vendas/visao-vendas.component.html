@@ -1,1 +1,20 @@
-<p>visao-vendas works!</p>
+<po-page-default
+p-title="Visão Geral de Vendas">
+
+    <div class="po-row">
+
+        <po-chart
+        class="po-md-12"
+        [p-title]="sellingEvolution.title"
+        [p-options]="sellingEvolution.options"
+        [p-categories]="sellingEvolution.categories"
+        [p-series]="sellingEvolution.series"
+        [p-type]="sellingEvolution.type"
+        [p-data-label]="sellingEvolution.dataLabel"
+        >
+        </po-chart>
+    
+    </div>
+
+</po-page-default>
+<po-loading-overlay [hidden]="isHideLoading" [p-text]="loadingText" ></po-loading-overlay>
