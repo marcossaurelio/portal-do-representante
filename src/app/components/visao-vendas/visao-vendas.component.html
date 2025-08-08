@@ -3,18 +3,69 @@ p-title="Visão Geral de Vendas">
 
     <div class="po-row">
 
+        <po-datepicker-range
+        class="po-xl-10 po-lg-10 po-md-10 po-sm-10"
+        p-label="Período base"
+        [p-no-autocomplete]="true"
+        p-size="small"
+        (p-change)="onChangeDate($event)"
+        [p-max-date]="today"
+        [p-start-date]="startDate"
+        [p-end-date]="endDate"
+        [p-clean]="true"
+        >
+        </po-datepicker-range>
+        
+        <po-button
+        style="margin-top: 31px;"
+        class="po-xl-2 po-lg-2 po-md-2 po-sm-2"
+        p-label="Atualizar"
+        p-icon="an an-arrows-clockwise"
+        p-kind="secondary"
+        >
+        </po-button>
+
+    </div>
+
+    <div class="po-row">
+
         <po-chart
-        class="po-md-12"
+        class="po-xl-12"
         [p-title]="sellingEvolution.title"
         [p-options]="sellingEvolution.options"
         [p-categories]="sellingEvolution.categories"
         [p-series]="sellingEvolution.series"
         [p-type]="sellingEvolution.type"
         [p-data-label]="sellingEvolution.dataLabel"
+        [p-height]="325"
+        [p-custom-actions]="sellingEvolution.customActions"
         >
         </po-chart>
     
     </div>
+
+    <div class="po-row">
+
+        <po-chart
+        class="po-xl-6"
+        [p-title]="sellingByProduct.title"
+        [p-options]="sellingByProduct.options"
+        [p-series]="sellingByProduct.series"
+        >
+        </po-chart>
+
+        <po-chart
+        class="po-xl-6"
+        [p-title]="sellingByCustomer.title"
+        [p-options]="sellingByCustomer.options"
+        [p-series]="sellingByCustomer.series"
+        >
+        </po-chart>
+
+    </div>
+
+    <br>
+    <br>
 
 </po-page-default>
 <po-loading-overlay [hidden]="isHideLoading" [p-text]="loadingText" ></po-loading-overlay>
