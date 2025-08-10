@@ -43,7 +43,7 @@ export class VisaoVendasComponent {
       legend: true,
     },
     dataLabel: { fixed: false },
-    categories: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+    categories: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
     series: [
       { label: '2024', data: [0, 32000, 28000, 35000, 40000.35, 32000, 38000, 42000, 45000, 48000, 50000, 52000] },
       { label: '2025', data: [45000, 30000, 25000, 30000, 35000, 37000, 35000, 40000, 42000, 45000, 47000, 49000] } 
@@ -54,7 +54,7 @@ export class VisaoVendasComponent {
     ]
   }
   public sellingByProduct: any = {
-    title: 'Faturamento Top Produtos (R$)',
+    title: 'Faturamento por Produto (R$)',
     options: {
       roseType: true,
       borderRadius: 8,
@@ -62,7 +62,7 @@ export class VisaoVendasComponent {
     },
     series: [
       { label: 'SAL REFINADO IODADO 30X1KG - ITA'.slice(13,33),         data: 2500.10,  tooltip: 'SAL REFINADO IODADO 30X1KG - ITA' },
-      { label: 'SAL REFINADO IODADO 30X1KG - DUNORTE'.slice(13,33),     data: 2135.99,  tooltip: 'SAL REFINADO IODADO 30X1KG - DUNORTE' },
+      { label: 'SAL REFINADO IODADO 30X1KG - DUNORTE'.slice(13,33),     data: 2435.99,  tooltip: 'SAL REFINADO IODADO 30X1KG - DUNORTE' },
       { label: 'SAL REFINADO IODADO 30X1KG - PEREIRA'.slice(13,33),     data: 1894.57,  tooltip: 'SAL REFINADO IODADO 30X1KG - PEREIRA' },
       { label: 'SAL REFINADO IODADO 10X1KG - DUNORTE'.slice(13,33),     data: 1554.50,  tooltip: 'SAL REFINADO IODADO 10X1KG - DUNORTE' },
       { label: 'SAL REFINADO IODADO 10X1KG - ITA'.slice(13,33),         data: 1334.35,  tooltip: 'SAL REFINADO IODADO 10X1KG - ITA' },
@@ -73,12 +73,12 @@ export class VisaoVendasComponent {
       { label: 'Outros',                                                data: 1500.65,   tooltip: 'Outros', color: 'gray'},
     ]
   };
-
   public sellingByCustomer: any = {
-    title: 'Faturamento Top Clientes (R$)',
+    title: 'Faturamento por Cliente (R$)',
     options: {
       roseType: true,
       borderRadius: 8,
+      legend: true,
     },
     series: [
       { label: 'M C SERVICOS TECNOLOGIA'.slice(0,20),                       data: 8750.10,  tooltip: 'M C SERVICOS TECNOLOGIA' },
@@ -86,11 +86,32 @@ export class VisaoVendasComponent {
       { label: 'JW SANTOS E BARRETO MINIMERCADO UMUARAMA LTDA'.slice(0,20), data: 6752.57,  tooltip: 'JW SANTOS E BARRETO MINIMERCADO UMUARAMA LTDA' },
       { label: 'SERV SAL LTDA'.slice(0,20),                                 data: 6500.50,  tooltip: 'SERV SAL LTDA' },
       { label: 'PFM COMERCIAL LTDA'.slice(0,20),                            data: 6200.35,  tooltip: 'PFM COMERCIAL LTDA' },
-      { label: 'MCONSULT LTDA'.slice(0,20),                                 data: 4500.35,  tooltip: 'MCONSULT LTDA' },
-      { label: 'EMPRESA COMERCIAL LTDA'.slice(0,20),                        data: 4200.35,  tooltip: 'EMPRESA COMERCIAL LTDA' },
-      { label: 'EXEMPLO SA SAIS IODADOS LTDA'.slice(0,20),                  data: 4000.35,  tooltip: 'EXEMPLO SA SAIS IODADOS LTDA' },
+      { label: 'MCONSULT LTDA'.slice(0,20),                                 data: 5757.35,  tooltip: 'MCONSULT LTDA' },
+      { label: 'EMPRESA COMERCIAL LTDA'.slice(0,20),                        data: 5274.35,  tooltip: 'EMPRESA COMERCIAL LTDA' },
+      { label: 'EXEMPLO SA SAIS IODADOS LTDA'.slice(0,20),                  data: 4567.35,  tooltip: 'EXEMPLO SA SAIS IODADOS LTDA' },
       { label: 'ULTIMA SAIS LTDA'.slice(0,20),                              data: 3954.35,  tooltip: 'ULTIMA SAIS LTDA' },
       { label: 'Outros',                                                    data: 3542.65,   tooltip: 'Outros', color: 'gray'},
+    ]
+  };
+
+  public sellingByCustomerCategory: any = {
+    title: 'Faturamento por Categoria de Clientes (R$)',
+    options: {
+      roseType: true,
+      borderRadius: 8,
+      legend: true,
+    },
+    series: [
+      { label: 'Distribuidor',            data: 2500.10,  tooltip: 'Distribuidor'           },
+      { label: 'Atacado',                 data: 1999.99,  tooltip: 'Atacado'                },
+      { label: 'Varejo',                  data: 1654.57,  tooltip: 'Varejo'                 },
+      { label: 'Atacarejo',               data: 1554.50,  tooltip: 'Atacarejo'              },
+      { label: 'Cesta Básica',            data: 1334.35,  tooltip: 'Cesta Básica'           },
+      { label: 'Food Service',            data: 1300.35,  tooltip: 'Food Service'           },
+      { label: 'Indústria de Alimentos',  data: 1235.35,  tooltip: 'Indústria de Alimentos' },
+      { label: 'Indústria Têxtil',        data: 1212.35,  tooltip: 'Indústria Têxtil'       },
+      { label: 'Indústria de Limpeza',    data: 1199.35,  tooltip: 'Indústria de Limpeza'   },
+      { label: 'Outros',                  data: 1001.45,  tooltip: 'Outros', color: 'gray'},
     ]
   };
 

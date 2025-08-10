@@ -48,7 +48,7 @@ export class LoginComponent {
           localStorage.setItem('userName', this.capitalizeName(res.userName));
           localStorage.setItem('sellerId', res.sellerId);
           this.router.navigate(['/','home'])
-          this.poNotification.success(res.message);
+          this.poNotification.success('Usuário autenticado com sucesso.');
         } else {
           this.poNotification.error('Erro ao realizar o login: ' + res.message)
         }

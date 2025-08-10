@@ -64,6 +64,18 @@ p-title="Visão Geral de Vendas">
 
     </div>
 
+    <div class="po-row">
+
+        <po-chart
+        class="po-xl-6"
+        [p-title]="sellingByCustomerCategory.title"
+        [p-options]="sellingByCustomerCategory.options"
+        [p-series]="sellingByCustomerCategory.series"
+        >
+        </po-chart>
+
+    </div>
+
     <br>
     <br>
 
