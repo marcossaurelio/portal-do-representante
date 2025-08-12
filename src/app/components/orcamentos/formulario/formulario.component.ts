@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule } from '@po-ui/ng-components';
+import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoDatepickerModule } from '@po-ui/ng-components';
 import { PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent } from '@po-ui/ng-components';
 import { PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged, PoInfoModule } from '@po-ui/ng-components';
 import { PoInfoOrientation, PoTableComponent, PoDividerModule, PoTagModule, PoTagType, PoLookupFilteredItemsParams } from '@po-ui/ng-components';
@@ -26,7 +26,8 @@ import { firstValueFrom, Observable } from 'rxjs';
     PoInfoModule,
     PoDividerModule,
     PoTagModule,
-  ],
+    PoDatepickerModule
+],
   templateUrl: './formulario.component.html',
   styleUrl: './formulario.component.css'
 })
@@ -49,7 +50,7 @@ export class FormularioComponent {
   public loadingText: string = 'Carregando';
   public formTitle: string = 'Orçamentos'
   public validateHeaderFields: Array<string> = ['loadingLocation','customerId','budgetId','paymentTerms'];
-  public validateFreightFields: Array<string> = ['freightType','maxLoad','palletPattern10x1','palletPattern30x1','palletPattern25kg','freightCost','freightResponsible','cargoType','transportationMode','freightPaymentTerms','destinationState','destinationCity'];
+  public validateFreightFields: Array<string> = ['freightType','maxLoad','palletPattern10x1','palletPattern30x1','palletPattern25kg','freightCost','freightResponsible','cargoType','transportationMode','freightPaymentTerms','destinationState','destinationCity','unloadingCost','unloadingType'];
   public validateFieldsRow: Array<string> = ['productId','comissionPercentage','fobBasePrice','unitPrice','amount'];
   public fields: Array<PoDynamicFormField> = [];
   public generalDataFields: Array<PoDynamicFormField> = [];
@@ -293,7 +294,7 @@ export class FormularioComponent {
       },
       {
         property: 'paymentTerms',
-        label: 'Cond. Pag.',
+        label: 'Cond. Pag. Produtos',
         visible: true,
         required: true,
         showRequired: true,
@@ -457,6 +458,20 @@ export class FormularioComponent {
         order: 2,
       },
       {
+        property: 'customerVehicle',
+        label: 'Veículo Próprio?',
+        visible: true,
+        required: false,
+        showRequired: false,
+        noAutocomplete: true,
+        disabled: this.isViewMode() || this.isAddMode(),
+        type: 'boolean',
+        booleanTrue: 'Sim',
+        booleanFalse: 'Não',
+        gridColumns: 2,
+        order: 2
+      },
+      {
         property: 'maxLoad',
         label: 'Carga Máxima (kg)',
         visible: true,
@@ -471,10 +486,32 @@ export class FormularioComponent {
         order: 2
       },
       {
+        property: 'unloadingType',
+        label: 'Tipo Descarga',
+        visible: true,
+        required: true,
+        showRequired: false,
+        disabled: this.isViewMode() || this.isAddMode(),
+        noAutocomplete: true,
+        minLength: 1,
+        maxLength: 1,
+        gridColumns: 4,
+        options: [
+          { unloadingType: 'Por conta do cliente' ,                 code: 'C' },
+          { unloadingType: 'Por conta do cliente' ,                 code: 'C' },
+          { unloadingType: 'Por conta do motorista (Leva Chapas)',  code: 'L' },
+          { unloadingType: 'Por conta do motorista (Paga Taxa)',    code: 'P' },
+        ],
+        type: 'string',
+        fieldValue: 'code',
+        fieldLabel: 'unloadingType',
+        order: 2,
+      },
+      {
         property: 'unloadingCost',
         label: 'Vlr. Descarga (R$/Ton)',
         visible: true,
-        required: false,
+        required: true,
         showRequired: false,
         disabled: this.isViewMode() || this.isAddMode(),
         noAutocomplete: true,
@@ -1012,6 +1049,7 @@ export class FormularioComponent {
       "condPagFrete":         this.headerData.freightPaymentTerms       ?? "",
       "valorFrete":           this.headerData.freightCost               ?? 0,
       "tipoCarga":            this.headerData.cargoType                 ?? "",
+      "tipoDescarga":         this.headerData.unloadingType             ?? "",
       "valorDescarga":        this.headerData.unloadingCost             ?? 0,
       "tipoFrete":            this.headerData.freightType               ?? "",
       "cargaMaxima":          this.headerData.maxLoad                   ?? 0,
@@ -1024,6 +1062,7 @@ export class FormularioComponent {
       "custoSobrepeso":       this.overweightCost                       ?? 0,
       "descontoFinanceiro":   this.headerData.financialDiscount         ?? 0,
       "responsavelFrete":     this.headerData.freightResponsible        ? "1" : "0",
+      "veiculoProprio":       this.headerData.customerVehicle           ? "S" : "N",
       "itens":                this.rows.map((item: any) => ({
         "item":               item.item                 ?? "",
         "produto":            item.productId            ?? "",
@@ -1061,11 +1100,13 @@ export class FormularioComponent {
       "condPagFrete":       this.headerData.freightPaymentTerms       ?? "",
       "valorFreteBase":     this.headerData.freightCost               ?? 0,
       "tipoCarga":          this.headerData.cargoType                 ?? "",
+      "tipoDescarga":       this.headerData.unloadingType             ?? "",
       "valorDescarga":      this.headerData.unloadingCost             ?? 0,
       "tipoFrete":          this.headerData.freightType               ?? "",
       "cargaMaxima":        this.headerData.maxLoad                   ?? 0,
       "tipoVeiculo":        this.headerData.transportationMode        ?? "",
       "responsavelFrete":   this.headerData.freightResponsible        ?? false,
+      "veiculoProprio":     this.headerData.customerVehicle           ?? false,
       "categoriaCliente":   this.headerData.customerCategory          ?? "", 
       "estadoDestino":      this.headerData.destinationState          ?? "",
       "cidadeDestino":      this.headerData.destinationCity           ?? "",
@@ -1264,9 +1305,10 @@ export class FormularioComponent {
   }
 
   public onChangeHeaderFields(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
+    let validation: PoDynamicFormValidation = {};
     if (changedValue.property === 'loadingLocation') {
       const newBudgetStatus = changedValue.value.loadingLocation === '01010001' ? 'CP' : 'PP';
-      return {
+      validation = {
         value: { budgetStatus: newBudgetStatus},
         fields: [
           { property: 'loadingLocation',    disabled: true },
@@ -1281,7 +1323,7 @@ export class FormularioComponent {
         this.headerData.customerIdDisabled = this.headerData.customerId;
         this.fillCustomerData();
       }, 0);
-      return {
+      validation = {
         fields: [
           { property: 'customerId',  visible: false },
           { property: 'customerIdDisabled',  visible: true },
@@ -1289,28 +1331,30 @@ export class FormularioComponent {
       }
     } else if (changedValue.property === 'paymentTerms') {
       //this.budgetPaymentDueDays = this.getDueDaysByPaymentTerms(changedValue.value.paymentTerms) ?? this.budgetPaymentDueDays;
-      return {}
-    } else {
-      return {}
+      validation = {}
     }
+    return validation;
   };
 
   public onChangeFreightFields(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
+    let validation: PoDynamicFormValidation = {};
     this.formatNumericHeaderValues();
     if (changedValue.property === 'freightType') {
       if (this.headerData.freightType === 'C') {
         this.updateFreightCost()
       }
-      return {
+      validation = {
         fields: [
           { property: 'freightPaymentTerms',  disabled: false, required: changedValue.value.freightType === 'C' },
           { property: 'cargoType',            disabled: false, required: changedValue.value.freightType === 'C' },
           { property: 'unloadingCost',        disabled: false },
-          { property: 'transportationMode',   disabled: this.headerData.loadingLocation !== '01010001', required: changedValue.value.freightType === 'C' },
+          { property: 'transportationMode',   disabled: this.headerData.loadingLocation !== '01010001' || !this.headerData.freightType, required: changedValue.value.freightType === 'C' },
           { property: 'maxLoad',              disabled: false, required: changedValue.value.freightType === 'C' },
           { property: 'freightResponsible',   disabled: false },
           { property: 'destinationState',     disabled: false },
           { property: 'destinationCity',      disabled: false, required: changedValue.value.freightType === 'C' },
+          { property: 'unloadingType',        disabled: false },
+          { property: 'customerVehicle',      disabled: changedValue.value.freightType === 'C' },
         ],
         value: {
           palletPattern10x1: this.headerData.palletPattern10x1 ?? 150,
@@ -1318,10 +1362,11 @@ export class FormularioComponent {
           palletPattern25kg: this.headerData.palletPattern25kg ?? 50,
           freightCost: this.headerData.freightType === 'F' ? 0 : this.headerData.freightCost ?? 0,
           transportationMode: this.headerData.loadingLocation !== '01010001' ? 'R' : this.headerData.transportationMode ?? 'R',
+          customerVehicle: changedValue.value.freightType === 'C' ? false : this.headerData.customerVehicle ?? false,
         }
       }
     } else if (changedValue.property === 'cargoType') {
-      return {
+      validation = {
         fields: [
           { property: 'palletPattern10x1',    disabled: this.headerData.cargoType === 'BT' },
           { property: 'palletPattern30x1',    disabled: this.headerData.cargoType === 'BT' },
@@ -1329,7 +1374,7 @@ export class FormularioComponent {
         ],
       }
     } else if (changedValue.property === 'palletPattern10x1' || changedValue.property === 'palletPattern30x1' || changedValue.property === 'palletPattern25kg') {
-      return {
+      validation = {
         value: {
           palletPattern10x1: this.headerData.palletPattern10x1 !== 0 ? this.headerData.palletPattern10x1 : 150,
           palletPattern30x1: this.headerData.palletPattern30x1 !== 0 ? this.headerData.palletPattern30x1 : 50,
@@ -1340,37 +1385,45 @@ export class FormularioComponent {
       if (!!this.headerData.destinationState && !!this.headerData.destinationCity) {
         this.updateFreightCost();
       }
-      return {
+      validation = {
         fields: [
           { property: 'freightCost',        disabled: !this.headerData.freightResponsible },
           { property: 'containerType',      visible:  this.headerData.transportationMode === 'M' },
-          { property: 'maxLoad',            disabled: this.headerData.transportationMode === 'M' },
-          { property: 'transportationMode', disabled: this.headerData.loadingLocation !== '01010001' },
+          { property: 'maxLoad',            disabled: this.headerData.transportationMode === 'M' || !this.headerData.freightType },
+          { property: 'transportationMode', disabled: this.headerData.loadingLocation !== '01010001' || !this.headerData.freightType },
         ],
         value: {
           transportationMode: this.headerData.loadingLocation !== '01010001' ? 'R' : this.headerData.transportationMode ?? 'R',
         }
       }
     } else if (changedValue.property === 'destinationState') {
-      return {
+      validation = {
         value: {
           destinationCity: '',
           freightCost: this.headerData.freightType === 'C' && !this.headerData.freightResponsible ? 0 : this.headerData.freightCost ?? 0,
         }
       }
-    } else {
-      return {}
+    } else if (changedValue.property === 'unloadingType') {
+      validation = {
+        fields: [
+          { property: 'unloadingCost',  disabled: this.headerData.unloadingType === 'C'},
+        ],
+        value: {
+          unloadingCost: this.headerData.unloadingType === 'C' ? 0 : null,
+        }
+      }
     }
+    return validation;
   };
 
   public onChangeFieldsRow(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
-    
+    let validation: PoDynamicFormValidation = {};
     if (changedValue.property === 'productId') {
       if (!this.selectedProductId) {
         this.fillProductData(changedValue.value.productId)
-        return {}
+        validation = {}
       } else {
-        return {
+        validation = {
           value: { productId: this.selectedProductId },
         }
       }
@@ -1382,16 +1435,15 @@ export class FormularioComponent {
       } else if (isNaN(Number(changedValue.value.amount))) {
         this.rowData.amount = 0
       }
-      return {
+      validation = {
         value: {
           totalPrice:           Math.abs(this.rowData.unitPrice*this.rowData.amount),
           comissionUnitValue:   Math.abs(this.rowData.unitPrice*(1-this.headerData.financialDiscount/100)*(this.rowData.comissionPercentage/100)),
           comissionTotalValue:  Math.abs(this.rowData.unitPrice*(1-this.headerData.financialDiscount/100)*this.rowData.amount*(this.rowData.comissionPercentage/100)),
         }
       }
-    } else {
-      return {}
     }
+    return validation;
   };
 
   private async loadBudgetData(location: string, budgetId: string): Promise<any> {
@@ -1409,6 +1461,7 @@ export class FormularioComponent {
           freightPaymentTerms:  res.condPagFrete          ?? '',
           freightCost:          res.valorFrete            ?? 0,
           cargoType:            res.tipoCarga             ?? '',
+          unloadingType:        res.tipoDescarga          ?? '',
           unloadingCost:        res.valorDescarga         ?? 0,
           maxLoad:              res.cargaMaxima           ?? 0,
           palletPattern10x1:    res.paletizacao10x1       ?? 150,
@@ -1416,6 +1469,7 @@ export class FormularioComponent {
           palletPattern25kg:    res.paletizacao25kg       ?? 50,
           transportationMode:   res.tipoVeiculo           ?? '',
           freightResponsible:   res.responsavelFrete      ?? false,
+          customerVehicle:      res.veiculoProprio        ?? false,
           destinationState:     res.estadoDestino         ?? '',
           destinationCity:      res.cidadeDestino         ?? '',
           financialDiscount:    res.descontoFinanceiro    ?? 0,
@@ -1549,13 +1603,13 @@ export class FormularioComponent {
       freightPaymentTerms:  '001',
       cargoType:            'BT',
       freightCost:          0,
-      unloadingCost:        0,
       maxLoad:              0,
       palletPattern10x1:    150,
       palletPattern30x1:    50,
       palletPattern25kg:    50,
       transportationMode:   'R',
       freightResponsible:   false,
+      customerVehicle:      false,
     };
     this.rows = [
     {
