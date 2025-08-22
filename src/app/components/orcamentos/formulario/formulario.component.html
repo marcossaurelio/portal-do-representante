@@ -14,7 +14,8 @@
             [p-height]="175"
             [p-no-border]="true"
             [p-no-padding]="true" >
-                <po-dynamic-form [p-fields]="generalDataFields"
+                <po-dynamic-form
+                [p-fields]="generalDataFields"
                 [p-value]="headerData"
                 [p-validate-fields]="this.validateHeaderFields"
                 [p-validate]="this.onChangeHeaderFields.bind(this)" >

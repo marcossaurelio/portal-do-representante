@@ -206,7 +206,7 @@ export class OrcamentosComponent {
       disabled: false,
       noAutocomplete: true,
       maxLength: 40,
-      gridColumns: 6,
+      gridColumns: 5,
     },
     {
       property: 'state',
@@ -217,7 +217,7 @@ export class OrcamentosComponent {
       disabled: false,
       noAutocomplete: true,
       maxLength: 2,
-      gridColumns: 1,
+      gridColumns: 2,
       type: 'string',
       options: this.states,
       fieldValue: 'code',

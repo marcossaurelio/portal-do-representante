@@ -8,6 +8,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
 import { CustomerService } from '../../../services/domain/customer.service';
 import { CityService } from '../../../services/domain/city.service';
+import { FieldsService } from '../../../services/fields.service';
 import { firstValueFrom, Observable } from 'rxjs';
 
 @Component({
@@ -33,7 +34,7 @@ import { firstValueFrom, Observable } from 'rxjs';
 })
 export class FormularioComponent {
   
-  constructor(private router: Router, private route: ActivatedRoute, private api: ApiService, private poNotification: PoNotificationService, private customerService: CustomerService, private cityService: CityService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private api: ApiService, private poNotification: PoNotificationService, private customerService: CustomerService, private cityService: CityService, private fieldsService: FieldsService) {}
 
   @ViewChild('modal', { static: true }) 'modal': PoModalComponent;
   @ViewChild('modalCopy', { static: true }) 'modalCopy': PoModalComponent;
@@ -49,8 +50,8 @@ export class FormularioComponent {
   public isHideLoading: boolean = true;
   public loadingText: string = 'Carregando';
   public formTitle: string = 'Orçamentos'
-  public validateHeaderFields: Array<string> = ['loadingLocation','customerId','budgetId','paymentTerms'];
-  public validateFreightFields: Array<string> = ['freightType','maxLoad','palletPattern10x1','palletPattern30x1','palletPattern25kg','freightCost','freightResponsible','cargoType','transportationMode','freightPaymentTerms','destinationState','destinationCity','unloadingCost','unloadingType'];
+  public validateHeaderFields: Array<string> = []
+  public validateFreightFields: Array<string> = []
   public validateFieldsRow: Array<string> = ['productId','comissionPercentage','fobBasePrice','unitPrice','amount'];
   public fields: Array<PoDynamicFormField> = [];
   public generalDataFields: Array<PoDynamicFormField> = [];
@@ -93,36 +94,6 @@ export class FormularioComponent {
     loading: false,
   }
 
-  public readonly states: Array<any> = [
-    { code: 'AC', label: 'Acre' },
-    { code: 'AL', label: 'Alagoas' },
-    { code: 'AP', label: 'Amapá' },
-    { code: 'AM', label: 'Amazonas' },
-    { code: 'BA', label: 'Bahia' },
-    { code: 'CE', label: 'Ceará' },
-    { code: 'DF', label: 'Distrito Federal' },
-    { code: 'ES', label: 'Espírito Santo' },
-    { code: 'GO', label: 'Goiás' },
-    { code: 'MA', label: 'Maranhão' },
-    { code: 'MT', label: 'Mato Grosso' },
-    { code: 'MS', label: 'Mato Grosso do Sul' },
-    { code: 'MG', label: 'Minas Gerais' },
-    { code: 'PA', label: 'Pará' },
-    { code: 'PB', label: 'Paraíba' },
-    { code: 'PR', label: 'Paraná' },
-    { code: 'PE', label: 'Pernambuco' },
-    { code: 'PI', label: 'Piauí' },
-    { code: 'RJ', label: 'Rio de Janeiro' },
-    { code: 'RN', label: 'Rio Grande do Norte' },
-    { code: 'RS', label: 'Rio Grande do Sul' },
-    { code: 'RO', label: 'Rondônia' },
-    { code: 'RR', label: 'Roraima' },
-    { code: 'SC', label: 'Santa Catarina' },
-    { code: 'SP', label: 'São Paulo' },
-    { code: 'SE', label: 'Sergipe' },
-    { code: 'TO', label: 'Tocantins' }
-  ]
-
   public gridRowActions: Array<PoTableAction> = [];
 
   public async ngOnInit() {
@@ -136,680 +107,22 @@ export class FormularioComponent {
 
     this.formTitle += ' - ' + this.getModeDescription(this.mode)
 
-    this.fields = [
-      {
-        property: 'loadingLocation',
-        label: 'Unidade Carreg.',
-        visible: true,
-        required: true,
-        showRequired: true,
-        disabled: !this.isAddMode(),
-        noAutocomplete: true,
-        gridColumns: 4,
-        options: [
-          { loadingLocation: 'Rio Grande do Norte', code: "01010001" },
-          { loadingLocation: 'Rio Grande do Norte', code: "01010001" },
-          { loadingLocation: 'São Paulo',           code: "01020009" },
-          { loadingLocation: 'Rio de Janeiro',      code: "01030010" },
-        ],
-        type: 'string',
-        fieldValue: 'code',
-        fieldLabel: 'loadingLocation',
-        order: 1,
-      },
-      {
-        property: 'budgetId',
-        label: 'Cód. Orçamento',
-        visible: true,
-        required: false,
-        showRequired: false,
-        disabled: true,
-        noAutocomplete: true,
-        gridColumns: 3,
-        type: 'string',
-        order: 1,
-      },
-      {
-        property: 'budgetStatus',
-        label: 'Sit. Orçamento',
-        visible: true,
-        required: false,
-        showRequired: false,
-        disabled: true,
-        noAutocomplete: true,
-        gridColumns: 4,
-        options: [
-          { budgetStatus: 'Cotação pendente',         code: "CP" },
-          { budgetStatus: 'Cotação rejeitada',        code: "CR" },
-          { budgetStatus: 'Pré Pedido pendente',      code: "PP" },
-          { budgetStatus: 'Pré pedido em aprovação',  code: "PE" },
-          { budgetStatus: 'Pré Pedido rejeitado',     code: "PR" },
-          { budgetStatus: 'Pré Pedido aprovado',      code: "PA" },
-          { budgetStatus: 'Orçamento expirado',       code: "EX" },
-        ],
-        type: 'string',
-        fieldValue: 'code',
-        fieldLabel: 'budgetStatus',
-        order: 1,
-      },
-      {
-        property: 'customerId',
-        label: 'Cliente',
-        visible: true,
-        required: true,
-        showRequired: true,
-        disabled: true,
-        noAutocomplete: true,
-        minLength: 3,
-        maxLength: 6,
-        gridColumns: 6,
-        type: 'string',
-        searchService: this.customerService,
-        columns: [
-          { property: 'codigo', label: 'Código' },
-          { property: 'cgc', label: 'CNPJ' },
-          { property: 'tipo', label: 'Tipo' },
-          { property: 'razaoSocial', label: 'Nome' },
-        ],
-        format: ['cgc', 'razaoSocial'],
-        fieldLabel: 'razaoSocial',
-        fieldValue: 'codigoLoja',
-        order: 1,
-      },
-      {
-        property: 'customerIdDisabled',
-        label: 'Cliente',
-        visible: false,
-        required: true,
-        showRequired: true,
-        disabled: true,
-        noAutocomplete: true,
-        minLength: 3,
-        maxLength: 6,
-        gridColumns: 6,
-        type: 'string',
-        searchService: this.customerService,
-        columns: [
-          { property: 'codigo', label: 'Código' },
-          { property: 'cgc', label: 'CNPJ' },
-          { property: 'tipo', label: 'Tipo' },
-          { property: 'razaoSocial', label: 'Nome' },
-        ],
-        format: ['cgc', 'razaoSocial'],
-        fieldLabel: 'razaoSocial',
-        fieldValue: 'codigoLoja',
-        order: 1,
-      },
-      {
-        property: 'customerHasIE',
-        label: 'Possui IE?',
-        visible: true,
-        required: false,
-        showRequired: false,
-        disabled: true,
-        noAutocomplete: true,
-        maxLength: 3,
-        gridColumns: 2,
-        options: [
-          { label: 'Sim', code: true  },
-          { label: 'Sim', code: true  },
-          { label: 'Não', code: false },
-          { label: 'Não', code: false },
-        ],
-        type: 'boolean',
-        fieldValue: 'code',
-        fieldLabel: 'label',
-        order: 1,
-      },
-      {
-        property: 'customerCategory',
-        label: 'Categoria Cliente',
-        visible: true,
-        required: false,
-        showRequired: false,
-        disabled: true,
-        noAutocomplete: true,
-        maxLength: 20,
-        gridColumns: 4,
-        options: [
-          { code: 'DT', label: 'Distribuidor'               },
-          { code: 'AT', label: 'Atacado'                    },
-          { code: 'VR', label: 'Varejo'                     },
-          { code: 'AJ', label: 'Atacarejo'                  },
-          { code: 'CB', label: 'Cesta Básica'               },
-          { code: 'FS', label: 'Food Service'               },
-          { code: 'IA', label: 'Indústria de Alimentos'     },
-          { code: 'IT', label: 'Indústria Têxtil'           },
-          { code: 'IL', label: 'Indústria de Limpeza'       },
-          { code: 'IG', label: 'Indústria Geral'            },
-          { code: 'IR', label: 'Indústria de Ração Animal'  },
-          { code: 'CH', label: 'Charqueadas'                },
-          { code: 'PC', label: 'Pecuaristas e Avicultores'  },
-          { code: 'TA', label: 'Tratamento de Água'         },
-        ],
-        type: 'string',
-        fieldValue: 'code',
-        fieldLabel: 'label',
-        order: 1,
-      },
-      {
-        property: 'paymentTerms',
-        label: 'Cond. Pag. Produtos',
-        visible: true,
-        required: true,
-        showRequired: true,
-        disabled: !this.isModifyMode() && !this.isCopyMode(),
-        noAutocomplete: true,
-        minLength: 3,
-        maxLength: 40,
-        gridColumns: 3,
-        type: 'string',
-        searchService: this.api.baseUrl+'/portal-do-representante/condicoes',
-        columns: [
-          { property: 'codigo', label: 'Código' },
-          { property: 'descricao', label: 'Descrição' },
-        ],
-        format: ['codigo', 'descricao'],
-        fieldLabel: 'descricao',
-        fieldValue: 'codigo',
-        order: 1,
-      },
-      {
-        property: 'financialDiscount',
-        label: 'Desconto Financ. (%)',
-        visible: true,
-        required: false,
-        showRequired: false,
-        disabled: this.isViewMode() || this.isAddMode(),
-        noAutocomplete: true,
-        type: 'currency',
-        maxLength: 4,
-        gridColumns: 2,
-        format: 'BRL',
-        order: 1
-      },
-      {
-        property: 'observation',
-        label: 'Observação',
-        visible: true,
-        required: false,
-        showRequired: false,
-        disabled: !this.isModifyMode() && !this.isCopyMode(),
-        noAutocomplete: true,
-        maxLength: 120,
-        gridColumns: 12,
-        type: 'string',
-        rows: 1,
-        order: 1,
-      },
-      {
-        property: 'freightType',
-        label: 'Tipo Frete',
-        visible: true,
-        required: true,
-        showRequired: true,
-        disabled: this.isViewMode(),
-        noAutocomplete: true,
-        maxLength: 3,
-        gridColumns: 3,
-        options: [
-          { freightType: 'CIF', code: 'C' },
-          { freightType: 'CIF', code: 'C' },
-          { freightType: 'FOB', code: 'F' },
-          { freightType: 'FOB', code: 'F' },
-        ],
-        type: 'string',
-        fieldValue: 'code',
-        fieldLabel: 'freightType',
-        order: 2,
-      },
-      {
-        property: 'freightPaymentTerms',
-        label: 'Cond. Pag. Frete',
-        visible: true,
-        required: false,
-        showRequired: false,
-        disabled: this.isViewMode() || this.isAddMode(),
-        noAutocomplete: true,
-        minLength: 3,
-        maxLength: 40,
-        gridColumns: 3,
-        type: 'string',
-        searchService: this.api.baseUrl+'/portal-do-representante/condicoes',
-        columns: [
-          { property: 'codigo', label: 'Código' },
-          { property: 'descricao', label: 'Descrição' },
-        ],
-        format: ['codigo', 'descricao'],
-        fieldLabel: 'descricao',
-        fieldValue: 'codigo',
-        order: 2,
-      },
-      {
-        property: 'freightCost',
-        label: 'Frete Base (R$/Ton)',
-        visible: true,
-        required: false,
-        showRequired: false,
-        noAutocomplete: true,
-        disabled: true,
-        type: 'currency',
-        maxLength: 20,
-        gridColumns: 2,
-        format: 'BRL',
-        order: 2
-      },
-      {
-        property: 'freightResponsible',
-        label: 'Vendedor Responsável pelo Frete?',
-        visible: true,
-        required: false,
-        showRequired: false,
-        noAutocomplete: true,
-        disabled: this.isViewMode() || this.isAddMode(),
-        type: 'boolean',
-        booleanTrue: 'Sim',
-        booleanFalse: 'Não',
-        gridColumns: 3,
-        order: 2
-      },
-      {
-        property: 'transportationMode',
-        label: 'Tipo de Veículo',
-        visible: true,
-        required: false,
-        showRequired: false,
-        disabled: this.isViewMode() || this.isAddMode(),
-        noAutocomplete: true,
-        minLength: 1,
-        maxLength: 1,
-        gridColumns: 2,
-        options: [
-          { transportationMode: 'Rodoviário' , code: 'R' },
-          { transportationMode: 'Rodoviário' , code: 'R' },
-          { transportationMode: 'Marítimo'   , code: 'M' },
-          { transportationMode: 'Marítimo'   , code: 'M' },
-        ],
-        type: 'string',
-        fieldValue: 'code',
-        fieldLabel: 'transportationMode',
-        order: 2,
-      },
-      {
-        property: 'containerType',
-        label: 'Tipo de Container',
-        visible: false,
-        required: false,
-        showRequired: false,
-        disabled: true,
-        noAutocomplete: true,
-        minLength: 2,
-        maxLength: 2,
-        gridColumns: 2,
-        options: [
-          { containerType: 'Container 20'    , code: 'C20' },
-          { containerType: 'Container 20'    , code: 'C20' },
-          { containerType: 'Container 40'    , code: 'C40' },
-          { containerType: 'Container 40'    , code: 'C40' },
-        ],
-        type: 'string',
-        fieldValue: 'code',
-        fieldLabel: 'containerType',
-        order: 2,
-      },
-      {
-        property: 'customerVehicle',
-        label: 'Veículo Próprio?',
-        visible: true,
-        required: false,
-        showRequired: false,
-        noAutocomplete: true,
-        disabled: this.isViewMode() || this.isAddMode(),
-        type: 'boolean',
-        booleanTrue: 'Sim',
-        booleanFalse: 'Não',
-        gridColumns: 2,
-        order: 2
-      },
-      {
-        property: 'maxLoad',
-        label: 'Carga Máxima (kg)',
-        visible: true,
-        required: false,
-        showRequired: false,
-        noAutocomplete: true,
-        disabled: this.isViewMode() || this.isAddMode(),
-        type: 'number',
-        maxLength: 10,
-        gridColumns: 2,
-        format: '1.0-0',
-        order: 2
-      },
-      {
-        property: 'unloadingType',
-        label: 'Tipo Descarga',
-        visible: true,
-        required: true,
-        showRequired: false,
-        disabled: this.isViewMode() || this.isAddMode(),
-        noAutocomplete: true,
-        minLength: 1,
-        maxLength: 1,
-        gridColumns: 4,
-        options: [
-          { unloadingType: 'Por conta do cliente' ,                 code: 'C' },
-          { unloadingType: 'Por conta do cliente' ,                 code: 'C' },
-          { unloadingType: 'Por conta do motorista (Leva Chapas)',  code: 'L' },
-          { unloadingType: 'Por conta do motorista (Paga Taxa)',    code: 'P' },
-        ],
-        type: 'string',
-        fieldValue: 'code',
-        fieldLabel: 'unloadingType',
-        order: 2,
-      },
-      {
-        property: 'unloadingCost',
-        label: 'Vlr. Descarga (R$/Ton)',
-        visible: true,
-        required: true,
-        showRequired: false,
-        disabled: this.isViewMode() || this.isAddMode(),
-        noAutocomplete: true,
-        type: 'currency',
-        maxLength: 20,
-        gridColumns: 2,
-        format: 'BRL',
-        order: 2
-      },
-      {
-        property: 'destinationState',
-        label: 'UF Destino',
-        visible: true,
-        required: false,
-        showRequired: false,
-        disabled: this.isViewMode() || this.isAddMode(),
-        noAutocomplete: true,
-        maxLength: 2,
-        gridColumns: 2,
-        type: 'string',
-        options: this.states,
-        fieldValue: 'code',
-        fieldLabel: 'code',
-        order: 2,
-      },
-      {
-        property: 'destinationCity',
-        label: 'Cidade Destino',
-        visible: true,
-        required: false,
-        showRequired: false,
-        disabled: this.isViewMode() || this.isAddMode(),
-        gridColumns: 4,
-        type: 'string',
-        searchService: this.cityServiceWrapper,
-        columns: [
-          { property: 'codigo', label: 'Código IBGE' },
-          { property: 'cidade', label: 'Cidade' },
-          { property: 'estado', label: 'Estado' },
-        ],
-        format: ['codigo', 'cidade'],
-        fieldLabel: 'cidade',
-        fieldValue: 'codigo',
-        order: 2,
-      },
-      {
-        property: 'cargoType',
-        label: 'Tipo Carga',
-        visible: true,
-        required: false,
-        showRequired: false,
-        disabled: this.isViewMode() || this.isAddMode(),
-        noAutocomplete: true,
-        minLength: 2,
-        maxLength: 2,
-        gridColumns: 3,
-        options: [
-          { cargoType: 'Batida'                       , code: 'BT' },
-          { cargoType: 'Pallet PBR com Forro'         , code: 'PC' },
-          { cargoType: 'Pallet PBR sem Forro'         , code: 'PS' },
-          { cargoType: 'Pallet Descartável com Forro' , code: 'DC' },
-          { cargoType: 'Pallet Descartável sem Forro' , code: 'DS' },
-        ],
-        type: 'string',
-        fieldValue: 'code',
-        fieldLabel: 'cargoType',
-        order: 2,
-      },
-      {
-        property: 'palletPattern10x1',
-        label: 'Padrão Palete 10x1',
-        visible: true,
-        required: true,
-        showRequired: false,
-        noAutocomplete: true,
-        disabled: this.isViewMode() || this.isAddMode(),
-        type: 'number',
-        maxLength: 3,
-        gridColumns: 2,
-        format: '1.0-0',
-        order: 2
-      },
-      {
-        property: 'palletPattern30x1',
-        label: 'Padrão Palete 30x1',
-        visible: true,
-        required: true,
-        showRequired: false,
-        noAutocomplete: true,
-        disabled: this.isViewMode() || this.isAddMode(),
-        type: 'number',
-        maxLength: 3,
-        gridColumns: 2,
-        format: '1.0-0',
-        order: 2
-      },
-      {
-        property: 'palletPattern25kg',
-        label: 'Padrão Palete 25kg',
-        visible: true,
-        required: true,
-        showRequired: false,
-        noAutocomplete: true,
-        disabled: this.isViewMode() || this.isAddMode(),
-        type: 'number',
-        maxLength: 3,
-        gridColumns: 2,
-        format: '1.0-0',
-        order: 2
-      },
-    ]
+    this.loadDefaultData();
 
-    this.columns = [
-      {
-        property: 'item',
-        label: 'Item',
-        type: 'string',
-        required: true,
-        showRequired: false,
-        disabled: true,
-        noAutocomplete: true,
-        minLength: 2,
-        maxLength: 4,
-        gridColumns: 1,
-      },
-      {
-        property: 'productId',
-        label: 'Cód. Produto',
-        type: 'string',
-        required: true,
-        showRequired: false,
-        disabled: this.isViewMode(),
-        noAutocomplete: true,
-        maxLength: 20,
-        searchService: this.api.baseUrl+'/portal-do-representante/produtos',
-        columns: [
-          { property: 'codigo', label: 'Código' },
-          { property: 'descricao', label: 'Descrição' },
-        ],
-        format: ['codigo'],
-        fieldValue: 'codigo',
-        gridColumns: 2,
-      },
-      {
-        property: 'productDescription',
-        label: 'Desc. Produto',
-        type: 'string',
-        required: false,
-        showRequired: false,
-        disabled: true,
-        noAutocomplete: true,
-        maxLength: 60,
-        gridColumns: 6,
-      },
-      {
-        property: 'amount',
-        label: 'Quantidade',
-        type: 'number',
-        required: true,
-        showRequired: false,
-        disabled: this.isViewMode(),
-        noAutocomplete: true,
-        maxLength: 10,
-        gridColumns: 2,
-        format: '1.2-2',
-      },
-      {
-        property: 'packagingType',
-        label: 'Embalagem',
-        type: 'string',
-        required: false,
-        showRequired: false,
-        disabled: true,
-        noAutocomplete: true,
-        maxLength: 20,
-        gridColumns: 2,
-      },
-      {
-        property: 'fobBasePrice',
-        label: 'Valor FOB Base',
-        type: 'currency',
-        required: false,
-        showRequired: false,
-        visible: false,
-        disabled: this.isViewMode(),
-        noAutocomplete: true,
-        maxLength: 20,
-        gridColumns: 2,
-        format: 'BRL',
-      },
-      {
-        property: 'unitPrice',
-        label: 'Valor Unit. Efetivo',
-        type: 'currency',
-        required: false,
-        showRequired: false,
-        disabled: true,
-        noAutocomplete: true,
-        maxLength: 20,
-        gridColumns: 2,
-        format: 'BRL',
-      },
-      {
-        property: 'totalPrice',
-        label: 'Valor Total',
-        type: 'currency',
-        required: false,
-        showRequired: false,
-        disabled: true,
-        noAutocomplete: true,
-        maxLength: 20,
-        gridColumns: 2,
-        format: 'BRL',
-      },
-      {
-        property: 'tes',
-        label: 'TES',
-        type: 'string',
-        required: false,
-        showRequired: false,
-        disabled: false,
-        visible: false,
-        noAutocomplete: true,
-        maxLength: 3,
-        gridColumns: 2,
-      },
-      {
-        property: 'comissionPercentage',
-        label: 'Comissão (%)',
-        type: 'number',
-        required: false,
-        showRequired: false,
-        disabled: true,
-        noAutocomplete: true,
-        maxLength: 3,
-        gridColumns: 2,
-      },
-      {
-        property: 'comissionUnitValue',
-        label: 'Vl. Unit. Comissão',
-        type: 'currency',
-        required: false,
-        showRequired: false,
-        disabled: true,
-        noAutocomplete: true,
-        maxLength: 20,
-        gridColumns: 2,
-        format: 'BRL',
-      },
-      {
-        property: 'comissionTotalValue',
-        label: 'Vl. Total Comissão',
-        type: 'currency',
-        required: false,
-        showRequired: false,
-        disabled: true,
-        noAutocomplete: true,
-        maxLength: 20,
-        gridColumns: 2,
-        format: 'BRL',
-      },
-      {
-        property: 'productNetWeight',
-        label: 'Peso Neto Produto',
-        type: 'number',
-        required: false,
-        showRequired: false,
-        disabled: true,
-        visible: false,
-        noAutocomplete: true,
-        maxLength: 20,
-        gridColumns: 2,
-      },
-      {
-        property: 'productGrossWeight',
-        label: 'Peso Bruto Produto',
-        type: 'number',
-        required: false,
-        showRequired: false,
-        disabled: true,
-        visible: false,
-        noAutocomplete: true,
-        maxLength: 20,
-        gridColumns: 2,
-      },
-      {
-        property: 'packagingFormat',
-        label: 'Formato Embalagem',
-        type: 'string',
-        required: false,
-        showRequired: false,
-        disabled: false,
-        visible: false,
-        noAutocomplete: true,
-        maxLength: 3,
-        gridColumns: 2,
-      },
-    ]
+    if (!this.isAddMode() && this.location && this.budgetId) {
+      const res = await this.loadBudgetData(this.location,this.budgetId);
+      if (res) {        
+        !!this.headerData.customerId ? await this.fillCustomerData() : null;
+        !this.isViewMode() ? await this.updateFreightCost() : null;
+        //this.updateFieldsProperties();
+      } else {
+        this.router.navigate(['/','orcamentos']);
+      }
+    }
+
+    this.fields = this.fieldsService.getFields(this);
+
+    this.columns = this.fieldsService.getColumns(this);
     
     this.generalDataFields = this.getFields(1);
     this.logisticsDataFields = this.getFields(2);
@@ -822,29 +135,22 @@ export class FormularioComponent {
         return copiedField;
       });
 
+    this.validateHeaderFields = this.generalDataFields
+      .map(field => field.property);
+    this.validateFreightFields = this.logisticsDataFields
+      .map(field => field.property);
+
     this.gridRowActions = [
       { action: this.onModifyRow.bind(this),  icon: 'an an-note-pencil',  label: 'Alterar linha',     disabled: this.isViewMode() },
       { action: this.onAddRow.bind(this),     icon: 'an an-plus',         label: 'Adicionar linha',   disabled: this.isViewMode() },
     ];
         
-    if (!this.isAddMode() && this.location && this.budgetId) {
-      const res = await this.loadBudgetData(this.location,this.budgetId);
-      if (res) {        
-        !!this.headerData.customerId ? await this.fillCustomerData() : null;
-        !this.isViewMode() ? await this.updateFreightCost() : null;
-        this.updateFieldsProperties();
-      } else {
-        this.router.navigate(['/','orcamentos']);
-      }
-    } else {
-      this.loadDefaultData();
-    }
-
     setTimeout(() => {
       this.isHideLoading = true;
     }, 0);
 
   }
+
 
   public getFields(order: number): Array<PoDynamicFormField> {
     return this.fields.filter(field => field.order == order);
@@ -1006,19 +312,21 @@ export class FormularioComponent {
     this.isHideLoading = true;
   }
 
-  private async saveForm(isAutoSave: boolean, bkpRows?: Array<any>): Promise<any> {
+  private async saveForm(isAutoSave: boolean, bkpRows?: Array<any>, bkpHeaderData?: any, isSilent: boolean = false): Promise<any> {
     const budgetStatus = this.headerData.loadingLocation === '01010001' ? 'CP' : 'PP';
-    if (!(this.validateHeader() && this.validateRows())) {
+    if (!(this.validateHeader(isSilent) && this.validateRows(isSilent))) {
       return;
     }
+    await this.updateFreightCost(true);
     await this.updateAllRowsPrices();
-    await this.updateFreightCost()
     const res = await this.sendForm();
     if (!res) {
+      bkpHeaderData ? this.headerData = { ...bkpHeaderData } : null;
       bkpRows ? this.rows = bkpRows.map(item => ({ ...item })) : null;
       return;
     }
     if (!res.success) {
+      bkpHeaderData ? this.headerData = { ...bkpHeaderData } : null;
       bkpRows ? this.rows = bkpRows.map(item => ({ ...item })) : null;
       this.poNotification.error(res.message + ': ' + res.fix);
       return;
@@ -1063,6 +371,7 @@ export class FormularioComponent {
       "descontoFinanceiro":   this.headerData.financialDiscount         ?? 0,
       "responsavelFrete":     this.headerData.freightResponsible        ? "1" : "0",
       "veiculoProprio":       this.headerData.customerVehicle           ? "S" : "N",
+      "palletReturn":         this.headerData.palletReturn              ? "S" : "N",
       "itens":                this.rows.map((item: any) => ({
         "item":               item.item                 ?? "",
         "produto":            item.productId            ?? "",
@@ -1121,7 +430,7 @@ export class FormularioComponent {
       "volumeTotal":        this.totalLoadWeight                      ?? 0,
       "pesoTotalProdutos":  this.totalProductsNetWeight               ?? 0,
       "qtdTotalPaletes":    this.totalPalletsAmount                   ?? 0,
-      "devolucaoPalete":    false,
+      "devolucaoPalete":    this.headerData.palletReturn              ?? false,
     };
     try {
       const res: any = await firstValueFrom( this.api.post('portal-do-representante/precificacao/produto/', body, loadingLocation));
@@ -1153,7 +462,7 @@ export class FormularioComponent {
     this.loadingText = 'Carregando';
   }
 
-  private validateHeader(): boolean {
+  private validateHeader(isSilent: boolean = false): boolean {
     const requiredFields: Array<PoDynamicFormField> = this.getRequiredHeaderFields();
     const missingFields = requiredFields.filter(field => {
       const value = this.headerData[field.property];
@@ -1161,8 +470,10 @@ export class FormularioComponent {
     });
 
     if (missingFields.length > 0) {
-      const missingFieldLabels = missingFields.map(f => f.label).join(', ');
-      this.poNotification.warning('Preencha os campos obrigatórios: ' + missingFieldLabels);
+      if (!isSilent) {
+        const missingFieldLabels = missingFields.map(f => f.label).join(', ');
+        this.poNotification.warning('Preencha os campos obrigatórios: ' + missingFieldLabels);
+      }
       return false;
     }
 
@@ -1170,10 +481,15 @@ export class FormularioComponent {
 
   }
 
-  private validateRows(): boolean {
+  private validateRows(isSilent: boolean = false): boolean {
+    if (this.rows.length === 0) {
+      if (!isSilent) {
+        this.poNotification.warning('Orçamento sem itens. Adicione pelo menos um item.');
+      }
+      return false;
+    }
     const requiredFields: Array<PoDynamicFormField> = this.getRequiredRowFields();
     const invalidRows: string[] = [];
-  
     this.rows.forEach((row, index) => {
       const missingFields = requiredFields.filter(field => {
         const value = row[field.property];
@@ -1189,12 +505,12 @@ export class FormularioComponent {
         invalidRows.push('Item ' + row.item + ' - Preencha os campos obrigatórios: ' + fieldLabels);
       }
     });
-  
     if (invalidRows.length > 0) {
-      invalidRows.forEach(message => this.poNotification.warning(message));
+      if (!isSilent) {
+        invalidRows.forEach(message => this.poNotification.warning(message));
+      }
       return false;
     }
-  
     return true;
   }
 
@@ -1305,114 +621,38 @@ export class FormularioComponent {
   }
 
   public onChangeHeaderFields(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
-    let validation: PoDynamicFormValidation = {};
-    if (changedValue.property === 'loadingLocation') {
-      const newBudgetStatus = changedValue.value.loadingLocation === '01010001' ? 'CP' : 'PP';
-      validation = {
-        value: { budgetStatus: newBudgetStatus},
-        fields: [
-          { property: 'loadingLocation',    disabled: true },
-          { property: 'customerId',         disabled: false },
-          { property: 'paymentTerms',       disabled: false },
-          { property: 'observation',        disabled: false },
-          { property: 'financialDiscount',  disabled: false },
-        ],
-      }
-    } else if (changedValue.property === 'customerId' && !this.isCopyMode()) {
-      setTimeout(() => {
-        this.headerData.customerIdDisabled = this.headerData.customerId;
-        this.fillCustomerData();
-      }, 0);
-      validation = {
-        fields: [
-          { property: 'customerId',  visible: false },
-          { property: 'customerIdDisabled',  visible: true },
-        ]
-      }
-    } else if (changedValue.property === 'paymentTerms') {
-      //this.budgetPaymentDueDays = this.getDueDaysByPaymentTerms(changedValue.value.paymentTerms) ?? this.budgetPaymentDueDays;
-      validation = {}
+    if (this.isViewMode()) {
+      return {};
     }
+    const bkpHeaderData = { ...this.headerData };
+    const bkpRows = this.rows.map(item => ({ ...item }));
+    const validation: PoDynamicFormValidation = { fields: this.fieldsService.getFields(this) };
+    const newBudgetStatus = this.isQuotationBranch ? 'CP' : 'PP';
+    changedValue.property === 'loadingLocation' ? this.headerData.budgetStatus = newBudgetStatus : null;
+    changedValue.property === 'customerId' ? this.headerData.customerIdDisabled = this.headerData.customerId : null;
+    changedValue.property === 'customerId' ? this.fillCustomerData() : null;
+    this.saveForm(true, bkpRows, bkpHeaderData, true);
     return validation;
   };
 
   public onChangeFreightFields(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
-    let validation: PoDynamicFormValidation = {};
-    this.formatNumericHeaderValues();
-    if (changedValue.property === 'freightType') {
-      if (this.headerData.freightType === 'C') {
-        this.updateFreightCost()
-      }
-      validation = {
-        fields: [
-          { property: 'freightPaymentTerms',  disabled: false, required: changedValue.value.freightType === 'C' },
-          { property: 'cargoType',            disabled: false, required: changedValue.value.freightType === 'C' },
-          { property: 'unloadingCost',        disabled: false },
-          { property: 'transportationMode',   disabled: this.headerData.loadingLocation !== '01010001' || !this.headerData.freightType, required: changedValue.value.freightType === 'C' },
-          { property: 'maxLoad',              disabled: false, required: changedValue.value.freightType === 'C' },
-          { property: 'freightResponsible',   disabled: false },
-          { property: 'destinationState',     disabled: false },
-          { property: 'destinationCity',      disabled: false, required: changedValue.value.freightType === 'C' },
-          { property: 'unloadingType',        disabled: false },
-          { property: 'customerVehicle',      disabled: changedValue.value.freightType === 'C' },
-        ],
-        value: {
-          palletPattern10x1: this.headerData.palletPattern10x1 ?? 150,
-          palletPattern30x1: this.headerData.palletPattern30x1 ?? 50,
-          palletPattern25kg: this.headerData.palletPattern25kg ?? 50,
-          freightCost: this.headerData.freightType === 'F' ? 0 : this.headerData.freightCost ?? 0,
-          transportationMode: this.headerData.loadingLocation !== '01010001' ? 'R' : this.headerData.transportationMode ?? 'R',
-          customerVehicle: changedValue.value.freightType === 'C' ? false : this.headerData.customerVehicle ?? false,
-        }
-      }
-    } else if (changedValue.property === 'cargoType') {
-      validation = {
-        fields: [
-          { property: 'palletPattern10x1',    disabled: this.headerData.cargoType === 'BT' },
-          { property: 'palletPattern30x1',    disabled: this.headerData.cargoType === 'BT' },
-          { property: 'palletPattern25kg',    disabled: this.headerData.cargoType === 'BT' },
-        ],
-      }
-    } else if (changedValue.property === 'palletPattern10x1' || changedValue.property === 'palletPattern30x1' || changedValue.property === 'palletPattern25kg') {
-      validation = {
-        value: {
-          palletPattern10x1: this.headerData.palletPattern10x1 !== 0 ? this.headerData.palletPattern10x1 : 150,
-          palletPattern30x1: this.headerData.palletPattern30x1 !== 0 ? this.headerData.palletPattern30x1 : 50,
-          palletPattern25kg: this.headerData.palletPattern25kg !== 0 ? this.headerData.palletPattern25kg : 50,
-        }
-      }
-    } else if (changedValue.property === 'freightResponsible' || changedValue.property === 'freightCost' || changedValue.property === 'destinationCity' || changedValue.property === 'transportationMode') {
-      if (!!this.headerData.destinationState && !!this.headerData.destinationCity) {
-        this.updateFreightCost();
-      }
-      validation = {
-        fields: [
-          { property: 'freightCost',        disabled: !this.headerData.freightResponsible },
-          { property: 'containerType',      visible:  this.headerData.transportationMode === 'M' },
-          { property: 'maxLoad',            disabled: this.headerData.transportationMode === 'M' || !this.headerData.freightType },
-          { property: 'transportationMode', disabled: this.headerData.loadingLocation !== '01010001' || !this.headerData.freightType },
-        ],
-        value: {
-          transportationMode: this.headerData.loadingLocation !== '01010001' ? 'R' : this.headerData.transportationMode ?? 'R',
-        }
-      }
-    } else if (changedValue.property === 'destinationState') {
-      validation = {
-        value: {
-          destinationCity: '',
-          freightCost: this.headerData.freightType === 'C' && !this.headerData.freightResponsible ? 0 : this.headerData.freightCost ?? 0,
-        }
-      }
-    } else if (changedValue.property === 'unloadingType') {
-      validation = {
-        fields: [
-          { property: 'unloadingCost',  disabled: this.headerData.unloadingType === 'C'},
-        ],
-        value: {
-          unloadingCost: this.headerData.unloadingType === 'C' ? 0 : null,
-        }
-      }
+    if (this.isViewMode()) {
+      return {};
     }
+    const bkpHeaderData = { ...this.headerData };
+    const bkpRows = this.rows.map(item => ({ ...item }));
+    const validation: PoDynamicFormValidation = { fields: this.fieldsService.getFields(this) };
+    this.formatNumericHeaderValues();
+    this.headerData.palletPattern10x1   = this.headerData.palletPattern10x1 ?? 150;
+    this.headerData.palletPattern30x1   = this.headerData.palletPattern30x1 ?? 50;
+    this.headerData.palletPattern25kg   = this.headerData.palletPattern25kg ?? 50;
+    this.headerData.unloadingCost       = this.headerData.unloadingType === 'C' ? 0 : changedValue.property === 'unloadingType' ? null : this.headerData.unloadingCost ?? 0;
+    this.headerData.freightCost         = this.headerData.freightType === 'F' ? 0 : this.headerData.freightCost ?? 0;
+    this.headerData.transportationMode  = this.headerData.loadingLocation !== '01010001' ? 'R' : this.headerData.transportationMode ?? 'R';
+    this.headerData.customerVehicle     = changedValue.value.freightType === 'C' ? false : this.headerData.customerVehicle ?? false;
+    this.headerData.palletReturn        = this.headerData.cargoType == 'BT' ? false : this.headerData.palletReturn ?? false;
+    changedValue.property === 'destinationState' ? this.headerData.destinationCity = '' : null;
+    this.saveForm(true, bkpRows, bkpHeaderData, true);
     return validation;
   };
 
@@ -1455,6 +695,7 @@ export class FormularioComponent {
           budgetId:             !this.isCopyMode() ? res.orcamento : '',
           budgetStatus:         !this.isCopyMode() ? res.situacao : '',
           customerId:           !this.isCopyMode() ? res.cliente+res.loja : '',
+          customerIdDisabled:   !this.isCopyMode() ? res.cliente+res.loja : '',
           paymentTerms:         res.condPag               ?? '',
           observation:          res.observacao.trim()     ?? '',
           freightType:          res.tipoFrete             ?? '',
@@ -1473,6 +714,7 @@ export class FormularioComponent {
           destinationState:     res.estadoDestino         ?? '',
           destinationCity:      res.cidadeDestino         ?? '',
           financialDiscount:    res.descontoFinanceiro    ?? 0,
+          palletReturn:         res.devolucaoPalete       ?? false,
         };
         if (!this.isCopyMode()) {
           this.rows = res.itens.map((item: any) => ({
@@ -1559,25 +801,6 @@ export class FormularioComponent {
     return this.headerData.loadingLocation === '01010001';
   }
 
-  private updateFieldsProperties(): void {
-    this.fields = this.fields.map(field => {
-      if (field.property === 'freightCost') {
-        return {
-          ...field,
-          disabled: !this.headerData.freightResponsible,
-        }
-      }
-      if (field.property === 'containerType') {
-        return {
-          ...field,
-          visible: this.headerData.transportationMode === 'M',
-          disabled: !this.headerData.freightResponsible,
-        }
-      }
-      return field;
-    })
-  };
-
   private updateColumnsProperties(): void {
     this.columns = this.columns.map(column => {
       if (column.property === 'fobBasePrice') {
@@ -1598,6 +821,7 @@ export class FormularioComponent {
   private loadDefaultData(): void {
     this.headerData = {
       customerId:           '',
+      customerIdDisabled:   '',
       paymentTerms:         '001',
       financialDiscount:    0,
       freightPaymentTerms:  '001',
@@ -1610,6 +834,7 @@ export class FormularioComponent {
       transportationMode:   'R',
       freightResponsible:   false,
       customerVehicle:      false,
+      palletReturn:         false,
     };
     this.rows = [
     {
@@ -1707,6 +932,9 @@ export class FormularioComponent {
     await this.saveForm(true,bkpRows);
     await this.fillCustomerData();
     this.modalCopy.close();
+    if (this.rows.length === 0) {
+      this.rows = bkpRows.map(item => ({ ...item }));
+    }
     this.isHideLoading = true;
   }
 
@@ -1714,10 +942,8 @@ export class FormularioComponent {
     return this.headerData.destinationState ?? '';
   }
 
-  // Criar um wrapper service que sempre usa o valor atual do destinationState
   public cityServiceWrapper = {
     getFilteredItems: (filteredParams: PoLookupFilteredItemsParams): Observable<any> => {
-      // Adiciona o estado atual aos parâmetros
       const enhancedParams = {
         ...filteredParams,
         filterParams: {
@@ -1726,8 +952,7 @@ export class FormularioComponent {
         }
       };
       return this.cityService.getFilteredItems(enhancedParams);
-    },
-    
+    },  
     getObjectByValue: (value: string): Observable<any> => {
       return this.cityService.getObjectByValue(this.headerData.destinationState+value);
     }
