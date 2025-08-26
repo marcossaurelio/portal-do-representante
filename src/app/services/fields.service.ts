@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { PoDynamicFormField } from '@po-ui/ng-components';
 import { ApiService } from './api.service';
+import { FormularioComponent } from '../components/orcamentos/formulario/formulario.component';
 
 @Injectable({
   providedIn: 'root'
@@ -307,7 +308,7 @@ export class FieldsService {
       {
         property: 'freightPaymentTerms',
         label: 'Cond. Pag. Frete',
-        visible: true,
+        visible: env.isQuotationBranch,
         required: true,
         showRequired: false,
         disabled: !env.headerData.freightType,
@@ -405,7 +406,7 @@ export class FieldsService {
       {
         property: 'maxLoad',
         label: 'Carga Máxima (kg)',
-        visible: true,
+        visible: env.isQuotationBranch,
         required: true,
         showRequired: false,
         noAutocomplete: true,

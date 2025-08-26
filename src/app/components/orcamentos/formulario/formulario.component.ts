@@ -371,7 +371,7 @@ export class FormularioComponent {
       "descontoFinanceiro":   this.headerData.financialDiscount         ?? 0,
       "responsavelFrete":     this.headerData.freightResponsible        ? "1" : "0",
       "veiculoProprio":       this.headerData.customerVehicle           ? "S" : "N",
-      "palletReturn":         this.headerData.palletReturn              ? "S" : "N",
+      "devolucaoPalete":      this.headerData.palletReturn              ? "S" : "N",
       "itens":                this.rows.map((item: any) => ({
         "item":               item.item                 ?? "",
         "produto":            item.productId            ?? "",
@@ -430,7 +430,7 @@ export class FormularioComponent {
       "volumeTotal":        this.totalLoadWeight                      ?? 0,
       "pesoTotalProdutos":  this.totalProductsNetWeight               ?? 0,
       "qtdTotalPaletes":    this.totalPalletsAmount                   ?? 0,
-      "devolucaoPalete":    this.headerData.palletReturn              ?? false,
+      "devolucaoPalete":    this.headerData.palletReturn              ? "S" : "N",
     };
     try {
       const res: any = await firstValueFrom( this.api.post('portal-do-representante/precificacao/produto/', body, loadingLocation));
