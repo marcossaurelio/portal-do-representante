@@ -313,7 +313,7 @@ export class FormularioComponent {
   }
 
   private async saveForm(isAutoSave: boolean, bkpRows?: Array<any>, bkpHeaderData?: any, isSilent: boolean = false): Promise<any> {
-    const budgetStatus = this.headerData.loadingLocation === '01010001' ? 'CP' : 'PP';
+    const budgetStatus = this.isQuotationBranch ? 'CP' : 'PP';
     if (!(this.validateHeader(isSilent) && this.validateRows(isSilent))) {
       return;
     }
@@ -343,8 +343,8 @@ export class FormularioComponent {
   }
 
   public async sendForm(): Promise<any> {
-    const loadingLocation = this.headerData.loadingLocation ?? '01010001';
-    const budgetStatus = loadingLocation === '01010001' ? 'CP' : 'PP';
+    const loadingLocation = this.headerData.loadingLocation;
+    const budgetStatus = this.isQuotationBranch ? 'CP' : 'PP';
     const body = {    
       "filial":               this.headerData.loadingLocation           ?? "",
       "orcamento":            this.headerData.budgetId                  ?? "",
@@ -397,7 +397,7 @@ export class FormularioComponent {
   }
 
   private async getItemPriceInfo(row: any): Promise<any> {
-    const loadingLocation = this.headerData.loadingLocation ?? '01010001';
+    const loadingLocation = this.headerData.loadingLocation;
     const body = {
       "filial":             this.headerData.loadingLocation           ?? "",
       "orcamento":          this.headerData.budgetId                  ?? "",
@@ -648,7 +648,7 @@ export class FormularioComponent {
     this.headerData.palletPattern25kg   = this.headerData.palletPattern25kg ?? 50;
     this.headerData.unloadingCost       = this.headerData.unloadingType === 'C' ? 0 : changedValue.property === 'unloadingType' ? null : this.headerData.unloadingCost ?? 0;
     this.headerData.freightCost         = this.headerData.freightType === 'F' ? 0 : this.headerData.freightCost ?? 0;
-    this.headerData.transportationMode  = this.headerData.loadingLocation !== '01010001' ? 'R' : this.headerData.transportationMode ?? 'R';
+    this.headerData.transportationMode  = !this.isQuotationBranch ? 'R' : this.headerData.transportationMode ?? 'R';
     this.headerData.customerVehicle     = changedValue.value.freightType === 'C' ? false : this.headerData.customerVehicle ?? false;
     this.headerData.palletReturn        = this.headerData.cargoType == 'BT' ? false : this.headerData.palletReturn ?? false;
     changedValue.property === 'destinationState' ? this.headerData.destinationCity = '' : null;
@@ -766,7 +766,7 @@ export class FormularioComponent {
 
   private async fillProductData(codigoProduto: string): Promise<any> {
     this.confirmRow.loading = true;
-    const loadingLocation = this.headerData.loadingLocation ?? '01010001';
+    const loadingLocation = this.headerData.loadingLocation;
     try {
       const res: any = await firstValueFrom(this.api.get('portal-do-representante/produtos/'+codigoProduto, loadingLocation));
       if (res) {
@@ -798,7 +798,9 @@ export class FormularioComponent {
   }
 
   public get isQuotationBranch(): boolean {
-    return this.headerData.loadingLocation === '01010001';
+    const location = this.headerData.loadingLocation;
+    const isQuotationBranch = this.fieldsService.getLoadingLocations.find(loc => loc.value === location)?.isQuotation ?? false;
+    return isQuotationBranch;
   }
 
   private updateColumnsProperties(): void {
@@ -909,7 +911,7 @@ export class FormularioComponent {
     }
     this.headerData.loadingLocation = this.copyModalHeaderData.loadingLocation;
     this.headerData.customerId = this.copyModalHeaderData.customerId;
-    this.headerData.budgetStatus = this.copyModalHeaderData.loadingLocation === '01010001' ? 'CP' : 'PP';
+    this.headerData.budgetStatus = this.isQuotationBranch ? 'CP' : 'PP';
     if (this.tableCopy.getSelectedRows().length <= 0) {
       this.modalCopy.close();
       return null;

@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { CustomerService } from '../../services/domain/customer.service';
 import { CityService } from '../../services/domain/city.service';
+import { FieldsService } from '../../services/fields.service';
 import { firstValueFrom, Observable } from 'rxjs';
 
 @Component({
@@ -28,7 +29,7 @@ import { firstValueFrom, Observable } from 'rxjs';
 })
 export class OrcamentosComponent {
 
-  constructor(private router: Router, private api: ApiService, private poNotification: PoNotificationService, private customerService: CustomerService, private cityService: CityService) {}
+  constructor(private router: Router, private api: ApiService, private poNotification: PoNotificationService, private customerService: CustomerService, private cityService: CityService, private fieldsService: FieldsService) {}
 
   @ViewChild('modal', { static: true }) 'modal': PoModalComponent;
 
@@ -492,13 +493,8 @@ export class OrcamentosComponent {
   }
 
   private getLoadingLocationByCode(code: string): string{
-    if (code == '01020009'){
-      return 'SP'
-    } else if (code == '01030010') {
-      return 'RJ'
-    } else {
-      return 'RN'
-    }
+    const location = this.fieldsService.getLoadingLocations.find(loc => loc.code === code);
+    return location ? location.loadingLocation : code;
   }
 
   private dateFormat(dateString: string): string {

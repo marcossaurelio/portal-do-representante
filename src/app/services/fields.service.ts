@@ -11,10 +11,13 @@ export class FieldsService {
   constructor(private api: ApiService) { }
 
     private readonly loadingLocations: Array<any> = [
-      { loadingLocation: 'Rio Grande do Norte', code: "01010001" },
-      { loadingLocation: 'Rio Grande do Norte', code: "01010001" },
-      { loadingLocation: 'São Paulo',           code: "01020009" },
-      { loadingLocation: 'Rio de Janeiro',      code: "01030010" },
+      { loadingLocation: 'Matriz',              code: "01010001", isQuotation: true   },
+      { loadingLocation: 'Grossos',             code: "01010002", isQuotation: true   },
+      { loadingLocation: 'São Camilo',          code: "01010003", isQuotation: true   },
+      { loadingLocation: 'Refinorte',           code: "02010001", isQuotation: true   },
+      { loadingLocation: 'Qualysal',            code: "03010001", isQuotation: true   },
+      { loadingLocation: 'São Paulo',           code: "01020009", isQuotation: false  },
+      { loadingLocation: 'Rio de Janeiro',      code: "01030010", isQuotation: false  },
     ]
 
     private readonly budgetStatuses: Array<any> = [
@@ -361,7 +364,7 @@ export class FieldsService {
         visible: true,
         required: false,
         showRequired: false,
-        disabled: env.headerData.loadingLocation !== '01010001' || !env.headerData.freightType,
+        disabled: !this.isQuotationBranch(env.headerData.loadingLocation) || !env.headerData.freightType,
         noAutocomplete: true,
         minLength: 1,
         maxLength: 1,
@@ -756,6 +759,12 @@ export class FieldsService {
     ]
   }
 
-
+  public get getLoadingLocations(): Array<any> {
+    return this.loadingLocations;
+  }
+  
+  public isQuotationBranch(loadingLocation: string): boolean {
+    return this.loadingLocations.find(loc => loc.value === loadingLocation)?.isQuotation ?? false;
+  }
 
 }
