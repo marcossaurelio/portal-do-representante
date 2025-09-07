@@ -273,7 +273,7 @@ export class FieldsService {
         disabled: !env.headerData.loadingLocation || env.isViewMode(),
         noAutocomplete: true,
         type: 'currency',
-        maxLength: 4,
+        maxLength: 5,
         gridColumns: 2,
         format: 'BRL',
         order: 1

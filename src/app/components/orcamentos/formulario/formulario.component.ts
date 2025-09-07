@@ -431,6 +431,7 @@ export class FormularioComponent {
       "pesoTotalProdutos":  this.totalProductsNetWeight               ?? 0,
       "qtdTotalPaletes":    this.totalPalletsAmount                   ?? 0,
       "devolucaoPalete":    this.headerData.palletReturn              ? "S" : "N",
+      "descontoFinanceiro": this.headerData.financialDiscount         ?? 0,
     };
     try {
       const res: any = await firstValueFrom( this.api.post('portal-do-representante/precificacao/produto/', body, loadingLocation));
@@ -631,6 +632,7 @@ export class FormularioComponent {
     changedValue.property === 'loadingLocation' ? this.headerData.budgetStatus = newBudgetStatus : null;
     changedValue.property === 'customerId' ? this.headerData.customerIdDisabled = this.headerData.customerId : null;
     changedValue.property === 'customerId' ? this.fillCustomerData() : null;
+    this.headerData.financialDiscount   = this.headerData.financialDiscount >= 100 ? 0 : this.headerData.financialDiscount ?? 0;
     this.saveForm(true, bkpRows, bkpHeaderData, true);
     return validation;
   };
@@ -728,8 +730,8 @@ export class FormularioComponent {
             totalPrice:           item.valorTotal,
             tes:                  item.tes,
             comissionPercentage:  item.comissao,
-            comissionUnitValue:   item.valorUnitario * (1-res.descontoFinanceiro/100) * item.comissao / 100,
-            comissionTotalValue:  item.valorTotal * (1-res.descontoFinanceiro/100) * item.comissao / 100,
+            comissionUnitValue:   item.valorUnitario * item.comissao / 100,
+            comissionTotalValue:  item.valorTotal * item.comissao / 100,
             productNetWeight:     item.pesoNeto,
             productGrossWeight:   item.pesoBruto,
             packagingFormat:      item.formatoEmbalagem,
@@ -746,8 +748,8 @@ export class FormularioComponent {
             totalPrice:           item.valorTotal,
             tes:                  item.tes,
             comissionPercentage:  item.comissao,
-            comissionUnitValue:   item.valorUnitario * (1-res.descontoFinanceiro/100) * item.comissao / 100,
-            comissionTotalValue:  item.valorTotal * (1-res.descontoFinanceiro/100) * item.comissao / 100,
+            comissionUnitValue:   item.valorUnitario * item.comissao / 100,
+            comissionTotalValue:  item.valorTotal * item.comissao / 100,
             productNetWeight:     item.pesoNeto,
             productGrossWeight:   item.pesoBruto,
             packagingFormat:      item.formatoEmbalagem,
