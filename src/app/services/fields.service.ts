@@ -311,7 +311,7 @@ export class FieldsService {
       {
         property: 'freightPaymentTerms',
         label: 'Cond. Pag. Frete',
-        visible: env.isQuotationBranch,
+        visible: env.isQuotationBranch || !env.headerData.loadingLocation,
         required: true,
         showRequired: false,
         disabled: !env.headerData.freightType,
@@ -337,7 +337,7 @@ export class FieldsService {
         required: false,
         showRequired: false,
         noAutocomplete: true,
-        disabled: !env.headerData.freightResponsible,
+        disabled: !env.headerData.freightResponsible || env.headerData.freightType === 'F',
         type: 'currency',
         maxLength: 20,
         gridColumns: 2,
@@ -364,7 +364,7 @@ export class FieldsService {
         visible: true,
         required: false,
         showRequired: false,
-        disabled: !this.isQuotationBranch(env.headerData.loadingLocation) || !env.headerData.freightType,
+        disabled: !env.isQuotationBranch || !env.headerData.freightType,
         noAutocomplete: true,
         minLength: 1,
         maxLength: 1,
@@ -409,7 +409,7 @@ export class FieldsService {
       {
         property: 'maxLoad',
         label: 'Carga Máxima (kg)',
-        visible: env.isQuotationBranch,
+        visible: env.isQuotationBranch || !env.headerData.loadingLocation,
         required: true,
         showRequired: false,
         noAutocomplete: true,
@@ -559,6 +559,20 @@ export class FieldsService {
         booleanFalse: 'Não',
         gridColumns: 2,
         order: 2
+      },
+      {
+        property: 'freightICMSPauta',
+        label: 'Frete Pauta (R$)',
+        visible: true,
+        required: false,
+        showRequired: false,
+        noAutocomplete: true,
+        disabled: true,
+        type: 'currency',
+        maxLength: 20,
+        gridColumns: 2,
+        format: 'BRL',
+        order: 2
       }
     ];
     if (env.isViewMode()) {
@@ -590,7 +604,7 @@ export class FieldsService {
         type: 'string',
         required: true,
         showRequired: false,
-        disabled: env.isViewMode(),
+        disabled: !!env.rowData.productDescription || env.isViewMode(),
         noAutocomplete: true,
         maxLength: 20,
         searchService: this.api.baseUrl+'/portal-do-representante/produtos',
@@ -638,12 +652,12 @@ export class FieldsService {
       },
       {
         property: 'fobBasePrice',
-        label: 'Valor FOB Base',
+        label: 'Valor Base',
         type: 'currency',
-        required: false,
+        required: true,
         showRequired: false,
-        visible: false,
-        disabled: env.isViewMode(),
+        visible: true,
+        disabled: env.isViewMode() || !env.isQuotationBranch,
         noAutocomplete: true,
         maxLength: 20,
         gridColumns: 2,
@@ -764,7 +778,7 @@ export class FieldsService {
   }
   
   public isQuotationBranch(loadingLocation: string): boolean {
-    return this.loadingLocations.find(loc => loc.value === loadingLocation)?.isQuotation ?? false;
+    return this.loadingLocations.find(loc => loc.code === loadingLocation)?.isQuotation ?? false;
   }
 
 }

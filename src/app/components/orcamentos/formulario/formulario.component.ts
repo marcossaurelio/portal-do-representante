@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoDatepickerModule } from '@po-ui/ng-components';
+import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoDatepickerModule, PoPageEditLiterals } from '@po-ui/ng-components';
 import { PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoDynamicFormComponent } from '@po-ui/ng-components';
 import { PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged, PoInfoModule } from '@po-ui/ng-components';
 import { PoInfoOrientation, PoTableComponent, PoDividerModule, PoTagModule, PoTagType, PoLookupFilteredItemsParams } from '@po-ui/ng-components';
@@ -52,7 +52,7 @@ export class FormularioComponent {
   public formTitle: string = 'Orçamentos'
   public validateHeaderFields: Array<string> = []
   public validateFreightFields: Array<string> = []
-  public validateFieldsRow: Array<string> = ['productId','comissionPercentage','fobBasePrice','unitPrice','amount'];
+  public validateFieldsRow: Array<string> = []
   public fields: Array<PoDynamicFormField> = [];
   public generalDataFields: Array<PoDynamicFormField> = [];
   public logisticsDataFields: Array<PoDynamicFormField> = [];
@@ -61,6 +61,11 @@ export class FormularioComponent {
   public rowFormTitle: string = 'Item - Adicionar';
   public infoOrientation: PoInfoOrientation = PoInfoOrientation.Horizontal;
   public rows2Copy: Array<any> = [];
+
+  public pageEditLiterals: PoPageEditLiterals = {
+    cancel: 'Fechar',
+    save: 'Salvar',
+  };
 
   private selectedProductId: string = '';
   private pbrPalletWeight: number = 35;
@@ -119,9 +124,8 @@ export class FormularioComponent {
         this.router.navigate(['/','orcamentos']);
       }
     }
-
+      
     this.fields = this.fieldsService.getFields(this);
-
     this.columns = this.fieldsService.getColumns(this);
     
     this.generalDataFields = this.getFields(1);
@@ -138,6 +142,8 @@ export class FormularioComponent {
     this.validateHeaderFields = this.generalDataFields
       .map(field => field.property);
     this.validateFreightFields = this.logisticsDataFields
+      .map(field => field.property);
+    this.validateFieldsRow = this.columns
       .map(field => field.property);
 
     this.gridRowActions = [
@@ -417,6 +423,7 @@ export class FormularioComponent {
       "responsavelFrete":   this.headerData.freightResponsible        ?? false,
       "veiculoProprio":     this.headerData.customerVehicle           ?? false,
       "categoriaCliente":   this.headerData.customerCategory          ?? "", 
+      "icmsPautaFrete":     this.headerData.freightICMSPauta          ?? 0,
       "estadoDestino":      this.headerData.destinationState          ?? "",
       "cidadeDestino":      this.headerData.destinationCity           ?? "",
       "item":               row.item                                  ?? "",
@@ -443,14 +450,24 @@ export class FormularioComponent {
         ...row,
         unitPrice: res.precoUnitario,
         comissionPercentage: res.comissao,
-        totalPrice: res.precoUnitario * row.amount,
-        comissionUnitValue: res.precoUnitario * (1-this.headerData.financialDiscount/100) * (res.comissao / 100),
-        comissionTotalValue: res.precoUnitario * (1-this.headerData.financialDiscount/100) * (res.comissao / 100) * row.amount,
+        fobBasePrice: this.isQuotationBranch ? row.fobBasePrice : res.precoBase,
+        //totalPrice: res.precoUnitario * row.amount,
+        //comissionUnitValue: res.precoUnitario * (1-this.headerData.financialDiscount/100) * (res.comissao / 100),
+        //comissionTotalValue: res.precoUnitario * (1-this.headerData.financialDiscount/100) * (res.comissao / 100) * row.amount,
       }
     } catch (error: any) {
       this.poNotification.error('Item ' + row.item + ' - ' + 'Erro ao consultar precificação: ' + error.message);
       return null;
     }
+  }
+
+  private recalculateRowsTotals(): void {
+    this.rows = this.rows.map(row => {
+      row.totalPrice = Math.abs(row.unitPrice * row.amount);
+      row.comissionUnitValue = Math.abs(row.fobBasePrice * (row.comissionPercentage / 100));
+      row.comissionTotalValue = Math.abs(row.fobBasePrice * row.amount * (row.comissionPercentage / 100));
+      return row;
+    });
   }
 
   private async updateAllRowsPrices(): Promise<void> {
@@ -460,6 +477,7 @@ export class FormularioComponent {
       return updatedRow ?? row;
     }));
     this.rows = updatedRows;
+    this.recalculateRowsTotals();
     this.loadingText = 'Carregando';
   }
 
@@ -495,7 +513,7 @@ export class FormularioComponent {
       const missingFields = requiredFields.filter(field => {
         const value = row[field.property];
         if (field.property == 'amount' || field.property == 'unitPrice') {
-          return value === null || value === undefined || isNaN(Number(value)) || value === 0;
+          return value === null || value === undefined || isNaN(Number(value)) || value <= 0;
         } else {
           return value === null || value === undefined || value === '';
         }
@@ -521,8 +539,8 @@ export class FormularioComponent {
   
     const missingFields = requiredFields.filter(field => {
       const value = this.rowData[field.property];
-      if (field.property == 'amount' || field.property == 'unitPrice') {
-        return value === null || value === undefined || isNaN(Number(value)) || value === 0;
+      if (field.property == 'amount' || field.property == 'unitPrice' || field.property == 'fobBasePrice') {
+        return value === null || value === undefined || isNaN(Number(value)) || value <= 0;
       } else {
         return value === null || value === undefined || value === '';
       }
@@ -559,7 +577,6 @@ export class FormularioComponent {
       this.fillRowData(row)
       this.selectedProductId = this.rowData.productId
       this.rowFormTitle = 'Item - Alterar'
-      this.updateColumnsProperties();
       this.modal.open()
     }
   }
@@ -570,7 +587,6 @@ export class FormularioComponent {
       this.fillRowNextItem()
       this.selectedProductId = this.rowData.productId
       this.rowFormTitle = 'Item - Adicionar'
-      this.updateColumnsProperties();
       this.modal.open()
     }
   }
@@ -659,32 +675,18 @@ export class FormularioComponent {
   };
 
   public onChangeFieldsRow(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
-    let validation: PoDynamicFormValidation = {};
-    if (changedValue.property === 'productId') {
-      if (!this.selectedProductId) {
-        this.fillProductData(changedValue.value.productId)
-        validation = {}
-      } else {
-        validation = {
-          value: { productId: this.selectedProductId },
-        }
-      }
-    } else if (changedValue.property === 'comissionPercentage' || changedValue.property === 'unitPrice' || changedValue.property === 'amount') {
-      if (isNaN(Number(changedValue.value.comissionPercentage))) {
-        this.rowData.comissionPercentage = 0
-      } else if (isNaN(Number(changedValue.value.unitPrice))) {
-        this.rowData.unitPrice = 0
-      } else if (isNaN(Number(changedValue.value.amount))) {
-        this.rowData.amount = 0
-      }
-      validation = {
-        value: {
-          totalPrice:           Math.abs(this.rowData.unitPrice*this.rowData.amount),
-          comissionUnitValue:   Math.abs(this.rowData.unitPrice*(1-this.headerData.financialDiscount/100)*(this.rowData.comissionPercentage/100)),
-          comissionTotalValue:  Math.abs(this.rowData.unitPrice*(1-this.headerData.financialDiscount/100)*this.rowData.amount*(this.rowData.comissionPercentage/100)),
-        }
-      }
+    if (this.isViewMode()) {
+      return {};
     }
+    let validation: PoDynamicFormValidation = { fields: this.fieldsService.getColumns(this) };
+    changedValue.property === 'productId'                 ? this.fillProductData(changedValue.value.productId)  : null;
+    !this.selectedProductId                               ? this.rowData.productId = this.selectedProductId     : null
+    isNaN(Number(changedValue.value.comissionPercentage)) ? this.rowData.comissionPercentage = 0                : null;
+    isNaN(Number(changedValue.value.unitPrice))           ? this.rowData.unitPrice = 0                          : null;
+    isNaN(Number(changedValue.value.amount))              ? this.rowData.amount = 0                             : null;
+    //this.rowData.totalPrice           = Math.abs(this.rowData.unitPrice*this.rowData.amount);
+    //this.rowData.comissionUnitValue   = Math.abs(this.rowData.unitPrice*(1-this.headerData.financialDiscount/100)*(this.rowData.comissionPercentage/100));
+    //this.rowData.comissionTotalValue  = Math.abs(this.rowData.unitPrice*(1-this.headerData.financialDiscount/100)*this.rowData.amount*(this.rowData.comissionPercentage/100));
     return validation;
   };
 
@@ -730,8 +732,8 @@ export class FormularioComponent {
             totalPrice:           item.valorTotal,
             tes:                  item.tes,
             comissionPercentage:  item.comissao,
-            comissionUnitValue:   item.valorUnitario * item.comissao / 100,
-            comissionTotalValue:  item.valorTotal * item.comissao / 100,
+            //comissionUnitValue:   item.valorUnitario * item.comissao / 100,
+            //comissionTotalValue:  item.valorTotal * item.comissao / 100,
             productNetWeight:     item.pesoNeto,
             productGrossWeight:   item.pesoBruto,
             packagingFormat:      item.formatoEmbalagem,
@@ -748,8 +750,8 @@ export class FormularioComponent {
             totalPrice:           item.valorTotal,
             tes:                  item.tes,
             comissionPercentage:  item.comissao,
-            comissionUnitValue:   item.valorUnitario * item.comissao / 100,
-            comissionTotalValue:  item.valorTotal * item.comissao / 100,
+            //comissionUnitValue:   item.valorUnitario * item.comissao / 100,
+            //comissionTotalValue:  item.valorTotal * item.comissao / 100,
             productNetWeight:     item.pesoNeto,
             productGrossWeight:   item.pesoBruto,
             packagingFormat:      item.formatoEmbalagem,
@@ -759,6 +761,7 @@ export class FormularioComponent {
           }, 0);
         }
       }
+      this.recalculateRowsTotals();
       return res; // Retorna os dados completos do orçamento
     } catch (error: any) {
       this.poNotification.error('Erro ao carregar orçamento: ' + error.message);
@@ -794,6 +797,7 @@ export class FormularioComponent {
       this.headerData.destinationCity   = !this.isModifyMode() && !this.isCopyMode() ? customerData.destinationCity : this.headerData.destinationCity;
       this.headerData.customerHasIE     = customerData.customerHasIE;
       this.headerData.customerCategory  = customerData.customerCategory;
+      this.headerData.freightICMSPauta  = customerData.freightICMSPauta;
     } else {
       this.poNotification.warning('Erro ao carregar dados do cliente.');
     }
@@ -801,25 +805,8 @@ export class FormularioComponent {
 
   public get isQuotationBranch(): boolean {
     const location = this.headerData.loadingLocation;
-    const isQuotationBranch = this.fieldsService.getLoadingLocations.find(loc => loc.value === location)?.isQuotation ?? false;
+    const isQuotationBranch = this.fieldsService.getLoadingLocations.find(loc => loc.code === location)?.isQuotation ?? false;
     return isQuotationBranch;
-  }
-
-  private updateColumnsProperties(): void {
-    this.columns = this.columns.map(column => {
-      if (column.property === 'fobBasePrice') {
-        return {
-          ...column,
-          disabled: !this.isQuotationBranch,
-          visible:  this.isQuotationBranch,
-          required: this.isQuotationBranch,
-        }
-      }
-      if (column.property === 'productId') {
-        return { ...column, disabled: !!this.rowData.productId }
-      }
-      return column;
-    });
   }
 
   private loadDefaultData(): void {
@@ -839,6 +826,7 @@ export class FormularioComponent {
       freightResponsible:   false,
       customerVehicle:      false,
       palletReturn:         false,
+      freightICMSPauta:     0,
     };
     this.rows = [
     {
@@ -911,6 +899,7 @@ export class FormularioComponent {
       this.poNotification.warning('Preencha todos os campos obrigatórios: Unidade de Carregamento, Cliente.')
       return null;
     }
+    this.location = this.copyModalHeaderData.loadingLocation;
     this.headerData.loadingLocation = this.copyModalHeaderData.loadingLocation;
     this.headerData.customerId = this.copyModalHeaderData.customerId;
     this.headerData.budgetStatus = this.isQuotationBranch ? 'CP' : 'PP';

@@ -38,10 +38,11 @@ export class CustomerService implements PoLookupFilter {
       const res: any = await firstValueFrom(this.api.get( `portal-do-representante/clientes/${customerId}?sellerId=${localStorage.getItem('sellerId')}`));
       if (res?.success) {
         return {
-          destinationState: res.estado,
-          destinationCity: res.municipio,
-          customerHasIE: !!res.ie,
-          customerCategory: res.categoria,
+          destinationState: res.estado          ?? '',
+          destinationCity:  res.municipio       ?? '',
+          customerCategory: res.categoria       ?? '',
+          freightICMSPauta: res.icmsPautaFrete  ?? 0,
+          customerHasIE:    !!res.ie,
         }
       }
       return null;
