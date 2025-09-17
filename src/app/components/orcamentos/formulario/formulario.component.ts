@@ -670,6 +670,7 @@ export class FormularioComponent {
     this.headerData.customerVehicle     = changedValue.value.freightType === 'C' ? false : this.headerData.customerVehicle ?? false;
     this.headerData.palletReturn        = this.headerData.cargoType == 'BT' ? false : this.headerData.palletReturn ?? false;
     changedValue.property === 'destinationState' ? this.headerData.destinationCity = '' : null;
+    this.updateFreightCost(true);
     this.saveForm(true, bkpRows, bkpHeaderData, true);
     return validation;
   };
@@ -680,7 +681,7 @@ export class FormularioComponent {
     }
     let validation: PoDynamicFormValidation = { fields: this.fieldsService.getColumns(this) };
     changedValue.property === 'productId'                 ? this.fillProductData(changedValue.value.productId)  : null;
-    !this.selectedProductId                               ? this.rowData.productId = this.selectedProductId     : null
+    //!this.selectedProductId                               ? this.rowData.productId = this.selectedProductId     : null
     isNaN(Number(changedValue.value.comissionPercentage)) ? this.rowData.comissionPercentage = 0                : null;
     isNaN(Number(changedValue.value.unitPrice))           ? this.rowData.unitPrice = 0                          : null;
     isNaN(Number(changedValue.value.amount))              ? this.rowData.amount = 0                             : null;
@@ -986,6 +987,7 @@ export class FormularioComponent {
         }
       }
     } catch (error: any) {
+      this.headerData.freightCost = 0;
       if (!silent) {
         this.poNotification.error('Erro ao atualizar custo de frete: ' + error.message);
       }

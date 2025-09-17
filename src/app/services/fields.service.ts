@@ -604,7 +604,7 @@ export class FieldsService {
         type: 'string',
         required: true,
         showRequired: false,
-        disabled: !!env.rowData.productDescription || env.isViewMode(),
+        disabled: env.isViewMode(),
         noAutocomplete: true,
         maxLength: 20,
         searchService: this.api.baseUrl+'/portal-do-representante/produtos',
