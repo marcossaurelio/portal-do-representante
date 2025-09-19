@@ -11,11 +11,8 @@ export class FieldsService {
   constructor(private api: ApiService) { }
 
     private readonly loadingLocations: Array<any> = [
-      { loadingLocation: 'Matriz',              code: "01010001", isQuotation: true   },
-      { loadingLocation: 'Grossos',             code: "01010002", isQuotation: true   },
       { loadingLocation: 'São Camilo',          code: "01010003", isQuotation: true   },
-      { loadingLocation: 'Refinorte',           code: "02010001", isQuotation: true   },
-      { loadingLocation: 'Qualysal',            code: "03010001", isQuotation: true   },
+      { loadingLocation: 'São Camilo',          code: "01010003", isQuotation: true   },
       { loadingLocation: 'São Paulo',           code: "01020009", isQuotation: false  },
       { loadingLocation: 'Rio de Janeiro',      code: "01030010", isQuotation: false  },
     ]
