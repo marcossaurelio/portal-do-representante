@@ -433,8 +433,9 @@ export class OrcamentosComponent {
 
   public getColumns(): Array<PoTableColumn> {
     return [
-      {property: 'loadingLocation', label: 'Unidade'},
-      {property: 'budget', label: 'Orçamento'},
+      {property: 'branchName',      label: 'Filial'   },
+      {property: 'loadingLocation', label: 'Unidade Carreg.' },
+      {property: 'budget',          label: 'Orçamento'},
       {
         property: 'budgetStatus',
         label: 'Situação Orçamento',
@@ -471,8 +472,10 @@ export class OrcamentosComponent {
     try {
       const res: any = await firstValueFrom(this.api.post('portal-do-representante/orcamentos' + params,body));
       return res.objects.map((item: any) => ({
-        loadingLocationId:    item.filial,
-        loadingLocation:      this.getLoadingLocationByCode(item.filial),
+        branchId:             item.filial,
+        branchName:           this.getBranchByCode(item.filial),
+        loadingLocationId:    item.unidadeCarregamento,
+        loadingLocation:      this.getLoagingLocationByCode(item.unidadeCarregamento),
         budgetStatus:         item.situacao,
         orderStatus:          item.pedido ? item.situacaoPedido : '',
         budget:               item.orcamento,
@@ -492,9 +495,14 @@ export class OrcamentosComponent {
     this.filteredItems = [];
   }
 
-  private getLoadingLocationByCode(code: string): string{
-    const location = this.fieldsService.getLoadingLocations.find(loc => loc.code === code);
-    return location ? location.loadingLocation : code;
+  private getBranchByCode(branchId: string): string{
+    const branch = this.fieldsService.getBranches.find(branch => branch.id === branchId);
+    return branch ? branch.name : branchId;
+  }
+
+  private getLoagingLocationByCode(locationId: string): string {
+    const location = this.fieldsService.getLoadingLocations.find(location => location.id === locationId);
+    return location ? location.name : locationId;
   }
 
   private dateFormat(dateString: string): string {
@@ -578,24 +586,24 @@ export class OrcamentosComponent {
   }
   
   public viewBudget(item: any) {
-    this.router.navigate(['/','orcamentos','formulario'], { queryParams: { mode: 'view', location: item.loadingLocationId, budget: item.budget } })
+    this.router.navigate(['/','orcamentos','formulario'], { queryParams: { mode: 'view', branch: item.branchId, budget: item.budget } })
   }
   
   public copyBudget(item: any) {
-    this.router.navigate(['/','orcamentos','formulario'], { queryParams: { mode: 'copy', location: item.loadingLocationId, budget: item.budget } })
+    this.router.navigate(['/','orcamentos','formulario'], { queryParams: { mode: 'copy', branch: item.branchId, budget: item.budget } })
   }
   
   public modifyBudget(item: any) {
-    this.router.navigate(['/','orcamentos','formulario'], { queryParams: { mode: 'modify', location: item.loadingLocationId, budget: item.budget } })
+    this.router.navigate(['/','orcamentos','formulario'], { queryParams: { mode: 'modify', branch: item.branchId, budget: item.budget } })
   }
   
   public async approveQuotation(item: any): Promise<void> {
     this.isHideLoading = false;
-    const loadingLocationId = item.loadingLocationId;
+    const branchId = item.branchId;
     const budget = item.budget;
-    const body = { filial: loadingLocationId, orcamento: budget }
+    const body = { filial: branchId, orcamento: budget }
     try {
-      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/cotacao/aprovar', body, loadingLocationId));
+      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/cotacao/aprovar', body, branchId));
       if (res.success) {
         this.poNotification.success('Cotação aprovada com sucesso!');
         this.items = await this.getItems();
@@ -612,11 +620,11 @@ export class OrcamentosComponent {
 
   public async rejectQuotation(item: any): Promise<void> {
     this.isHideLoading = false;
-    const loadingLocationId = item.loadingLocationId;
+    const branchId = item.branchId;
     const budget = item.budget;
-    const body = { filial: loadingLocationId, orcamento: budget }
+    const body = { filial: branchId, orcamento: budget }
     try {
-      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/cotacao/rejeitar', body, loadingLocationId));
+      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/cotacao/rejeitar', body, branchId));
       if (res.success) {
         this.poNotification.success('Cotação rejeitada com sucesso!');
         this.items = await this.getItems();
@@ -634,11 +642,11 @@ export class OrcamentosComponent {
 
   public async sendToApproval(item: any): Promise<void> {
     this.isHideLoading = false;
-    const loadingLocationId = item.loadingLocationId;
+    const branchId = item.branchId;
     const budget = item.budget;
-    const body = { filial: loadingLocationId, orcamento: budget }
+    const body = { filial: branchId, orcamento: budget }
     try {
-      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/pre-pedido/aprovar', body, loadingLocationId));
+      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/pre-pedido/aprovar', body, branchId));
       if (res.success) {
         this.poNotification.success('Pré pedido enviado para aprovação com sucesso!');
         this.items = await this.getItems();

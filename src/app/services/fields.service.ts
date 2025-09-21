@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { PoDynamicFormField } from '@po-ui/ng-components';
 import { ApiService } from './api.service';
-import { FormularioComponent } from '../components/orcamentos/formulario/formulario.component';
 
 @Injectable({
   providedIn: 'root'
@@ -10,11 +9,19 @@ export class FieldsService {
 
   constructor(private api: ApiService) { }
 
+    private readonly branches: Array<any> = [
+      { name: 'São Camilo',          id: "01010003", isQuotation: true   },
+      { name: 'São Camilo',          id: "01010003", isQuotation: true   },
+      { name: 'São Paulo',           id: "01020009", isQuotation: false  },
+      { name: 'Rio de Janeiro',      id: "01030010", isQuotation: false  },
+    ]
+
     private readonly loadingLocations: Array<any> = [
-      { loadingLocation: 'São Camilo',          code: "01010003", isQuotation: true   },
-      { loadingLocation: 'São Camilo',          code: "01010003", isQuotation: true   },
-      { loadingLocation: 'São Paulo',           code: "01020009", isQuotation: false  },
-      { loadingLocation: 'Rio de Janeiro',      code: "01030010", isQuotation: false  },
+      { id: 'SS', name: 'Serv Sal',       branch: "01010003" },
+      { id: 'JS', name: 'Jassal',         branch: "01010003" },
+      { id: 'FS', name: 'F Souto',        branch: "01010003" },
+      { id: 'SP', name: 'São Paulo',      branch: "01020009" },
+      { id: 'RJ', name: 'Rio de Janeiro', branch: "01030010" },
     ]
 
     private readonly budgetStatuses: Array<any> = [
@@ -123,8 +130,23 @@ export class FieldsService {
         gridColumns: 4,
         options: this.loadingLocations,
         type: 'string',
-        fieldValue: 'code',
-        fieldLabel: 'loadingLocation',
+        fieldValue: 'id',
+        fieldLabel: 'name',
+        order: 1,
+      },
+      {
+        property: 'branchId',
+        label: 'Filial',
+        visible: true,
+        required: true,
+        showRequired: false,
+        disabled: true,
+        noAutocomplete: true,
+        gridColumns: 2,
+        options: this.branches,
+        type: 'string',
+        fieldValue: 'id',
+        fieldLabel: 'name',
         order: 1,
       },
       {
@@ -135,7 +157,7 @@ export class FieldsService {
         showRequired: false,
         disabled: true,
         noAutocomplete: true,
-        gridColumns: 3,
+        gridColumns: 2,
         type: 'string',
         order: 1,
       },
@@ -245,7 +267,7 @@ export class FieldsService {
         visible: true,
         required: true,
         showRequired: true,
-        disabled: !env.headerData.loadingLocation || env.isViewMode(),
+        disabled: !env.headerData.branchId || env.isViewMode(),
         noAutocomplete: true,
         minLength: 3,
         maxLength: 40,
@@ -267,7 +289,7 @@ export class FieldsService {
         visible: true,
         required: false,
         showRequired: false,
-        disabled: !env.headerData.loadingLocation || env.isViewMode(),
+        disabled: !env.headerData.branchId || env.isViewMode(),
         noAutocomplete: true,
         type: 'currency',
         maxLength: 5,
@@ -281,7 +303,7 @@ export class FieldsService {
         visible: true,
         required: false,
         showRequired: false,
-        disabled: !env.headerData.loadingLocation || env.isViewMode(),
+        disabled: !env.headerData.branchId || env.isViewMode(),
         noAutocomplete: true,
         maxLength: 120,
         gridColumns: 12,
@@ -308,7 +330,7 @@ export class FieldsService {
       {
         property: 'freightPaymentTerms',
         label: 'Cond. Pag. Frete',
-        visible: env.isQuotationBranch || !env.headerData.loadingLocation,
+        visible: env.isQuotationBranch || !env.headerData.branchId,
         required: true,
         showRequired: false,
         disabled: !env.headerData.freightType,
@@ -406,7 +428,7 @@ export class FieldsService {
       {
         property: 'maxLoad',
         label: 'Carga Máxima (kg)',
-        visible: env.isQuotationBranch || !env.headerData.loadingLocation,
+        visible: env.isQuotationBranch || !env.headerData.branchId,
         required: true,
         showRequired: false,
         noAutocomplete: true,
@@ -604,7 +626,7 @@ export class FieldsService {
         disabled: env.isViewMode(),
         noAutocomplete: true,
         maxLength: 20,
-        searchService: this.api.baseUrl+'/portal-do-representante/produtos',
+        searchService: env.productServiceWrapper,
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'descricao', label: 'Descrição' },
@@ -770,12 +792,21 @@ export class FieldsService {
     ]
   }
 
-  public get getLoadingLocations(): Array<any> {
-    return this.loadingLocations;
+  public get getBranches(): Array<any> {
+    return this.branches;
   }
   
-  public isQuotationBranch(loadingLocation: string): boolean {
-    return this.loadingLocations.find(loc => loc.code === loadingLocation)?.isQuotation ?? false;
+  public isQuotationBranch(branchId: string): boolean {
+    return this.branches.find(branch => branch.code === branchId)?.isQuotation ?? false;
+  }
+
+  public getBranchByLocation(locationId: string): any {
+    const branchId = this.loadingLocations.find(location => location.id === locationId)?.branch;
+    return branchId
+  }
+
+  public get getLoadingLocations(): Array<any> {
+    return this.loadingLocations;
   }
 
 }

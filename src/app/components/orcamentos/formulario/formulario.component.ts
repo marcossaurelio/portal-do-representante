@@ -9,6 +9,7 @@ import { ApiService } from '../../../services/api.service';
 import { CustomerService } from '../../../services/domain/customer.service';
 import { CityService } from '../../../services/domain/city.service';
 import { FieldsService } from '../../../services/fields.service';
+import { ProductService } from '../../../services/domain/product.service';
 import { firstValueFrom, Observable } from 'rxjs';
 
 @Component({
@@ -34,7 +35,7 @@ import { firstValueFrom, Observable } from 'rxjs';
 })
 export class FormularioComponent {
   
-  constructor(private router: Router, private route: ActivatedRoute, private api: ApiService, private poNotification: PoNotificationService, private customerService: CustomerService, private cityService: CityService, private fieldsService: FieldsService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private api: ApiService, private poNotification: PoNotificationService, private customerService: CustomerService, private cityService: CityService, private fieldsService: FieldsService, private productService: ProductService) {}
 
   @ViewChild('modal', { static: true }) 'modal': PoModalComponent;
   @ViewChild('modalCopy', { static: true }) 'modalCopy': PoModalComponent;
@@ -45,7 +46,7 @@ export class FormularioComponent {
   public rowData: any = {};
   public copyModalHeaderData: any  = {};
   public mode: string = 'view';
-  public location: string = ''
+  public branchId: string = ''
   public budgetId: string = ''
   public isHideLoading: boolean = true;
   public loadingText: string = 'Carregando';
@@ -107,15 +108,15 @@ export class FormularioComponent {
     this.route.queryParams.subscribe(params => {
       this.mode = params['mode'] || '';
       this.budgetId = params['budget'] || '';
-      this.location = params['location'] || '';
+      this.branchId = params['branch'] || '';
     });
 
     this.formTitle += ' - ' + this.getModeDescription(this.mode)
 
     this.loadDefaultData();
 
-    if (!this.isAddMode() && this.location && this.budgetId) {
-      const res = await this.loadBudgetData(this.location,this.budgetId);
+    if (!this.isAddMode() && this.branchId && this.budgetId) {
+      const res = await this.loadBudgetData(this.branchId,this.budgetId);
       if (res) {        
         !!this.headerData.customerId ? await this.fillCustomerData() : null;
         !this.isViewMode() ? await this.updateFreightCost() : null;
@@ -349,11 +350,11 @@ export class FormularioComponent {
   }
 
   public async sendForm(): Promise<any> {
-    const loadingLocation = this.headerData.loadingLocation;
+    const branchId = this.headerData.branchId;
     const budgetStatus = this.isQuotationBranch ? 'CP' : 'PP';
     const body = {    
-      "filial":               this.headerData.loadingLocation           ?? "",
-      "unidadeCarregamento":  "SS",
+      "filial":               this.headerData.branchId                  ?? "",
+      "unidadeCarregamento":  this.headerData.loadingLocation           ?? "",
       "orcamento":            this.headerData.budgetId                  ?? "",
       "cliente":              this.headerData.customerId.substring(0,6) ?? "",
       "lojaCliente":          this.headerData.customerId.slice(-2)      ?? "",
@@ -391,10 +392,10 @@ export class FormularioComponent {
     };
     try {
       if (!this.headerData.budgetId) {
-        const res = await firstValueFrom( this.api.post('portal-do-representante/orcamentos/incluir/', body, loadingLocation));
+        const res = await firstValueFrom( this.api.post('portal-do-representante/orcamentos/incluir/', body, branchId));
         return res;
       } else {
-        const res = await firstValueFrom( this.api.put('portal-do-representante/orcamentos/alterar/', body, loadingLocation));
+        const res = await firstValueFrom( this.api.put('portal-do-representante/orcamentos/alterar/', body, branchId));
         return res;
       }
     } catch (error: any) {
@@ -404,10 +405,10 @@ export class FormularioComponent {
   }
 
   private async getItemPriceInfo(row: any): Promise<any> {
-    const loadingLocation = this.headerData.loadingLocation;
+    const branchId = this.headerData.branchId;
     const body = {
-      "filial":               this.headerData.loadingLocation           ?? "",
-      "unidadeCarregamento":  "SS",
+      "filial":               this.headerData.branchId                  ?? "",
+      "unidadeCarregamento":  this.headerData.loadingLocation           ?? "",
       "orcamento":            this.headerData.budgetId                  ?? "",
       "cliente":              this.headerData.customerId.substring(0,6) ?? "",
       "lojaCliente":          this.headerData.customerId.slice(-2)      ?? "",
@@ -443,7 +444,7 @@ export class FormularioComponent {
       "descontoFinanceiro":   this.headerData.financialDiscount         ?? 0,
     };
     try {
-      const res: any = await firstValueFrom( this.api.post('portal-do-representante/precificacao/produto/', body, loadingLocation));
+      const res: any = await firstValueFrom( this.api.post('portal-do-representante/precificacao/produto/', body, branchId));
       if (!res.success) {
         this.poNotification.error('Item ' + row.item + ' - ' + res.message + ': ' + res.fix);
         return null;
@@ -628,7 +629,7 @@ export class FormularioComponent {
 
   public formatNumericHeaderValues() {
     const numericFields: Array<string> = this.fields
-      .filter(field => field.type === 'number')
+      .filter(field => field.type === 'number' || field.type === 'currency')
       .map(field => field.property);
     numericFields.forEach((field) => {
       const value: number = Math.abs(Number(this.headerData[field])) ?? 0;
@@ -645,13 +646,14 @@ export class FormularioComponent {
     }
     const bkpHeaderData = { ...this.headerData };
     const bkpRows = this.rows.map(item => ({ ...item }));
-    const validation: PoDynamicFormValidation = { fields: this.fieldsService.getFields(this) };
-    const newBudgetStatus = this.isQuotationBranch ? 'CP' : 'PP';
-    changedValue.property === 'loadingLocation' ? this.headerData.budgetStatus = newBudgetStatus : null;
+    this.formatNumericHeaderValues();
+    changedValue.property === 'loadingLocation' ? this.headerData.branchId = this.fieldsService.getBranchByLocation(changedValue.value.loadingLocation) : null;
+    changedValue.property === 'loadingLocation' ? this.headerData.budgetStatus = this.isQuotationBranch ? 'CP' : 'PP' : null;
     changedValue.property === 'customerId' ? this.headerData.customerIdDisabled = this.headerData.customerId : null;
     changedValue.property === 'customerId' ? this.fillCustomerData() : null;
     this.headerData.financialDiscount   = this.headerData.financialDiscount >= 100 ? 0 : this.headerData.financialDiscount ?? 0;
     this.saveForm(true, bkpRows, bkpHeaderData, true);
+    const validation: PoDynamicFormValidation = { fields: this.fieldsService.getFields(this) };
     return validation;
   };
 
@@ -661,7 +663,6 @@ export class FormularioComponent {
     }
     const bkpHeaderData = { ...this.headerData };
     const bkpRows = this.rows.map(item => ({ ...item }));
-    const validation: PoDynamicFormValidation = { fields: this.fieldsService.getFields(this) };
     this.formatNumericHeaderValues();
     this.headerData.palletPattern10x1   = this.headerData.palletPattern10x1 ?? 150;
     this.headerData.palletPattern30x1   = this.headerData.palletPattern30x1 ?? 50;
@@ -674,6 +675,7 @@ export class FormularioComponent {
     changedValue.property === 'destinationState' ? this.headerData.destinationCity = '' : null;
     this.updateFreightCost(true);
     this.saveForm(true, bkpRows, bkpHeaderData, true);
+    const validation: PoDynamicFormValidation = { fields: this.fieldsService.getFields(this) };
     return validation;
   };
 
@@ -681,24 +683,22 @@ export class FormularioComponent {
     if (this.isViewMode()) {
       return {};
     }
-    let validation: PoDynamicFormValidation = { fields: this.fieldsService.getColumns(this) };
     changedValue.property === 'productId'                 ? this.fillProductData(changedValue.value.productId)  : null;
     //!this.selectedProductId                               ? this.rowData.productId = this.selectedProductId     : null
     isNaN(Number(changedValue.value.comissionPercentage)) ? this.rowData.comissionPercentage = 0                : null;
     isNaN(Number(changedValue.value.unitPrice))           ? this.rowData.unitPrice = 0                          : null;
     isNaN(Number(changedValue.value.amount))              ? this.rowData.amount = 0                             : null;
-    //this.rowData.totalPrice           = Math.abs(this.rowData.unitPrice*this.rowData.amount);
-    //this.rowData.comissionUnitValue   = Math.abs(this.rowData.unitPrice*(1-this.headerData.financialDiscount/100)*(this.rowData.comissionPercentage/100));
-    //this.rowData.comissionTotalValue  = Math.abs(this.rowData.unitPrice*(1-this.headerData.financialDiscount/100)*this.rowData.amount*(this.rowData.comissionPercentage/100));
+    const validation: PoDynamicFormValidation = { fields: this.fieldsService.getColumns(this) };
     return validation;
   };
 
-  private async loadBudgetData(location: string, budgetId: string): Promise<any> {
+  private async loadBudgetData(branchId: string, budgetId: string): Promise<any> {
     try {
-      const res: any = await firstValueFrom(this.api.get('portal-do-representante/orcamentos/dados?loadingLocation='+location+'&budget='+budgetId, location));
+      const res: any = await firstValueFrom(this.api.get('portal-do-representante/orcamentos/dados?branchId='+branchId+'&budget='+budgetId, branchId));
       if (res) {
         this.headerData = {
-          loadingLocation:      !this.isCopyMode() ? res.filial : '',
+          branchId:             !this.isCopyMode() ? res.filial : '',
+          loadingLocation:      !this.isCopyMode() ? res.unidadeCarregamento : '',
           budgetId:             !this.isCopyMode() ? res.orcamento : '',
           budgetStatus:         !this.isCopyMode() ? res.situacao : '',
           customerId:           !this.isCopyMode() ? res.cliente+res.loja : '',
@@ -774,9 +774,9 @@ export class FormularioComponent {
 
   private async fillProductData(codigoProduto: string): Promise<any> {
     this.confirmRow.loading = true;
-    const loadingLocation = this.headerData.loadingLocation;
+    const branchId = this.headerData.branchId;
     try {
-      const res: any = await firstValueFrom(this.api.get('portal-do-representante/produtos/'+codigoProduto, loadingLocation));
+      const res: any = await firstValueFrom(this.api.get('portal-do-representante/produtos/'+codigoProduto, branchId));
       if (res) {
         this.rowData.productDescription = res.descricao;
         this.rowData.packagingType = res.unidade;
@@ -807,8 +807,8 @@ export class FormularioComponent {
   }
 
   public get isQuotationBranch(): boolean {
-    const location = this.headerData.loadingLocation;
-    const isQuotationBranch = this.fieldsService.getLoadingLocations.find(loc => loc.code === location)?.isQuotation ?? false;
+    const branchId = this.headerData.branchId;
+    const isQuotationBranch = this.fieldsService.getBranches.find(branch => branch.id === branchId)?.isQuotation ?? false;
     return isQuotationBranch;
   }
 
@@ -889,7 +889,7 @@ export class FormularioComponent {
   }
 
   public get isFreightTabDisabled(): boolean {
-    return !this.headerData.loadingLocation || !this.headerData.customerId;
+    return !this.headerData.branchId || !this.headerData.customerId;
   }
 
   private openCopyModal(): any {
@@ -902,8 +902,9 @@ export class FormularioComponent {
       this.poNotification.warning('Preencha todos os campos obrigatórios: Unidade de Carregamento, Cliente.')
       return null;
     }
-    this.location = this.copyModalHeaderData.loadingLocation;
     this.headerData.loadingLocation = this.copyModalHeaderData.loadingLocation;
+    this.branchId = this.fieldsService.getBranchByLocation(this.copyModalHeaderData.loadingLocation);
+    this.headerData.branchId = this.branchId;
     this.headerData.customerId = this.copyModalHeaderData.customerId;
     this.headerData.budgetStatus = this.isQuotationBranch ? 'CP' : 'PP';
     if (this.tableCopy.getSelectedRows().length <= 0) {
@@ -954,23 +955,43 @@ export class FormularioComponent {
     }
   };
 
+  public productServiceWrapper = {
+    getFilteredItems: (filteredParams: PoLookupFilteredItemsParams): Observable<any> => {
+      const enhancedParams = {
+        ...filteredParams,
+        filterParams: {
+          ...filteredParams.filterParams,
+          loadingLocation: this.headerData.loadingLocation || ''
+        }
+      };
+      return this.productService.getFilteredItems(enhancedParams);
+    },  
+    getObjectByValue: (value: string): Observable<any> => {
+      return this.productService.getObjectByValue(value);
+    }
+  };
+
   private async updateFreightCost(silent: boolean = false): Promise<void> {
-    const loadingLocation = this.headerData.loadingLocation;
+    const branchId = this.headerData.branchId;
     const destinationState = this.headerData.destinationState;
     const destinationCity = this.headerData.destinationCity;
     const totalWeight = this.totalLoadWeight;
     const body = {
-      filialOrigem: loadingLocation,
+      filialOrigem: branchId,
       cidadeDestino: destinationCity,
       estadoDestino: destinationState,
       pesoTotal: totalWeight,
     }
     const transportationMode = this.headerData.transportationMode === 'M' ? 'maritimo' : 'rodoviario';
-    if (this.headerData.freightType !== 'C' || this.headerData.freightResponsible) {
+    if (this.headerData.freightType !== 'C') {
+      this.headerData.freightCost = 0;
+      return;
+    }
+    if (this.headerData.freightResponsible) {
       return;
     }
     try {
-      const res: any = await firstValueFrom(this.api.post(`portal-do-representante/frete/valor/` + transportationMode, body, loadingLocation));
+      const res: any = await firstValueFrom(this.api.post(`portal-do-representante/frete/valor/` + transportationMode, body, branchId));
       if (res.success) {
         if (this.headerData.freightCost !== res.valorFrete) {
           this.headerData.freightCost = res.valorFrete;

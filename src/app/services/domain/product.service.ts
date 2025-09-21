@@ -8,20 +8,20 @@ import { PoNotificationService } from '@po-ui/ng-components';
 @Injectable({
   providedIn: 'root'
 })
-export class CityService implements PoLookupFilter {
+export class ProductService implements PoLookupFilter {
 
   constructor(private api: ApiService, private poNotification: PoNotificationService) { }
 
   getFilteredItems(filteredParams: PoLookupFilteredItemsParams): Observable<any> {
     const { filterParams, advancedFilters, ...restFilteredItemsParams } = filteredParams;
     const params = { ...restFilteredItemsParams, ...filterParams, ...advancedFilters };
-    let endpoint = 'portal-do-representante/cidades?page=' + params.page + '&pageSize=' + params.pageSize + '&state=' + params.state;
+    let endpoint = 'portal-do-representante/produtos?page=' + params.page + '&pageSize=' + params.pageSize + '&location=' + params.loadingLocation;
     endpoint += !!params.filter ? '&filter=' + params.filter : '';
     return this.api.get(endpoint);
   }
 
   getObjectByValue(value: string): Observable<any> {
-    const endpoint = `portal-do-representante/cidades/${value}`;
+    const endpoint = `portal-do-representante/produtos/${value}`;
     return this.api.get(endpoint).pipe(
       tap((res: any) => {
         if (!res.success) {
