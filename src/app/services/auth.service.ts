@@ -29,13 +29,6 @@ export class AuthService {
   
     return tokenExpiration >= todayFormatted;
   }
-    
-  /*
-  login(token: string): void {
-    localStorage.setItem('token',token);
-    this.router.navigate(['/home']);
-  }
-  */
 
   public login(user: string, password: string) {
     const body = {

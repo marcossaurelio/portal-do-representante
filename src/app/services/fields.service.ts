@@ -190,7 +190,7 @@ export class FieldsService {
         type: 'string',
         searchService: env.customerService,
         columns: [
-          { property: 'codigo', label: 'Código' },
+          { property: 'codigoLoja', label: 'Código' },
           { property: 'cgc', label: 'CNPJ' },
           { property: 'tipo', label: 'Tipo' },
           { property: 'razaoSocial', label: 'Nome' },
@@ -259,6 +259,29 @@ export class FieldsService {
         type: 'string',
         fieldValue: 'code',
         fieldLabel: 'label',
+        order: 1,
+      },
+      {
+        property: 'sellerId',
+        label: 'Vendedor',
+        visible: true,
+        required: true,
+        showRequired: true,
+        disabled: !env.headerData.loadingLocation || !this.isInternalUser || env.isViewMode(),
+        noAutocomplete: true,
+        maxLength: 6,
+        gridColumns: 4,
+        type: 'string',
+        searchService: this.api.baseUrl+'/portal-do-representante/vendedores',
+        columns: [
+          { property: 'codigo',   label: 'Código'   },
+          { property: 'nome',     label: 'Nome'     },
+          { property: 'cgc',      label: 'CPF/CNPJ' },
+          { property: 'tipo',     label: 'Tipo'     },
+        ],
+        format: ['codigo', 'nome'],
+        fieldLabel: 'nome',
+        fieldValue: 'codigo',
         order: 1,
       },
       {
@@ -807,6 +830,10 @@ export class FieldsService {
 
   public get getLoadingLocations(): Array<any> {
     return this.loadingLocations;
+  }
+
+  public get isInternalUser(): boolean {
+    return localStorage.getItem('sellerType') === 'I';
   }
 
 }

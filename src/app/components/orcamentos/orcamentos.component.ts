@@ -37,6 +37,7 @@ export class OrcamentosComponent {
   public items: Array<any> = [];
   public filteredItems: Array<any> = [];
   private sellerId: string = localStorage.getItem('sellerId') ?? '';
+  private sellerType: string = localStorage.getItem('sellerType') ?? '';
   public isHideLoading: boolean = true;
   public selectedFilterBlock: number = 0;
   public customerModalTitle: string = 'Cadastro de Novo Cliente';
@@ -433,9 +434,11 @@ export class OrcamentosComponent {
 
   public getColumns(): Array<PoTableColumn> {
     return [
-      {property: 'branchName',      label: 'Filial'   },
-      {property: 'loadingLocation', label: 'Unidade Carreg.' },
-      {property: 'budget',          label: 'Orçamento'},
+      {property: 'branchName',      label: 'Filial'           },
+      {property: 'loadingLocation', label: 'Unidade Carreg.'  },
+      {property: 'sellerId',        label: 'Vendedor'         , visible: this.sellerType === 'I' },
+      {property: 'sellerName',      label: 'Nome Vendedor'    , visible: this.sellerType === 'I' },
+      {property: 'budget',          label: 'Orçamento'        },
       {
         property: 'budgetStatus',
         label: 'Situação Orçamento',
@@ -474,6 +477,8 @@ export class OrcamentosComponent {
       return res.objects.map((item: any) => ({
         branchId:             item.filial,
         branchName:           this.getBranchByCode(item.filial),
+        sellerId:             item.vendedor,
+        sellerName:           item.nomeVendedor,
         loadingLocationId:    item.unidadeCarregamento,
         loadingLocation:      this.getLoagingLocationByCode(item.unidadeCarregamento),
         budgetStatus:         item.situacao,
@@ -710,7 +715,7 @@ export class OrcamentosComponent {
     this.confirmCustomer.loading = true;
     const cnpj = this.customerModalData.cnpj;
     const res: any = await this.customerService.getCustomerPublicData(cnpj);
-    if (!res.success) {
+    if (!res.success || !res) {
       this.poNotification.error('Falha ao buscar dados do cliente: ' + res.message);
       this.customerModalData.cnpj = '';
       this.confirmCustomer.loading = false;

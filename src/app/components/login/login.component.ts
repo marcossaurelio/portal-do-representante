@@ -47,6 +47,7 @@ export class LoginComponent {
           localStorage.setItem('authTokenExpiration', res.authTokenExpiration);
           localStorage.setItem('userName', this.capitalizeName(res.userName));
           localStorage.setItem('sellerId', res.sellerId);
+          localStorage.setItem('sellerType', res.sellerType);
           this.router.navigate(['/','home'])
           this.poNotification.success('Usuário autenticado com sucesso.');
         } else {

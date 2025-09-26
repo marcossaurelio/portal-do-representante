@@ -36,8 +36,6 @@ export class AppComponent {
   }
 
   public logoServSal = 'assets/images/logo-serv-sal.png';
-  private userName: string = localStorage.getItem('userName') ?? 'Usuário';
-  private sellerId: string = localStorage.getItem('sellerCode') ?? 'Representante';
 
   public profile: PoToolbarProfile = {
     avatar: '',
@@ -57,6 +55,13 @@ export class AppComponent {
     { label: 'Contas a Receber',          action: this.contasReceberClick.bind(this), icon: 'an an-currency-circle-dollar', shortLabel: "Contas a Receber" },
     { label: 'Tabelas de Preço',          action: this.tabelasPrecoClick.bind(this),  icon: 'an an-money-wavy',             shortLabel: "Tabelas de Preço" },
   ];
+
+  private get userName(): string {
+    return localStorage.getItem('userName') ?? 'Usuário';
+  }
+  private get sellerId(): string {
+    return localStorage.getItem('sellerType') == 'I' ? 'Vendedor Interno' : 'Representante';  
+  }
 
   private homeClick() {
     this.router.navigate(['/','home']);
