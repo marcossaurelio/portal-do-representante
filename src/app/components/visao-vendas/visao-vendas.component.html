@@ -1,5 +1,3 @@
-<!--
-
 <po-page-default
 p-title="Visão Geral de Vendas">
 
@@ -29,59 +27,52 @@ p-title="Visão Geral de Vendas">
 
     </div>
 
-    <div class="po-row">
-
+    <div class="po-md-12">
         <po-chart
-        class="po-xl-12"
-        [p-title]="sellingEvolution.title"
-        [p-options]="sellingEvolution.options"
-        [p-categories]="sellingEvolution.categories"
-        [p-series]="sellingEvolution.series"
-        [p-type]="sellingEvolution.type"
-        [p-data-label]="sellingEvolution.dataLabel"
-        [p-height]="325"
-        [p-custom-actions]="sellingEvolution.customActions"
+        class="po-md-12"
+        [p-title]="revenueOverTimeTitle"
+        [p-options]="revenueOverTimeOptions"
+        [p-categories]="months"
+        [p-series]="revenueOverTime"
         >
         </po-chart>
-    
     </div>
 
-    <div class="po-row">
-
+    <div class="po-md-12">
         <po-chart
-        class="po-xl-6"
-        [p-title]="sellingByProduct.title"
-        [p-options]="sellingByProduct.options"
-        [p-series]="sellingByProduct.series"
+        class="po-md-12"
+        [p-title]="revenueHistoryTitle"
+        [p-options]="revenueHistoryOptions"
+        [p-categories]="years"
+        [p-series]="revenueHistory"
         >
         </po-chart>
-
-        <po-chart
-        class="po-xl-6"
-        [p-title]="sellingByCustomer.title"
-        [p-options]="sellingByCustomer.options"
-        [p-series]="sellingByCustomer.series"
-        >
-        </po-chart>
-
     </div>
 
-    <div class="po-row">
-
+    <div class="po-md-12">
         <po-chart
-        class="po-xl-6"
-        [p-title]="sellingByCustomerCategory.title"
-        [p-options]="sellingByCustomerCategory.options"
-        [p-series]="sellingByCustomerCategory.series"
+        class="po-lg-12"
+        [p-title]="customerCategoriesTitle"
+        [p-options]="customerCategoriesOptions"
+        [p-series]="customerCategories"
+        [p-height]="450"
         >
         </po-chart>
-
     </div>
 
-    <br>
-    <br>
+    <div class="po-md-12">
+        <po-chart
+        class="po-md-12"
+        [p-title]="productCategoriesEvolutionTitle"
+        [p-height]="450"
+        [p-categories]="productCategoriesEvolutionItems"
+        [p-series]="productCategoriesEvolution"
+        [p-type]="productCategoriesEvolutionType"
+        [p-options]="productCategoriesEvolutionOptions"
+        >
+        </po-chart>
+    </div>
+
 
 </po-page-default>
 <po-loading-overlay [hidden]="isHideLoading" [p-text]="loadingText" ></po-loading-overlay>
-
--->
