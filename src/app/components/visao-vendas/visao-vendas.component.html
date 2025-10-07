@@ -1,8 +1,32 @@
-<po-page-default
+<po-page-default style="padding-bottom: 100px;"
+[p-actions]="pageActions"
 p-title="Visão Geral de Vendas">
 
-    <div class="po-row">
+    <po-page-slide #pageSlide
+    [p-title]="pageSlideTitle"
+    [p-subtitle]="pageSlideSubtitle"
+    p-size="md"
+    [p-click-out]="true">
 
+        <po-dynamic-form
+        [p-fields]="filtersFields"
+        [p-value]="filters" 
+        [p-validate-fields]="this.validateFiltersFields"
+        [p-validate]="this.onChangeFilters.bind(this)" >
+        </po-dynamic-form>
+
+        <po-page-slide-footer>
+
+            <po-button p-label="Salvar" (p-click)="applyFilters()"> </po-button>
+
+        </po-page-slide-footer>
+
+    </po-page-slide>
+
+    <!--
+        
+    <div class="po-row">
+        
         <po-datepicker-range
         class="po-xl-10 po-lg-10 po-md-10 po-sm-10"
         p-label="Período base"
@@ -24,10 +48,12 @@ p-title="Visão Geral de Vendas">
         p-kind="secondary"
         >
         </po-button>
-
+    
     </div>
 
-    <div class="po-md-12">
+    -->
+
+    <div class="po-md-12 div-chart">
         <po-chart
         class="po-md-12"
         [p-title]="revenueOverTimeTitle"
@@ -38,33 +64,33 @@ p-title="Visão Geral de Vendas">
         </po-chart>
     </div>
 
-    <div class="po-md-12">
+    <div class="po-md-12 div-chart">
         <po-chart
         class="po-md-12"
         [p-title]="revenueHistoryTitle"
         [p-options]="revenueHistoryOptions"
-        [p-categories]="years"
+        [p-categories]="revenueHistoryCategories"
         [p-series]="revenueHistory"
         >
         </po-chart>
     </div>
 
-    <div class="po-md-12">
+    <div class="po-md-12 div-chart">
         <po-chart
         class="po-lg-12"
         [p-title]="customerCategoriesTitle"
         [p-options]="customerCategoriesOptions"
         [p-series]="customerCategories"
-        [p-height]="450"
+        [p-height]="500"
         >
         </po-chart>
     </div>
 
-    <div class="po-md-12">
+    <div class="po-md-12 div-chart">
         <po-chart
         class="po-md-12"
         [p-title]="productCategoriesEvolutionTitle"
-        [p-height]="450"
+        [p-height]="550"
         [p-categories]="productCategoriesEvolutionItems"
         [p-series]="productCategoriesEvolution"
         [p-type]="productCategoriesEvolutionType"
@@ -72,7 +98,6 @@ p-title="Visão Geral de Vendas">
         >
         </po-chart>
     </div>
-
 
 </po-page-default>
 <po-loading-overlay [hidden]="isHideLoading" [p-text]="loadingText" ></po-loading-overlay>
