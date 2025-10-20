@@ -1,3 +1,19 @@
 .div-chart {
     padding-bottom: 30px;
 }
+
+.stat-widget {
+    --border-radius: 15px;
+    --border-width: 1px;
+    --border-color: #045B8F;
+    --border-color-hover: #B4E2FD;
+    --background-selected: #B4E2FD;
+    --border-color-selected: #045B8F;
+    margin-left: -10px;
+    margin-right: 10px;
+    margin-bottom: 0px;
+}
+
+.widget-value {
+    font-weight: bold;
+}

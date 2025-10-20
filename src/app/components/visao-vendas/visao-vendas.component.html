@@ -23,35 +23,73 @@ p-title="Visão Geral de Vendas">
 
     </po-page-slide>
 
-    <!--
+    <div class="po-md-12" style="margin-bottom: 15px;">
         
-    <div class="po-row">
-        
-        <po-datepicker-range
-        class="po-xl-10 po-lg-10 po-md-10 po-sm-10"
-        p-label="Período base"
-        [p-no-autocomplete]="true"
-        p-size="small"
-        (p-change)="onChangeDate($event)"
-        [p-max-date]="today"
-        [p-start-date]="startDate"
-        [p-end-date]="endDate"
-        [p-clean]="true"
-        >
-        </po-datepicker-range>
-        
-        <po-button
-        style="margin-top: 31px;"
-        class="po-xl-2 po-lg-2 po-md-2 po-sm-2"
-        p-label="Atualizar"
-        p-icon="an an-arrows-clockwise"
-        p-kind="secondary"
-        >
-        </po-button>
-    
+        <po-widget class="po-xl-4 po-lg-6 po-md-12 stat-widget"
+        (p-click)="1===1">
+            <div class="po-text-center widget-value">
+                {{revenueIndicators.accumulatedRevenueCurrent.label}}
+            </div>
+            <div class="po-font-subtitle po-text-center">
+                {{revenueIndicators.accumulatedRevenueCurrent.value | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
+            </div>
+        </po-widget>
+
+        <po-widget class="po-xl-4 po-lg-6 po-md-12 stat-widget"
+        (p-click)="1===1">
+            <div class="po-text-center widget-value">
+                {{revenueIndicators.newClients.label}}
+            </div>
+            <div class="po-font-subtitle po-text-center">
+                {{revenueIndicators.newClients.value}}
+            </div>
+        </po-widget>
+
+        <po-widget class="po-xl-4 po-lg-6 po-md-12 stat-widget"
+        (p-click)="1===1">
+            <div class="po-text-center widget-value">
+                {{revenueIndicators.notPurchasedClients.label}}
+            </div>
+            <div class="po-font-subtitle po-text-center">
+                {{revenueIndicators.notPurchasedClients.value}}
+            </div>
+        </po-widget>
+
     </div>
 
-    -->
+    <div class="po-md-12" style="margin-bottom: 40px;">
+
+        <po-widget class="po-xl-4 po-lg-6 po-md-12 stat-widget"
+        (p-click)="1===1">
+            <div class="po-text-center widget-value">
+                {{revenueIndicators.accumulatedRevenuePrevious.label}}
+            </div>
+            <div class="po-font-subtitle po-text-center">
+                {{revenueIndicators.accumulatedRevenuePrevious.value | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
+            </div>
+        </po-widget>
+        
+        <po-widget class="po-xl-4 po-lg-6 po-md-12 stat-widget"
+        (p-click)="1===1">
+            <div class="po-text-center widget-value">
+                {{revenueIndicators.increasedClients.label}}
+            </div>
+            <div class="po-font-subtitle po-text-center">
+                {{revenueIndicators.increasedClients.value}}
+            </div>
+        </po-widget>
+
+        <po-widget class="po-xl-4 po-lg-6 po-md-12 stat-widget"
+        (p-click)="1===1">
+            <div class="po-text-center widget-value">
+                {{revenueIndicators.decreasedClients.label}}
+            </div>
+            <div class="po-font-subtitle po-text-center">
+                {{revenueIndicators.decreasedClients.value}}
+            </div>
+        </po-widget>
+
+    </div>
 
     <div class="po-md-12 div-chart">
         <po-chart

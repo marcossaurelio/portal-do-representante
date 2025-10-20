@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { FieldsService } from '../../services/fields.service';
 import { LOCALE_ID } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-visao-vendas',
@@ -19,6 +20,7 @@ import { firstValueFrom, Observable } from 'rxjs';
     PoButtonModule,
     PoDynamicModule,
     PoPageSlideModule,
+    CurrencyPipe,
 ],
   templateUrl: './visao-vendas.component.html',
   styleUrl: './visao-vendas.component.css',
@@ -48,6 +50,34 @@ export class VisaoVendasComponent {
   public pageActions: Array<PoPopupAction> = [
     { label: 'Filtros', action: () => { this.pageSlide.open() }, icon: 'an an-funnel' },
   ]
+
+  // Indicadores de Faturamento
+  public revenueIndicators: any = {
+    accumulatedRevenueCurrent: {
+      label: 'Faturamento Acumulado (Período Atual)',
+      value: 0,
+    },
+    accumulatedRevenuePrevious: {
+      label: 'Faturamento Acumulado (Período Anterior)',
+      value: 0,
+    },
+    newClients: {
+      label: 'Clientes Novos',
+      value: 0,
+    },
+    increasedClients: {
+      label: 'Aumento em Clientes',
+      value: 0,
+    },
+    notPurchasedClients: {
+      label: 'Não Compraram',
+      value: 0,
+    },
+    decreasedClients: {
+      label: 'Redução em Clientes',
+      value: 0,
+    },
+  }
 
   // Faturamento x Período
   public revenueOverTimeTitle: string = 'Faturamento x Período (R$)';
@@ -336,8 +366,10 @@ export class VisaoVendasComponent {
   }
 
   public async applyFilters() {
+    this.isHideLoading = false;
     this.pageSlide.close();
     await this.refreshChartsData();
+    this.isHideLoading = true;
   }
 
   private buildFiltersBody(): any {
