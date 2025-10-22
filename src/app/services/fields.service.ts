@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { PoDynamicFormField } from '@po-ui/ng-components';
+import { PoDynamicFormField, ForceOptionComponentEnum } from '@po-ui/ng-components';
 import { ApiService } from './api.service';
 
 @Injectable({
@@ -10,7 +10,6 @@ export class FieldsService {
   constructor(private api: ApiService) { }
 
     private readonly branches: Array<any> = [
-      { name: 'São Camilo',          id: "01010003", isQuotation: true   },
       { name: 'São Camilo',          id: "01010003", isQuotation: true   },
       { name: 'São Paulo',           id: "01020009", isQuotation: false  },
       { name: 'Rio de Janeiro',      id: "01030010", isQuotation: false  },
@@ -53,27 +52,20 @@ export class FieldsService {
 
     private readonly freightTypes: Array<any> = [
       { freightType: 'CIF', code: 'C' },
-      { freightType: 'CIF', code: 'C' },
-      { freightType: 'FOB', code: 'F' },
       { freightType: 'FOB', code: 'F' },
     ];
 
   private readonly transportationModes: Array<any> = [
       { transportationMode: 'Rodoviário' , code: 'R' },
-      { transportationMode: 'Rodoviário' , code: 'R' },
-      { transportationMode: 'Marítimo'   , code: 'M' },
       { transportationMode: 'Marítimo'   , code: 'M' },
     ];
 
   private readonly containerTypes: Array<any> = [
       { containerType: 'Container 20'    , code: 'C20' },
-      { containerType: 'Container 20'    , code: 'C20' },
-      { containerType: 'Container 40'    , code: 'C40' },
       { containerType: 'Container 40'    , code: 'C40' },
     ];
 
   private readonly unloadingTypes: Array<any> = [
-      { unloadingType: 'Por conta do cliente' ,                 code: 'C' },
       { unloadingType: 'Por conta do cliente' ,                 code: 'C' },
       { unloadingType: 'Por conta do motorista (Leva Chapas)',  code: 'L' },
       { unloadingType: 'Por conta do motorista (Paga Taxa)',    code: 'P' },
@@ -144,6 +136,7 @@ export class FieldsService {
         noAutocomplete: true,
         gridColumns: 2,
         options: this.branches,
+        forceOptionsComponentType: ForceOptionComponentEnum.select,
         type: 'string',
         fieldValue: 'id',
         fieldLabel: 'name',
@@ -345,6 +338,7 @@ export class FieldsService {
         maxLength: 3,
         gridColumns: 3,
         options: this.freightTypes,
+        forceOptionsComponentType: ForceOptionComponentEnum.select,
         type: 'string',
         fieldValue: 'code',
         fieldLabel: 'freightType',
@@ -412,6 +406,7 @@ export class FieldsService {
         maxLength: 1,
         gridColumns: 2,
         options: this.transportationModes,
+        forceOptionsComponentType: ForceOptionComponentEnum.select,
         type: 'string',
         fieldValue: 'code',
         fieldLabel: 'transportationMode',
@@ -429,6 +424,7 @@ export class FieldsService {
         maxLength: 2,
         gridColumns: 2,
         options: this.containerTypes,
+        forceOptionsComponentType: ForceOptionComponentEnum.select,
         type: 'string',
         fieldValue: 'code',
         fieldLabel: 'containerType',
@@ -474,6 +470,7 @@ export class FieldsService {
         maxLength: 1,
         gridColumns: 4,
         options: this.unloadingTypes,
+        forceOptionsComponentType: ForceOptionComponentEnum.select,
         type: 'string',
         fieldValue: 'code',
         fieldLabel: 'unloadingType',
