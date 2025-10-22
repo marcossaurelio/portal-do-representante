@@ -23,34 +23,46 @@ p-title="Visão Geral de Vendas">
 
     </po-page-slide>
 
-    <div class="po-md-12" style="margin-bottom: 15px;">
+    <div class="po-md-12" style="margin-bottom: 10px;">
         
         <po-widget class="po-xl-4 po-lg-6 po-md-12 stat-widget"
-        (p-click)="1===1">
-            <div class="po-text-center widget-value">
+        [p-height]="revenueIndicators.accumulatedRevenueCurrent.variation == null ? 90 : 80"
+        [p-tag]="formatPercentage(revenueIndicators.accumulatedRevenueCurrent.variation)"
+        (p-tag-icon)="getWidgetTagDefinition(revenueIndicators.accumulatedRevenueCurrent).icon"
+        (p-tag-type)="getWidgetTagDefinition(revenueIndicators.accumulatedRevenueCurrent).type"
+        (p-click)="true">
+            <div class="po-text-center widget-label">
                 {{revenueIndicators.accumulatedRevenueCurrent.label}}
             </div>
-            <div class="po-font-subtitle po-text-center">
+            <div class="po-font-subtitle po-text-center widget-value">
                 {{revenueIndicators.accumulatedRevenueCurrent.value | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
             </div>
         </po-widget>
 
         <po-widget class="po-xl-4 po-lg-6 po-md-12 stat-widget"
-        (p-click)="1===1">
-            <div class="po-text-center widget-value">
+        [p-height]="revenueIndicators.newClients.variation == null ? 90 : 80"
+        [p-tag]="formatPercentage(revenueIndicators.newClients.variation)"
+        [p-tag-icon]="getWidgetTagDefinition(revenueIndicators.newClients).icon"
+        [p-tag-type]="getWidgetTagDefinition(revenueIndicators.newClients).type"
+        (p-click)="true">
+            <div class="po-text-center widget-label">
                 {{revenueIndicators.newClients.label}}
             </div>
-            <div class="po-font-subtitle po-text-center">
+            <div class="po-font-subtitle po-text-center widget-value">
                 {{revenueIndicators.newClients.value}}
             </div>
         </po-widget>
 
         <po-widget class="po-xl-4 po-lg-6 po-md-12 stat-widget"
-        (p-click)="1===1">
-            <div class="po-text-center widget-value">
+        [p-height]="revenueIndicators.notPurchasedClients.variation == null ? 90 : 80"
+        [p-tag]="formatPercentage(revenueIndicators.notPurchasedClients.variation)"
+        [p-tag-icon]="getWidgetTagDefinition(revenueIndicators.notPurchasedClients).icon"
+        [p-tag-type]="getWidgetTagDefinition(revenueIndicators.notPurchasedClients).type"
+        (p-click)="true">
+            <div class="po-text-center widget-label">
                 {{revenueIndicators.notPurchasedClients.label}}
             </div>
-            <div class="po-font-subtitle po-text-center">
+            <div class="po-font-subtitle po-text-center widget-value">
                 {{revenueIndicators.notPurchasedClients.value}}
             </div>
         </po-widget>
@@ -60,31 +72,43 @@ p-title="Visão Geral de Vendas">
     <div class="po-md-12" style="margin-bottom: 40px;">
 
         <po-widget class="po-xl-4 po-lg-6 po-md-12 stat-widget"
-        (p-click)="1===1">
-            <div class="po-text-center widget-value">
+        [p-height]="revenueIndicators.accumulatedRevenuePrevious.variation == null ? 90 : 80"
+        [p-tag]="formatPercentage(revenueIndicators.accumulatedRevenuePrevious.variation)"
+        [p-tag-icon]="getWidgetTagDefinition(revenueIndicators.accumulatedRevenuePrevious).icon"
+        [p-tag-type]="getWidgetTagDefinition(revenueIndicators.accumulatedRevenuePrevious).type"
+        (p-click)="true">
+            <div class="po-text-center widget-label">
                 {{revenueIndicators.accumulatedRevenuePrevious.label}}
             </div>
-            <div class="po-font-subtitle po-text-center">
+            <div class="po-font-subtitle po-text-center widget-value">
                 {{revenueIndicators.accumulatedRevenuePrevious.value | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
             </div>
         </po-widget>
         
         <po-widget class="po-xl-4 po-lg-6 po-md-12 stat-widget"
-        (p-click)="1===1">
-            <div class="po-text-center widget-value">
+        [p-height]="revenueIndicators.increasedClients.variation == null ? 90 : 80"
+        [p-tag]="formatPercentage(revenueIndicators.increasedClients.variation)"
+        [p-tag-icon]="getWidgetTagDefinition(revenueIndicators.increasedClients).icon"
+        [p-tag-type]="getWidgetTagDefinition(revenueIndicators.increasedClients).type"
+        (p-click)="true">
+            <div class="po-text-center widget-label">
                 {{revenueIndicators.increasedClients.label}}
             </div>
-            <div class="po-font-subtitle po-text-center">
+            <div class="po-font-subtitle po-text-center widget-value">
                 {{revenueIndicators.increasedClients.value}}
             </div>
         </po-widget>
 
         <po-widget class="po-xl-4 po-lg-6 po-md-12 stat-widget"
-        (p-click)="1===1">
-            <div class="po-text-center widget-value">
+        [p-height]="revenueIndicators.decreasedClients.variation == null ? 90 : 80"
+        [p-tag]="formatPercentage(revenueIndicators.decreasedClients.variation)"
+        [p-tag-icon]="getWidgetTagDefinition(revenueIndicators.decreasedClients).icon"
+        [p-tag-type]="getWidgetTagDefinition(revenueIndicators.decreasedClients).type"
+        (p-click)="true">
+            <div class="po-text-center widget-label">
                 {{revenueIndicators.decreasedClients.label}}
             </div>
-            <div class="po-font-subtitle po-text-center">
+            <div class="po-font-subtitle po-text-center widget-value">
                 {{revenueIndicators.decreasedClients.value}}
             </div>
         </po-widget>

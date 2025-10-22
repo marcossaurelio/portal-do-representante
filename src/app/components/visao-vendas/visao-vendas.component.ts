@@ -64,18 +64,22 @@ export class VisaoVendasComponent {
     newClients: {
       label: 'Clientes Novos',
       value: 0,
+      variation: -10.0,
     },
     increasedClients: {
       label: 'Aumento em Clientes',
       value: 0,
+      variation: 0,
     },
     notPurchasedClients: {
       label: 'Não Compraram',
       value: 0,
+      variation: 0,
     },
     decreasedClients: {
       label: 'Redução em Clientes',
       value: 0,
+      variation: 0,
     },
   }
 
@@ -164,14 +168,15 @@ export class VisaoVendasComponent {
     return new Date(Number(year), Number(month) - 1, Number(day));
   }
 
-  private getYearsBetween(startDate: Date, endDate: Date): Array<string> {
-    const years: string[] = [];
-    const startYear = startDate.getUTCFullYear();
-    const endYear = endDate.getUTCFullYear();
-    for (let year = startYear; year <= endYear; year++) {
-      years.push(year.toString());
+  public formatPercentage(value: number | null): string | undefined {
+    return value === null || value === undefined ? undefined : parseFloat(value.toFixed(2)) + '%';
+  }
+
+  public getWidgetTagDefinition(indicator: any): any {
+    return {
+      icon: indicator.variation > 0 ? 'an an-arrow-up' : (indicator.variation < 0 ? 'an an-arrow-down' : undefined),
+      type: indicator.variation > 0 ? 'success' : (indicator.variation < 0 ? 'danger' : 'neutral'),
     }
-    return years;
   }
 
   private async loadRevenueOverTimeData(): Promise<Array<PoChartSerie>> {
@@ -299,6 +304,7 @@ export class VisaoVendasComponent {
         noAutocomplete: true,
         gridColumns: 12,
         options: this.fieldsService.getBranches,
+        forceOptionsComponentType: ForceOptionComponentEnum.radioGroup,
         optionsMulti: true,
         fieldLabel: 'name',
         fieldValue: 'id',
@@ -369,6 +375,8 @@ export class VisaoVendasComponent {
     this.isHideLoading = false;
     this.pageSlide.close();
     await this.refreshChartsData();
+    this.revenueIndicators.newClients.variation = 12.0; // Exemplo estático
+    this.revenueIndicators.increasedClients.variation = 5.5; // Exemplo estático
     this.isHideLoading = true;
   }
 

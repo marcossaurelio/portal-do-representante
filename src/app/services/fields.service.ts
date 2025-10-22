@@ -11,6 +11,7 @@ export class FieldsService {
 
     private readonly branches: Array<any> = [
       { name: 'São Camilo',          id: "01010003", isQuotation: true   },
+      { name: 'São Camilo',          id: "01010003", isQuotation: true   },
       { name: 'São Paulo',           id: "01020009", isQuotation: false  },
       { name: 'Rio de Janeiro',      id: "01030010", isQuotation: false  },
     ]

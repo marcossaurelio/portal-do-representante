@@ -12,8 +12,23 @@
     margin-left: -10px;
     margin-right: 10px;
     margin-bottom: 0px;
+    position: relative;
+}
+
+.widget-label {
+    font-weight: bold;
+    position: absolute;
+    top: 16px;
+    left: 0;
+    width: 100%;
+    text-align: center;
 }
 
 .widget-value {
     font-weight: bold;
+    position: absolute;
+    top: 43px;
+    left: 0;
+    width: 100%;
+    text-align: center;
 }
