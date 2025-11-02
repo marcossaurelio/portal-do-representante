@@ -64,22 +64,26 @@ export class VisaoVendasComponent {
     newClients: {
       label: 'Clientes Novos',
       value: 0,
-      variation: -10.0,
+      variation: 0,
+      positive: true,
     },
     increasedClients: {
       label: 'Aumento em Clientes',
       value: 0,
       variation: 0,
+      positive: true,
     },
     notPurchasedClients: {
       label: 'Não Compraram',
       value: 0,
       variation: 0,
+      positive: false,
     },
     decreasedClients: {
       label: 'Redução em Clientes',
       value: 0,
       variation: 0,
+      positive: false,
     },
   }
 
@@ -175,7 +179,67 @@ export class VisaoVendasComponent {
   public getWidgetTagDefinition(indicator: any): any {
     return {
       icon: indicator.variation > 0 ? 'an an-arrow-up' : (indicator.variation < 0 ? 'an an-arrow-down' : undefined),
-      type: indicator.variation > 0 ? 'success' : (indicator.variation < 0 ? 'danger' : 'neutral'),
+      type: indicator.variation > 0 ? (indicator.positive ? 'success' : 'danger') : (indicator.variation < 0 ? (indicator.positive ? 'danger' : 'success') : 'neutral'),
+    }
+  }
+
+  private async loadAcumulatedRevenueIndicators(): Promise<void> {
+    const body: any = this.buildFiltersBody();
+    try {
+      const res: any = await firstValueFrom(this.api.post('portal-do-representante/dashboard/faturamento-acumulado', body))
+      this.revenueIndicators.accumulatedRevenueCurrent.value = res.valores[0] ?? 0;
+      this.revenueIndicators.accumulatedRevenuePrevious.value = res.valores[1] ?? 0;
+    } catch (error) {
+      this.revenueIndicators.accumulatedRevenueCurrent.value = 0;
+      this.revenueIndicators.accumulatedRevenuePrevious.value = 0;
+    }
+  }
+
+  private async loadNewClients(): Promise<void> {
+    const body: any = this.buildFiltersBody();
+    try {
+      const res: any = await firstValueFrom(this.api.post('portal-do-representante/dashboard/clientes-novos', body))
+      this.revenueIndicators.newClients.value = res.novosClientes ?? 0;
+      this.revenueIndicators.newClients.variation = res.variacao ?? 0;
+    } catch (error) {
+      this.revenueIndicators.newClients.value = 0;
+      this.revenueIndicators.newClients.variation = 0;
+    } 
+  }
+
+  private async loadNotPurchasedClients(): Promise<void> {
+    const body: any = this.buildFiltersBody();
+    try {
+      const res: any = await firstValueFrom(this.api.post('portal-do-representante/dashboard/clientes-nao-compraram', body))
+      this.revenueIndicators.notPurchasedClients.value = res.naoCompraram ?? 0;
+      this.revenueIndicators.notPurchasedClients.variation = res.variacao ?? 0;
+    } catch (error) {
+      this.revenueIndicators.notPurchasedClients.value = 0;
+      this.revenueIndicators.notPurchasedClients.variation = 0;
+    }
+  }
+
+  private async loadIncreasedClients(): Promise<void> {
+    const body: any = this.buildFiltersBody();
+    try {
+      const res: any = await firstValueFrom(this.api.post('portal-do-representante/dashboard/clientes-aumento', body))
+      this.revenueIndicators.increasedClients.value = res.clientesAumento ?? 0;
+      this.revenueIndicators.increasedClients.variation = res.variacao ?? 0;
+    } catch (error) {
+      this.revenueIndicators.increasedClients.value = 0;
+      this.revenueIndicators.increasedClients.variation = 0;
+    }
+  }
+
+  private async loadDecreasedClients(): Promise<void> {
+    const body: any = this.buildFiltersBody();
+    try {
+      const res: any = await firstValueFrom(this.api.post('portal-do-representante/dashboard/clientes-reducao', body))
+      this.revenueIndicators.decreasedClients.value = res.clientesReducao ?? 0;
+      this.revenueIndicators.decreasedClients.variation = res.variacao ?? 0;
+    } catch (error) {
+      this.revenueIndicators.decreasedClients.value = 0;
+      this.revenueIndicators.decreasedClients.variation = 0;
     }
   }
 
@@ -358,6 +422,13 @@ export class VisaoVendasComponent {
   }
 
   private async refreshChartsData() {
+    await Promise.all([
+      this.loadAcumulatedRevenueIndicators(),
+      this.loadNewClients(),
+      this.loadNotPurchasedClients(),
+      this.loadIncreasedClients(),
+      this.loadDecreasedClients(),
+    ]);
     [
       this.revenueOverTime,
       this.revenueHistory,
@@ -375,8 +446,6 @@ export class VisaoVendasComponent {
     this.isHideLoading = false;
     this.pageSlide.close();
     await this.refreshChartsData();
-    this.revenueIndicators.newClients.variation = 12.0; // Exemplo estático
-    this.revenueIndicators.increasedClients.variation = 5.5; // Exemplo estático
     this.isHideLoading = true;
   }
 
