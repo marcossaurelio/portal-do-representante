@@ -826,6 +826,10 @@ export class FieldsService {
     return branchId
   }
 
+  public getBranchNameById(branchId: string): string {
+    return this.branches.find(branch => branch.id === branchId)?.name ?? '';
+  }
+
   public get getLoadingLocations(): Array<any> {
     return this.loadingLocations;
   }

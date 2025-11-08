@@ -1,1 +1,33 @@
-<p>contas-a-receber works!</p>
+<po-page-dynamic-search
+    p-title="Contas a Receber"
+    [p-keep-filters]="true"
+    [p-filters]="filterFields"
+    (p-advanced-search)="onChangeDisclaimers($event)"
+    (p-change-disclaimers)="onChangeDisclaimers($event)"
+    (p-quick-search)="onQuickSearch($event)"
+    [p-quick-search-width]="4"
+    >
+
+    <div>
+
+        <po-table
+        [p-columns]="columns"
+        [p-items]="filteredItems"
+        [p-height]="tableHeight"
+        [p-infinite-scroll]="false"
+        (p-show-more)="onShowMore($event)"
+        [p-show-more-disabled]="false"
+        [p-sort]="true"
+        [p-striped]="true"
+        p-container="border"
+        [p-loading-show-more]="isShowMoreLoading"
+        [p-show-more-disabled]="isShowMoreDisabled"
+        [p-hide-columns-manager]="true"
+        >
+        
+        </po-table>
+        
+    </div>
+
+</po-page-dynamic-search>
+<po-loading-overlay [hidden]="isHideLoading"></po-loading-overlay>
