@@ -694,7 +694,7 @@ export class FieldsService {
         property: 'fobBasePrice',
         label: 'Valor Base',
         type: 'currency',
-        required: true,
+        required: env.isQuotationBranch,
         showRequired: false,
         visible: true,
         disabled: env.isViewMode() || !env.isQuotationBranch,

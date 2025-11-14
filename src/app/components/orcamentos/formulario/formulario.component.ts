@@ -71,6 +71,7 @@ export class FormularioComponent {
   private selectedProductId: string = '';
   private pbrPalletWeight: number = 35;
   private disposablePalletWeight: number = 19;
+  private supressValidation: boolean = false;
 
   public readonly confirmRow: PoModalAction = {
     action: () => { this.saveRow(this.rowData); },
@@ -281,14 +282,23 @@ export class FormularioComponent {
 
   public get weightStatusInformations(): Array<any> {
     const weightMargin = 3;
+    const minimumLoad = 1500
     if (this.totalLoadWeight == 0 || !this.totalLoadWeight) {
       return ['Descarregado', PoTagType.Neutral ]
-    } else if (this.totalLoadWeight > this.headerData.maxLoad*(1+weightMargin/100)) {
-      return ['Carga acima do limite', PoTagType.Danger]
-    } else if (this.totalLoadWeight < this.headerData.maxLoad*(1-weightMargin/100)) {
-      return ['Carga abaixo do limite', PoTagType.Warning]
+    } else if (this.isQuotationBranch) {
+      if (this.totalLoadWeight > this.headerData.maxLoad*(1+weightMargin/100)) {
+        return ['Carga acima do limite', PoTagType.Danger]
+      } else if (this.totalLoadWeight < this.headerData.maxLoad*(1-weightMargin/100)) {
+        return ['Carga abaixo do limite', PoTagType.Warning]
+      } else {
+        return ['Carga dentro do limite', PoTagType.Success]
+      }
     } else {
-      return ['Carga dentro do limite', PoTagType.Success]
+      if (this.totalLoadWeight < minimumLoad) {
+        return ['Carga abaixo do limite', PoTagType.Danger]
+      } else {
+        return ['Carga dentro do limite', PoTagType.Success]
+      }
     }
   }
 
@@ -324,18 +334,21 @@ export class FormularioComponent {
     if (!(this.validateHeader(isSilent) && this.validateRows(isSilent))) {
       return;
     }
+    this.supressValidation = true;
     await this.updateFreightCost(true);
     await this.updateAllRowsPrices();
     const res = await this.sendForm();
     if (!res) {
       bkpHeaderData ? this.headerData = { ...bkpHeaderData } : null;
       bkpRows ? this.rows = bkpRows.map(item => ({ ...item })) : null;
+      this.supressValidation = false;
       return;
     }
     if (!res.success) {
       bkpHeaderData ? this.headerData = { ...bkpHeaderData } : null;
       bkpRows ? this.rows = bkpRows.map(item => ({ ...item })) : null;
       this.poNotification.error(res.message + ': ' + res.fix);
+      this.supressValidation = false;
       return;
     }
     this.headerData.budgetStatus = budgetStatus;
@@ -347,6 +360,7 @@ export class FormularioComponent {
       this.modal.close();
       this.modalCopy.close();
     }
+    this.supressValidation = false;
   }
 
   public async sendForm(): Promise<any> {
@@ -641,7 +655,7 @@ export class FormularioComponent {
   }
 
   public onChangeHeaderFields(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
-    if (this.isViewMode()) {
+    if (this.isViewMode() || this.supressValidation) {
       return {};
     }
     const bkpHeaderData = { ...this.headerData };
@@ -658,7 +672,7 @@ export class FormularioComponent {
   };
 
   public onChangeFreightFields(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
-    if (this.isViewMode()) {
+    if (this.isViewMode() || this.supressValidation) {
       return {};
     }
     const bkpHeaderData = { ...this.headerData };
@@ -673,14 +687,13 @@ export class FormularioComponent {
     this.headerData.customerVehicle     = changedValue.value.freightType === 'C' ? false : this.headerData.customerVehicle ?? false;
     this.headerData.palletReturn        = this.headerData.cargoType == 'BT' ? false : this.headerData.palletReturn ?? false;
     changedValue.property === 'destinationState' ? this.headerData.destinationCity = '' : null;
-    this.updateFreightCost(true);
     this.saveForm(true, bkpRows, bkpHeaderData, true);
     const validation: PoDynamicFormValidation = { fields: this.fieldsService.getFields(this) };
     return validation;
   };
 
   public onChangeFieldsRow(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
-    if (this.isViewMode()) {
+    if (this.isViewMode() || this.supressValidation) {
       return {};
     }
     changedValue.property === 'productId'                 ? this.fillProductData(changedValue.value.productId)  : null;
@@ -795,6 +808,7 @@ export class FormularioComponent {
   }
 
   private async fillCustomerData(): Promise<void> {
+    this.supressValidation = true;
     const customerData = await this.customerService.getCustomerData(this.headerData.customerId);
     if (customerData) {
       this.headerData.destinationState  = !this.isModifyMode() && !this.isCopyMode() ? customerData.destinationState : this.headerData.destinationState;
@@ -805,6 +819,7 @@ export class FormularioComponent {
     } else {
       this.poNotification.warning('Erro ao carregar dados do cliente.');
     }
+    this.supressValidation = false;
   }
 
   public get isQuotationBranch(): boolean {
