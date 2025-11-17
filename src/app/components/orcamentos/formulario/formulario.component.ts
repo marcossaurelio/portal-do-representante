@@ -282,7 +282,7 @@ export class FormularioComponent {
 
   public get weightStatusInformations(): Array<any> {
     const weightMargin = 3;
-    const minimumLoad = 1500
+    const minimumLoad = 1000; // Carga mínima de 1 tonelada para filiais não cotação
     if (this.totalLoadWeight == 0 || !this.totalLoadWeight) {
       return ['Descarregado', PoTagType.Neutral ]
     } else if (this.isQuotationBranch) {
