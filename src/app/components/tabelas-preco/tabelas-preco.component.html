@@ -1,1 +1,13 @@
-<p>tabelas-preco works!</p>
+<po-page-dynamic-table
+p-title="Tabelas de Preço"
+[p-height]="tableHeight"
+[p-fields]="columns"
+[p-table-custom-actions]="tableActions"
+[p-hide-columns-manager]="true"
+[p-quick-search-width]="3"
+[p-service-api]="apiService"
+[p-actions-right]="true"
+>
+
+</po-page-dynamic-table>
+<po-loading-overlay [hidden]="isHideLoading"></po-loading-overlay>
