@@ -209,23 +209,23 @@ export class FormularioComponent {
 
   private get productsAmountPerPackagingFormat(): Array<number> {
     const productsAmount10x1 = this.rows.reduce((sum, row) => {
-      const packagingFormat = row.packagingFormat;
+      const packagingFormat = row.item === this.rowData.item ? this.rowData.packagingFormat : row.packagingFormat;
       if (packagingFormat === '10X1') {
-        return sum + (Number(row.amount) ?? 0);
+        return sum + (Number(row.item === this.rowData.item ? this.rowData.amount : row.amount) ?? 0);
       }
       return sum;
     }, 0);
     const productsAmount30x1 = this.rows.reduce((sum, row) => {
-      const packagingFormat = row.packagingFormat;
+      const packagingFormat = row.item === this.rowData.item ? this.rowData.packagingFormat : row.packagingFormat;
       if (packagingFormat === '30X1') {
-        return sum + (Number(row.amount) ?? 0);
+        return sum + (Number(row.item === this.rowData.item ? this.rowData.amount : row.amount) ?? 0);
       }
       return sum;
     }, 0);
     const productsAmount25kg = this.rows.reduce((sum, row) => {
-      const packagingFormat = row.packagingFormat;
+      const packagingFormat = row.item === this.rowData.item ? this.rowData.packagingFormat : row.packagingFormat;
       if (packagingFormat === '25KG') {
-        return sum + (Number(row.amount) ?? 0);
+        return sum + (Number(row.item === this.rowData.item ? this.rowData.amount : row.amount) ?? 0);
       }
       return sum;
     }, 0);
@@ -251,8 +251,8 @@ export class FormularioComponent {
 
   private get totalProductsNetWeight(): number {
     return this.rows.reduce((sum, row) => {
-      const netWeight = row.productNetWeight ?? 0;
-      const amount = row.amount ?? 0;
+      const netWeight = row.item === this.rowData.item ? this.rowData.productNetWeight : row.productNetWeight ?? 0;
+      const amount = row.item === this.rowData.item ? this.rowData.amount : row.amount ?? 0;
       const weight = netWeight * amount;
       return sum + (weight ?? 0);
     }, 0);
@@ -260,8 +260,8 @@ export class FormularioComponent {
 
   private get totalProductsWeight(): number {
     return this.rows.reduce((sum, row) => {
-      const grossWeight = row.productGrossWeight ?? 0;
-      const amount = row.amount ?? 0;
+      const grossWeight = row.item === this.rowData.item ? this.rowData.productGrossWeight : row.productGrossWeight ?? 0;
+      const amount = row.item === this.rowData.item ? this.rowData.amount : row.amount ?? 0;
       const weight = grossWeight * amount;
       return sum + (weight ?? 0);
     }, 0);
@@ -311,7 +311,7 @@ export class FormularioComponent {
     const item = this.rows[this.rows.length-1].item;
     const newItem = parseInt(item, 10)+1;
     this.rowData.item = newItem.toString().padStart(item.length, '0');
-    this.rowData.amount = 1;
+    //this.rowData.amount = 1;
     this.rowData.unitPrice = 0;
     this.rowData.totalPrice = 0;
     this.rowData.comissionUnitValue = 0;
@@ -478,13 +478,17 @@ export class FormularioComponent {
     }
   }
 
-  private recalculateRowsTotals(): void {
+  private recalculateAllRowsTotals(): void {
     this.rows = this.rows.map(row => {
-      row.totalPrice = Math.abs(row.unitPrice * row.amount);
-      row.comissionUnitValue = Math.abs(row.fobBasePrice * (row.comissionPercentage / 100));
-      row.comissionTotalValue = Math.abs(row.fobBasePrice * row.amount * (row.comissionPercentage / 100));
-      return row;
+      return this.recalculateRowTotals(row);
     });
+  }
+
+  private recalculateRowTotals(row: any): void {
+    row.totalPrice = Math.abs(this.rowData.unitPrice * this.rowData.amount);
+    row.comissionUnitValue = Math.abs(this.rowData.fobBasePrice * (this.rowData.comissionPercentage / 100));
+    row.comissionTotalValue = Math.abs(this.rowData.fobBasePrice * this.rowData.amount * (this.rowData.comissionPercentage / 100));
+    return row;
   }
 
   private async updateAllRowsPrices(): Promise<void> {
@@ -494,7 +498,7 @@ export class FormularioComponent {
       return updatedRow ?? row;
     }));
     this.rows = updatedRows;
-    this.recalculateRowsTotals();
+    this.recalculateAllRowsTotals();
     this.loadingText = 'Carregando';
   }
 
@@ -550,7 +554,7 @@ export class FormularioComponent {
     return true;
   }
 
-  private validateRowData(): boolean {
+  private validateRowData(isAutoSave: boolean = false): boolean {
     const requiredFields: Array<PoDynamicFormField> = this.getRequiredRowFields();
     const invalidRows: string[] = [];
   
@@ -569,7 +573,9 @@ export class FormularioComponent {
     }
   
     if (invalidRows.length > 0) {
-      invalidRows.forEach(message => this.poNotification.warning(message));
+      if (!isAutoSave) {
+        invalidRows.forEach(message => this.poNotification.warning(message));
+      }
       return false;
     }
   
@@ -607,6 +613,18 @@ export class FormularioComponent {
       this.modal.open()
     }
   }
+  
+  public async updateRowDataPrice() {
+    if (!this.validateRowData(true)) {
+      return;
+    }
+    const updatedRow = await this.getItemPriceInfo(this.rowData);
+    if (!updatedRow) {
+      return;
+    }
+    this.rowData = updatedRow;
+    this.recalculateRowTotals(this.rowData);
+  }
 
   public async saveRow(row: any) {
     if (!this.validateRowData()) {
@@ -638,6 +656,7 @@ export class FormularioComponent {
   }
 
   public closeRow() {
+    this.eraseRowData();
     this.modal.close()
   }
 
@@ -663,7 +682,6 @@ export class FormularioComponent {
     this.formatNumericHeaderValues();
     changedValue.property === 'loadingLocation' ? this.headerData.branchId = this.fieldsService.getBranchByLocation(changedValue.value.loadingLocation) : null;
     changedValue.property === 'loadingLocation' ? this.headerData.budgetStatus = this.isQuotationBranch ? 'CP' : 'PP' : null;
-    changedValue.property === 'customerId' ? this.headerData.customerIdDisabled = this.headerData.customerId : null;
     changedValue.property === 'customerId' ? this.fillCustomerData() : null;
     this.headerData.financialDiscount   = this.headerData.financialDiscount >= 100 ? 0 : this.headerData.financialDiscount ?? 0;
     this.saveForm(true, bkpRows, bkpHeaderData, true);
@@ -696,11 +714,17 @@ export class FormularioComponent {
     if (this.isViewMode() || this.supressValidation) {
       return {};
     }
+    const fobBasePricePosition = this.columns.findIndex(col => col.property === 'fobBasePrice');
+    if (fobBasePricePosition !== -1) {
+      this.columns[fobBasePricePosition].required = this.fieldsService.getColumns(this)
+        .find(col => col.property === 'fobBasePrice')?.required ?? false;
+    }
     changedValue.property === 'productId'                 ? this.fillProductData(changedValue.value.productId)  : null;
     //!this.selectedProductId                               ? this.rowData.productId = this.selectedProductId     : null
     isNaN(Number(changedValue.value.comissionPercentage)) ? this.rowData.comissionPercentage = 0                : null;
     isNaN(Number(changedValue.value.unitPrice))           ? this.rowData.unitPrice = 0                          : null;
     isNaN(Number(changedValue.value.amount))              ? this.rowData.amount = 0                             : null;
+    this.updateRowDataPrice();
     const validation: PoDynamicFormValidation = { fields: this.fieldsService.getColumns(this) };
     return validation;
   };
@@ -778,7 +802,7 @@ export class FormularioComponent {
           }, 0);
         }
       }
-      this.recalculateRowsTotals();
+      this.recalculateAllRowsTotals();
       return res; // Retorna os dados completos do orçamento
     } catch (error: any) {
       this.poNotification.error('Erro ao carregar orçamento: ' + error.message);
@@ -849,15 +873,15 @@ export class FormularioComponent {
       freightICMSPauta:     0,
     };
     this.rows = [
-    {
-      item: '01',
-      amount: 1,
-      fobBasePrice: 0,
-      unitPrice: 0,
-      totalPrice: 0,
-      comissionUnitValue: 0,
-      comissionTotalValue: 0,
-    },
+      {
+        item: '01',
+        //amount: 1,
+        fobBasePrice: 0,
+        unitPrice: 0,
+        totalPrice: 0,
+        comissionUnitValue: 0,
+        comissionTotalValue: 0,
+      },
     ];
   }
   

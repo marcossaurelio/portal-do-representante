@@ -173,10 +173,10 @@ export class FieldsService {
       {
         property: 'customerId',
         label: 'Cliente',
-        visible: !env.headerData.customerId,
+        visible: true,
         required: true,
         showRequired: true,
-        disabled: !env.headerData.loadingLocation || !!env.headerData.customerId || env.isViewMode(),
+        disabled: !env.headerData.loadingLocation || env.isViewMode(),
         noAutocomplete: true,
         minLength: 3,
         maxLength: 6,
@@ -194,6 +194,7 @@ export class FieldsService {
         fieldValue: 'codigoLoja',
         order: 1,
       },
+      /*
       {
         property: 'customerIdDisabled',
         label: 'Cliente',
@@ -218,6 +219,7 @@ export class FieldsService {
         fieldValue: 'codigoLoja',
         order: 1,
       },
+      */
       {
         property: 'customerHasIE',
         label: 'Possui IE?',
@@ -654,7 +656,7 @@ export class FieldsService {
         ],
         format: ['codigo'],
         fieldValue: 'codigo',
-        gridColumns: 2,
+        gridColumns: 3,
       },
       {
         property: 'productDescription',
