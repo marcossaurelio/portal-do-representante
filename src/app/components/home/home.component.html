@@ -1,3 +1,39 @@
 <po-page-default [p-title]="welcomeMessage">
 
+    <div>
+
+        <po-button class="po-xl-12 po-lg-12 po-md-12 shortcut"
+        (p-click)="redirectToBudgetsPage()"
+        p-label="Orçamentos"
+        p-icon="an an-file-text"
+        p-kind="secondary"
+        p-size="large">
+        </po-button>
+
+        <po-button class="po-xl-4 po-lg-4 po-md-4 shortcut"
+        (p-click)="redirectToSalesOverviewPage()"
+        p-label="Visão Geral de Vendas" 
+        p-icon="an an-chart-line-up"
+        p-kind="secondary"
+        p-size="large">
+        </po-button>
+
+        <po-button class="po-xl-4 po-lg-4 po-md-4 shortcut"
+        (p-click)="redirectToAccountsReceivablePage()"
+        p-label="Contas a Receber"
+        p-icon="an an-wallet"
+        p-kind="secondary"
+        p-size="large">
+        </po-button>
+
+        <po-button class="po-xl-4 po-lg-4 po-md-4 shortcut"
+        (p-click)="redirectToPriceTablesPage()"
+        p-label="Tabelas de Preço"
+        p-icon="an an-tag"
+        p-kind="secondary"
+        p-size="large">
+        </po-button>
+
+    </div>
+
 </po-page-default>

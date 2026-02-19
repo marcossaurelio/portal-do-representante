@@ -30,3 +30,34 @@
     align-items: center;          /* Centraliza conteúdo verticalmente */
     justify-content: center;      /* Centraliza conteúdo horizontalmente */
 }
+
+.page-slide-items {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.page-slide-items > po-info {
+    flex: 0 0 30%;
+    display: inline-block;
+}
+
+.page-slide-items > po-info:nth-child(1) {
+    text-align: left;
+}
+
+.page-slide-items > po-info:nth-child(2) {
+    text-align: center;
+}
+
+.page-slide-items > po-info:nth-child(3) {
+    text-align: right;
+}
+
+.add-row-button {
+    width: 100%;
+    height: 300px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}

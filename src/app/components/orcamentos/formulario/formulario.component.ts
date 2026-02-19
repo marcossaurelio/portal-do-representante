@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoDatepickerModule, PoPageEditLiterals } from '@po-ui/ng-components';
-import { PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction } from '@po-ui/ng-components';
+import { PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoPageSlideModule } from '@po-ui/ng-components';
 import { PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged, PoInfoModule } from '@po-ui/ng-components';
 import { PoInfoOrientation, PoTableComponent, PoDividerModule, PoTagModule, PoTagType, PoLookupFilteredItemsParams } from '@po-ui/ng-components';
 import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
@@ -28,7 +28,8 @@ import { firstValueFrom, Observable } from 'rxjs';
     PoInfoModule,
     PoDividerModule,
     PoTagModule,
-    PoDatepickerModule
+    PoDatepickerModule,
+    PoPageSlideModule,
 ],
   templateUrl: './formulario.component.html',
   styleUrl: './formulario.component.css'
@@ -40,6 +41,7 @@ export class FormularioComponent {
   @ViewChild('modal', { static: true }) 'modal': PoModalComponent;
   @ViewChild('modalCopy', { static: true }) 'modalCopy': PoModalComponent;
   @ViewChild('tableCopy', { static: true }) 'tableCopy': PoTableComponent;
+  @ViewChild('pageSlide') pageSlide: any;
 
   public headerData: any  = {};
   public rows: Array<any> = [];
@@ -62,10 +64,13 @@ export class FormularioComponent {
   public rowFormTitle: string = 'Item - Adicionar';
   public infoOrientation: PoInfoOrientation = PoInfoOrientation.Horizontal;
   public rows2Copy: Array<any> = [];
+  public pageSlideTitle: string = 'Detalhes';
+  public tableHeight: number = 300;
 
   public pageEditLiterals: PoPageEditLiterals = {
     cancel: 'Fechar',
     save: 'Salvar',
+    saveNew: 'Detalhes',
   };
 
   private selectedProductId: string = '';
@@ -149,8 +154,8 @@ export class FormularioComponent {
       .map(field => field.property);
 
     this.gridRowActions = [
-      { action: this.onModifyRow.bind(this),  icon: 'an an-note-pencil',  label: 'Alterar linha',     disabled: this.isViewMode() },
-      { action: this.onAddRow.bind(this),     icon: 'an an-plus',         label: 'Adicionar linha',   disabled: this.isViewMode() },
+      { action: this.onModifyRow.bind(this),  icon: 'an an-note-pencil',  label: 'Alterar produto',     disabled: this.isViewMode() },
+      { action: this.onAddRow.bind(this),     icon: 'an an-plus',         label: 'Adicionar produto',   disabled: this.isViewMode() },
     ];
         
     setTimeout(() => {
@@ -159,9 +164,12 @@ export class FormularioComponent {
 
   }
 
-
   public getFields(order: number): Array<PoDynamicFormField> {
     return this.fields.filter(field => field.order == order);
+  }
+
+  public get isRowsEmpty(): boolean {
+    return this.rows.length <= 1 && this.validateRows(true);
   }
 
   public get budgetTotalValue(): number {
@@ -232,7 +240,10 @@ export class FormularioComponent {
     return [productsAmount10x1, productsAmount30x1, productsAmount25kg];
   }
 
-  private get palletsAmountPerPackagingFormat(): Array<number> {
+  public get palletsAmountPerPackagingFormat(): Array<number> {
+    if (this.headerData.cargoType === 'BT') {
+      return [0,0,0];
+    }
     const pallets10x1Amount = Math.ceil(this.productsAmountPerPackagingFormat[0]/(this.headerData.palletPattern10x1 ?? 150));
     const pallets30x1Amount = Math.ceil(this.productsAmountPerPackagingFormat[1]/(this.headerData.palletPattern30x1 ?? 50));
     const pallets25kgAmount = Math.ceil(this.productsAmountPerPackagingFormat[2]/(this.headerData.palletPattern25kg ?? 50));
@@ -321,6 +332,10 @@ export class FormularioComponent {
 
   public eraseRowData(): void {
     this.rowData = {};
+  }
+
+  public onViewDetails(): void {
+    this.pageSlide.open();
   }
 
   public async onSaveForm(isAutoSave: boolean): Promise<void> {
@@ -502,7 +517,7 @@ export class FormularioComponent {
     this.loadingText = 'Carregando';
   }
 
-  private validateHeader(isSilent: boolean = false): boolean {
+  public validateHeader(isSilent: boolean = false): boolean {
     const requiredFields: Array<PoDynamicFormField> = this.getRequiredHeaderFields();
     const missingFields = requiredFields.filter(field => {
       const value = this.headerData[field.property];

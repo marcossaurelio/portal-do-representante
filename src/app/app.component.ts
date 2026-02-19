@@ -47,12 +47,12 @@ export class AppComponent {
   ];
 
   public readonly menus: Array<PoMenuItem> = [
-    { label: 'Home',                      action: this.homeClick.bind(this),          icon: 'an an-house-line',             shortLabel: "Home" },
-    { label: 'Orçamentos',                action: this.orcamentosClick.bind(this),    icon: 'an an-clipboard-text',         shortLabel: "Orçamentos" },
-    { label: 'Visão Geral de Vendas',     action: this.visaoVendasClick.bind(this),   icon: 'an an-chart-line-up',          shortLabel: "Vendas" },
-    //{ label: 'Categorias e Performance',  action: this.categoriasClick.bind(this),    icon: 'an an-chart-pie-slice',        shortLabel: "Performance" },
-    { label: 'Contas a Receber',          action: this.contasReceberClick.bind(this), icon: 'an an-currency-circle-dollar', shortLabel: "Contas a Receber" },
-    { label: 'Tabelas de Preço',          action: this.tabelasPrecoClick.bind(this),  icon: 'an an-money-wavy',             shortLabel: "Tabelas de Preço" },
+    { label: 'Home',                      action: this.homeClick.bind(this),          icon: 'an an-house-line',         shortLabel: "Home" },
+    { label: 'Orçamentos',                action: this.orcamentosClick.bind(this),    icon: 'an an-file-text',          shortLabel: "Orçamentos" },
+    { label: 'Visão Geral de Vendas',     action: this.visaoVendasClick.bind(this),   icon: 'an an-chart-line-up',      shortLabel: "Vendas" },
+    //{ label: 'Categorias e Performance',  action: this.categoriasClick.bind(this),    icon: 'an an-chart-pie-slice',  shortLabel: "Performance" },
+    { label: 'Contas a Receber',          action: this.contasReceberClick.bind(this), icon: 'an an-wallet',             shortLabel: "Contas a Receber" },
+    { label: 'Tabelas de Preço',          action: this.tabelasPrecoClick.bind(this),  icon: 'an an-tag',                shortLabel: "Tabelas de Preço" },
   ];
 
   private get userName(): string {
