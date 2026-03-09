@@ -61,3 +61,8 @@
     align-items: center;
     display: flex;
 }
+
+.price-ranges-table {
+    display: flex;
+    justify-content: center;
+}

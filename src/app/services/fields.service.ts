@@ -656,7 +656,7 @@ export class FieldsService {
         ],
         format: ['codigo'],
         fieldValue: 'codigo',
-        gridColumns: 3,
+        gridColumns: 2,
       },
       {
         property: 'productDescription',
@@ -667,7 +667,7 @@ export class FieldsService {
         disabled: true,
         noAutocomplete: true,
         maxLength: 60,
-        gridColumns: 6,
+        gridColumns: 5,
       },
       {
         property: 'amount',

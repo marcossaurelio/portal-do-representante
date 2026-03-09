@@ -70,7 +70,7 @@
 
     <div style="margin-top: 5px;"></div>
 
-    <div [style.display]="!isRowsEmpty ? 'flex' : 'none'" class="add-row-button">
+    <div [style.display]="isRowsEmpty ? 'flex' : 'none'" class="add-row-button">
 
         <po-button
         p-label="Adicionar produto"
@@ -82,7 +82,7 @@
 
     </div>
 
-    <po-table [style.display]="isRowsEmpty ? 'block' : 'none'"
+    <po-table [style.display]="!isRowsEmpty ? 'block' : 'none'"
     [p-columns]="columns"
     [p-items]="rows"
     [p-actions]="gridRowActions"
@@ -108,17 +108,61 @@
     [p-click-out]="false"
     [p-hide-close]="true"
     p-icon="an an-plus-circle"
-    [p-primary-action]="confirmRow"
-    [p-secondary-action]="cancelRow"
     p-size="xl"
     [p-title]="rowFormTitle" >
+
         <po-dynamic-form #rowForm
         [p-fields]="columns"
         [p-value]="rowData"
         [p-validate-fields]="this.validateFieldsRow"
         [p-validate]="this.onChangeFieldsRow.bind(this)" >
-            
         </po-dynamic-form>
+        
+        <div [style.display]="isPriceRangesTablesVisible && !!rowData.productId ? 'block' : 'none'">
+
+            <po-divider
+            p-label="Faixas de Preço" >
+            </po-divider>
+        
+            <div class="price-ranges-table">
+
+                <po-table class="po-xl-4 po-lg-5 po-md-8"
+                [p-columns]="priceRangesColumns"
+                [p-items]="priceRangesRows"
+                [p-striped]="true"
+                p-container="border"
+                [p-hide-columns-manager]="true" >
+                </po-table>
+
+            </div>
+
+        </div>
+
+        <po-modal-footer>
+
+            <po-button [style.display]="isQuotationBranch ? 'flex' : 'none'"
+            p-label="Faixas de Preço"
+            p-kind="tertiary"
+            [p-disabled]="!rowData.productId"
+            [p-loading]="isModalPriceRangesButtonLoading"
+            (p-click)="onPriceRangesClick()">
+            </po-button>
+
+            <po-button
+            p-label="Cancelar"
+            (p-click)="closeRow()">
+            </po-button>
+
+            <po-button p-label="Salvar"
+            (p-click)="saveRow(rowData)"
+            p-kind="primary"
+            [p-loading]="isModalSaveButtonLoading"
+            p-icon="an an-check">
+            
+        </po-button>
+
+        </po-modal-footer>
+
     </po-modal>
 
     <po-modal #modalCopy

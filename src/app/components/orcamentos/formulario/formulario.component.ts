@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
-import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoDatepickerModule, PoPageEditLiterals } from '@po-ui/ng-components';
-import { PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoPageSlideModule } from '@po-ui/ng-components';
+import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoDatepickerModule, PoPageEditLiterals, PoTableColumnSpacing } from '@po-ui/ng-components';
+import { PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoPageSlideModule, PoTableColumn } from '@po-ui/ng-components';
 import { PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged, PoInfoModule } from '@po-ui/ng-components';
 import { PoInfoOrientation, PoTableComponent, PoDividerModule, PoTagModule, PoTagType, PoLookupFilteredItemsParams } from '@po-ui/ng-components';
 import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
@@ -66,6 +66,9 @@ export class FormularioComponent {
   public rows2Copy: Array<any> = [];
   public pageSlideTitle: string = 'Detalhes';
   public tableHeight: number = 300;
+  public isPriceRangesTablesVisible: boolean = false;
+  public isModalSaveButtonLoading: boolean = false;
+  public isModalPriceRangesButtonLoading: boolean = false;
 
   public pageEditLiterals: PoPageEditLiterals = {
     cancel: 'Fechar',
@@ -77,20 +80,6 @@ export class FormularioComponent {
   private pbrPalletWeight: number = 35;
   private disposablePalletWeight: number = 19;
   private supressValidation: boolean = false;
-
-  public readonly confirmRow: PoModalAction = {
-    action: () => { this.saveRow(this.rowData); },
-    label: 'Confirmar',
-    disabled: false,
-    loading: false,
-  }
-  
-  public readonly cancelRow: PoModalAction = {
-    action: () => { this.closeRow(); },
-    label: 'Cancelar',
-    disabled: false,
-    loading: false,
-  }
 
   public readonly confirmCopy: PoModalAction = {
     action: () => { this.saveRows2Copy(); },
@@ -107,6 +96,27 @@ export class FormularioComponent {
   }
 
   public gridRowActions: Array<PoTableAction> = [];
+
+  public priceRangesColumns: Array<PoTableColumn> = [
+    {
+      property: 'price',
+      label: 'Preço',
+      type: 'currency',
+      width: '9999px',
+    },
+    {
+      property: 'comission',
+      label: 'Comissão (%)',
+      type: 'string',
+      width: '9999px',
+    },
+  ];
+
+  public priceRangesRows: Array<any> = [
+    {comission: 6, price: 10},
+    {comission: 7, price: 20.50},
+    {comission: 8, price: 23},
+  ];
 
   public async ngOnInit() {
     this.isHideLoading = false;
@@ -169,7 +179,7 @@ export class FormularioComponent {
   }
 
   public get isRowsEmpty(): boolean {
-    return this.rows.length <= 1 && this.validateRows(true);
+    return this.rows.length <= 1 && !this.validateRows(true);
   }
 
   public get budgetTotalValue(): number {
@@ -500,9 +510,9 @@ export class FormularioComponent {
   }
 
   private recalculateRowTotals(row: any): void {
-    row.totalPrice = Math.abs(this.rowData.unitPrice * this.rowData.amount);
-    row.comissionUnitValue = Math.abs(this.rowData.fobBasePrice * (this.rowData.comissionPercentage / 100));
-    row.comissionTotalValue = Math.abs(this.rowData.fobBasePrice * this.rowData.amount * (this.rowData.comissionPercentage / 100));
+    row.totalPrice = Math.abs(row.unitPrice * row.amount);
+    row.comissionUnitValue = Math.abs(row.fobBasePrice * (row.comissionPercentage / 100));
+    row.comissionTotalValue = Math.abs(row.fobBasePrice * row.amount * (row.comissionPercentage / 100));
     return row;
   }
 
@@ -534,6 +544,77 @@ export class FormularioComponent {
 
     return true;
 
+  }
+
+  private async getProductPriceRanges(row: any): Promise<any> {
+    const branchId = this.headerData.branchId;
+    const body = {
+      "filial":               this.headerData.branchId                  ?? "",
+      "unidadeCarregamento":  this.headerData.loadingLocation           ?? "",
+      "orcamento":            this.headerData.budgetId                  ?? "",
+      "cliente":              this.headerData.customerId.substring(0,6) ?? "",
+      "lojaCliente":          this.headerData.customerId.slice(-2)      ?? "",
+      "condPagamento":        this.headerData.paymentTerms              ?? "",
+      "vendedor":             this.headerData.sellerId                  ?? "",
+      "situacao":             this.headerData.budgetStatus              ?? "",
+      "condPagFrete":         this.headerData.freightPaymentTerms       ?? "",
+      "valorFreteBase":       this.headerData.freightCost               ?? 0,
+      "tipoCarga":            this.headerData.cargoType                 ?? "",
+      "tipoDescarga":         this.headerData.unloadingType             ?? "",
+      "valorDescarga":        this.headerData.unloadingCost             ?? 0,
+      "tipoFrete":            this.headerData.freightType               ?? "",
+      "cargaMaxima":          this.headerData.maxLoad                   ?? 0,
+      "tipoVeiculo":          this.headerData.transportationMode        ?? "",
+      "responsavelFrete":     this.headerData.freightResponsible        ?? false,
+      "veiculoProprio":       this.headerData.customerVehicle           ?? false,
+      "categoriaCliente":     this.headerData.customerCategory          ?? "", 
+      "icmsPautaFrete":       this.headerData.freightICMSPauta          ?? 0,
+      "estadoDestino":        this.headerData.destinationState          ?? "",
+      "cidadeDestino":        this.headerData.destinationCity           ?? "",
+      "item":                 row.item                                  ?? "",
+      "produto":              row.productId                             ?? "",
+      "quantidade":           row.amount                                ?? 0,
+      "precoFOB":             row.fobBasePrice                          ?? 0,
+      "precoUnitario":        row.unitPrice                             ?? 0,
+      "comissao":             row.comissionPercentage                   ?? 0,
+      "totalFaturamento":     this.budgetTotalValue                     ?? 0,
+      "totalFrete":           this.budgetFreightPerTon                  ?? 0,
+      "volumeTotal":          this.totalLoadWeight                      ?? 0,
+      "pesoTotalProdutos":    this.totalProductsNetWeight               ?? 0,
+      "qtdTotalPaletes":      this.totalPalletsAmount                   ?? 0,
+      "devolucaoPalete":      this.headerData.palletReturn              ? "S" : "N",
+      "descontoFinanceiro":   this.headerData.financialDiscount         ?? 0,
+    };
+    try {
+      const res: any = await firstValueFrom( this.api.post('portal-do-representante/precificacao/faixas/', body, branchId));
+      if (!res.success) {
+        this.poNotification.error('Item ' + row.item + ' - ' + 'Erro ao consultar faixas de preço.');
+        return null;
+      }
+      return res.faixas;
+    } catch (error: any) {
+      this.poNotification.error('Item ' + row.item + ' - ' + 'Erro ao consultar faixas de preço: ' + error.message);
+      return null;
+    }
+  }
+
+  private async updatePriceRangesTable(row: any): Promise<void> {
+    this.isModalPriceRangesButtonLoading = true;
+    const priceRanges = await this.getProductPriceRanges(row);
+    if (priceRanges) {
+      this.priceRangesRows = priceRanges.map((range: any) => ({
+        comission:  range.comissao,
+        price:      range.preco,
+      }));
+    }
+    this.isModalPriceRangesButtonLoading = false;
+  }
+
+  public async onPriceRangesClick(): Promise<void> {
+    if (!this.isPriceRangesTablesVisible){
+      await this.updatePriceRangesTable(this.rowData);
+    }
+    this.isPriceRangesTablesVisible = !this.isPriceRangesTablesVisible;
   }
 
   private validateRows(isSilent: boolean = false): boolean {
@@ -615,6 +696,7 @@ export class FormularioComponent {
       this.fillRowData(row)
       this.selectedProductId = this.rowData.productId
       this.rowFormTitle = 'Item - Alterar'
+      this.isPriceRangesTablesVisible = false;
       this.modal.open()
     }
   }
@@ -625,6 +707,7 @@ export class FormularioComponent {
       this.fillRowNextItem()
       this.selectedProductId = this.rowData.productId
       this.rowFormTitle = 'Item - Adicionar'
+      this.isPriceRangesTablesVisible = false;
       this.modal.open()
     }
   }
@@ -826,7 +909,7 @@ export class FormularioComponent {
   }
 
   private async fillProductData(codigoProduto: string): Promise<any> {
-    this.confirmRow.loading = true;
+    this.isModalSaveButtonLoading = true;
     const branchId = this.headerData.branchId;
     try {
       const res: any = await firstValueFrom(this.api.get('portal-do-representante/produtos/'+codigoProduto, branchId));
@@ -837,11 +920,14 @@ export class FormularioComponent {
         this.rowData.productNetWeight = res.pesoNeto;
         this.rowData.productGrossWeight = res.pesoBruto;
       }
-      this.confirmRow.loading = false;
+      if (!!this.isPriceRangesTablesVisible) {
+        await this.updatePriceRangesTable(this.rowData);
+      }
+      this.isModalSaveButtonLoading = false;
       return res
     } catch (error: any) {
       console.error('Erro ao buscar dados do produto:', error.message);
-      this.confirmRow.loading = false;
+      this.isModalSaveButtonLoading = false;
       return null;
     }
   }
