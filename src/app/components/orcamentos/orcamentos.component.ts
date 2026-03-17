@@ -54,6 +54,7 @@ export class OrcamentosComponent {
     { action: this.modifyBudget.bind(this),      icon: 'an an-note-pencil',        label: 'Renovar',               disabled: (item: any) => !this.isModifiable(item), visible: (item: any) => this.isExpired(item)   },
     { action: this.viewBudget.bind(this),        icon: 'an an-magnifying-glass',   label: 'Visualizar',            disabled: false                                           },
     { action: this.copyBudget.bind(this),        icon: 'an an-copy',               label: 'Copiar',                disabled: false                                           },
+    { action: this.printBudget.bind(this),       icon: 'an an-printer',            label: 'Imprimir',              disabled: false                                           },
     { action: this.sendToApproval.bind(this),    icon: 'an an-paper-plane-tilt',   label: 'Enviar para Aprovação', disabled: (item: any) => !this.isPendingOrder(item)       },
     { action: this.approveQuotation.bind(this),  icon: 'an an-check',              label: 'Aprovar cotação',       disabled: (item: any) => !this.isPendingQuotation(item)   },
     { action: this.rejectQuotation.bind(this),   icon: 'an an-x',                  label: 'Rejeitar cotação',      disabled: (item: any) => !this.isPendingQuotation(item)   },
@@ -770,6 +771,15 @@ export class OrcamentosComponent {
 
   private closeCustomerModal() {
     this.modal.close()
+  }
+
+  private printBudget(item: any) {
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree(['/','orcamentos','impressao'], {
+        queryParams: { branch: item.branchId, budget: item.budget }
+      })
+    );
+    window.open(url, '_blank');
   }
 
 }

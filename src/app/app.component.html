@@ -1,5 +1,5 @@
 
-<div class="po-wrapper" *ngIf="!isLoginRoute">
+<div class="po-wrapper" *ngIf="!isCleanPage">
   <po-toolbar
     p-title="Portal do Representante | Serv Sal"
     [p-profile]="profile"
@@ -25,4 +25,4 @@
 
 </div>
 
-<router-outlet *ngIf="isLoginRoute"></router-outlet>
+<router-outlet *ngIf="isCleanPage"></router-outlet>

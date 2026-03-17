@@ -1,0 +1,138 @@
+<po-page-default
+[p-title]="title"
+[p-subtitle]="subtitle"
+>
+
+    <po-divider p-label="Dados Gerais" ></po-divider>
+
+    <div class="print-line-items">
+
+        <po-info
+        p-label="Representante"
+        [p-value]="budgetData.sellerName"
+        [p-orientation]="infoOrientation"
+        ></po-info>
+
+        <po-info
+        p-label="Nome do Cliente"
+        [p-value]="budgetData.customerName"
+        [p-orientation]="infoOrientation"
+        ></po-info>
+        
+        <po-info
+        p-label="Cond. Pag. Produtos"
+        [p-value]="budgetData.paymentTermsDescription"
+        [p-orientation]="infoOrientation"
+        ></po-info>
+
+    </div>
+
+    <div class="print-line-items">
+
+        <po-info
+        p-label="Desconto Financeiro"
+        [p-value]="budgetData.financialDiscount + '%'"
+        [p-orientation]="infoOrientation"
+        ></po-info>
+
+        <po-info
+        ></po-info>
+        
+        <po-info
+        ></po-info>
+
+    </div>
+
+    <po-divider p-label="Dados Logísticos" ></po-divider>
+
+    <div class="print-line-items">
+
+        <po-info
+        p-label="Tipo de Frete"
+        [p-value]="budgetData.freightTypeDescription"
+        [p-orientation]="infoOrientation"
+        ></po-info>
+
+        <po-info
+        p-label="Cond. Pag. Frete"
+        [p-value]="budgetData.freightPaymentTermsDescription"
+        [p-orientation]="infoOrientation"
+        ></po-info>
+        
+        <po-info
+        p-label="Estado Destino"
+        [p-value]="budgetData.destinationState"
+        [p-orientation]="infoOrientation"
+        ></po-info>
+
+    </div>
+
+    <div class="print-line-items">
+
+        <po-info
+        p-label="Cidade Destino"
+        [p-value]="budgetData.destinationCityName"
+        [p-orientation]="infoOrientation"
+        ></po-info>
+
+        <po-info
+        p-label="Tipo de Carga"
+        [p-value]="budgetData.cargoTypeDescription"
+        [p-orientation]="infoOrientation"
+        ></po-info>
+        
+        <po-info
+        p-label="Devolução Paletes?"
+        [p-value]="!!budgetData.palletReturn ? 'SIM' : 'NÃO'"
+        [p-orientation]="infoOrientation"
+        ></po-info>
+
+    </div>
+
+    <po-divider p-label="Itens" ></po-divider>
+
+    <po-table
+    [p-columns]="itemsFields"
+    [p-items]="budgetData.rows"
+    [p-hide-columns-manager]="true"
+    [p-striped]="true"
+    [p-text-wrap]="true"
+    ></po-table>
+
+    <br>
+
+    <po-divider p-label="Totais" ></po-divider>
+
+    <div class="print-line-items">
+
+        <po-info
+        p-label="Valor Produtos"
+        [p-value]="budgetTotalValueFormatted"
+        [p-orientation]="infoOrientation"
+        ></po-info>
+
+        <po-info
+        p-label="Valor Frete"
+        [p-value]="budgetFreightValueFormatted"
+        [p-orientation]="infoOrientation"
+        ></po-info>
+        
+        <po-info
+        p-label="Peso Total"
+        [p-value]="totalLoadWeightFormatted"
+        [p-orientation]="infoOrientation"
+        ></po-info>
+
+        <po-info
+        p-label="Valor Total"
+        [p-value]="budgetTotalValueWithFreightFormatted"
+        [p-orientation]="infoOrientation"
+        ></po-info>
+
+    </div>
+
+</po-page-default>
+
+<img class="logo" src="assets/images/logo-serv-sal.png">
+
+<po-loading-overlay [hidden]="isHideLoading"></po-loading-overlay>

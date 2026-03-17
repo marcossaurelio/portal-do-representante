@@ -617,7 +617,7 @@ export class FormularioComponent {
     this.isPriceRangesTablesVisible = !this.isPriceRangesTablesVisible;
   }
 
-  private validateRows(isSilent: boolean = false): boolean {
+  public validateRows(isSilent: boolean = false): boolean {
     if (this.rows.length === 0) {
       if (!isSilent) {
         this.poNotification.warning('Orçamento sem itens. Adicione pelo menos um item.');
@@ -1157,6 +1157,15 @@ export class FormularioComponent {
         this.poNotification.error('Erro ao atualizar custo de frete: ' + error.message);
       }
     }
+  }
+
+  public printBudget(): void {
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree(['/','orcamentos','impressao'], {
+        queryParams: { branch: this.headerData.branchId, budget: this.headerData.budgetId }
+      })
+    );
+    window.open(url, '_blank');
   }
 
 }

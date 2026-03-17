@@ -30,8 +30,8 @@ export class AppComponent {
 
   constructor(private router: Router, private authService: AuthService, private poNotification: PoNotificationService) {}
 
-  get isLoginRoute(): boolean {
-    return this.router.url.includes('/login') || this.router.url.includes('/page-not-found')
+  get isCleanPage(): boolean {
+    return this.router.url.includes('/login') || this.router.url.includes('/page-not-found') || this.router.url.includes('/orcamentos/impressao');
   }
 
   public logoServSal = 'assets/images/logo-serv-sal.png';

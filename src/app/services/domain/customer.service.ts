@@ -42,6 +42,7 @@ export class CustomerService implements PoLookupFilter {
           destinationCity:  res.municipio       ?? '',
           customerCategory: res.categoria       ?? '',
           freightICMSPauta: res.icmsPautaFrete  ?? 0,
+          customerName:     res.razaoSocial     ?? '',
           customerHasIE:    !!res.ie,
         }
       }

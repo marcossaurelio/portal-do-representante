@@ -1,0 +1,29 @@
+/* Posicionar o logo no canto direito superior */
+.logo {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.print-line-items {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.print-line-items > po-info {
+    flex: 0 0 30%;
+    display: inline-block;
+}
+
+.print-line-items > po-info:nth-child(1) {
+    text-align: left;
+}
+
+.print-line-items > po-info:nth-child(2) {
+    text-align: center;
+}
+
+.print-line-items > po-info:nth-child(3) {
+    text-align: right;
+}

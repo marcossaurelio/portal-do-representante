@@ -56,23 +56,23 @@ export class FieldsService {
       { freightType: 'FOB', code: 'F' },
     ];
 
-  private readonly transportationModes: Array<any> = [
+    private readonly transportationModes: Array<any> = [
       { transportationMode: 'Rodoviário' , code: 'R' },
       { transportationMode: 'Marítimo'   , code: 'M' },
     ];
 
-  private readonly containerTypes: Array<any> = [
+    private readonly containerTypes: Array<any> = [
       { containerType: 'Container 20'    , code: 'C20' },
       { containerType: 'Container 40'    , code: 'C40' },
     ];
 
-  private readonly unloadingTypes: Array<any> = [
+    private readonly unloadingTypes: Array<any> = [
       { unloadingType: 'Por conta do cliente' ,                 code: 'C' },
       { unloadingType: 'Por conta do motorista (Leva Chapas)',  code: 'L' },
       { unloadingType: 'Por conta do motorista (Paga Taxa)',    code: 'P' },
     ];
 
-  private readonly cargoTypes: Array<any> = [
+    private readonly cargoTypes: Array<any> = [
       { cargoType: 'Batida'                       , code: 'BT' },
       { cargoType: 'Pallet PBR com Forro'         , code: 'PC' },
       { cargoType: 'Pallet PBR sem Forro'         , code: 'PS' },
@@ -832,12 +832,20 @@ export class FieldsService {
     return this.branches.find(branch => branch.id === branchId)?.name ?? '';
   }
 
+  public getLoadingLocationNameById(locationId: string): string {
+    return this.loadingLocations.find(location => location.id === locationId)?.name ?? '';
+  }
+
   public get getLoadingLocations(): Array<any> {
     return this.loadingLocations;
   }
 
   public get isInternalUser(): boolean {
     return localStorage.getItem('sellerType') === 'I';
+  }
+
+  public getCargoTypeById(cargoTypeId: string): string {
+    return this.cargoTypes.find(cargoType => cargoType.code === cargoTypeId)?.cargoType ?? '';
   }
 
 }
