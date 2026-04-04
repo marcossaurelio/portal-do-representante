@@ -106,12 +106,19 @@
 
     </po-table>
 
+    <div class="total-values" [style.display]="totalPalletsAmount > 0 ? 'flex' : 'none'">
+        <po-info p-label="Paletes 10x1"     [p-value]="palletsAmountPerPackagingFormat[0].toString()"   [p-orientation]="infoOrientation"> </po-info>
+        <po-info p-label="Paletes 30x1"     [p-value]="palletsAmountPerPackagingFormat[1].toString()"   [p-orientation]="infoOrientation"> </po-info>
+        <po-info p-label="Paletes 25kg"     [p-value]="palletsAmountPerPackagingFormat[2].toString()"   [p-orientation]="infoOrientation"> </po-info>
+        <po-info p-label="Total de Paletes" [p-value]="totalPalletsAmount.toString()"                   [p-orientation]="infoOrientation"> </po-info>
+    </div>
+
     <div class="total-values">
         <po-info p-label="Valor Produtos"   [p-value]="this.budgetTotalValueFormatted"      [p-orientation]="infoOrientation" > </po-info>
         <po-info p-label="Valor Frete"      [p-value]="this.budgetFreightValueFormatted"    [p-orientation]="infoOrientation" > </po-info>
         <po-info p-label="Peso Total"       [p-value]="this.totalLoadWeightFormatted"       [p-orientation]="infoOrientation" > </po-info>
         <po-tag [p-value]="weightStatusInformations[0]" [p-type]="weightStatusInformations[1]" [p-icon]="true" > </po-tag>
-    </div>
+    </div>    
 
     <po-modal #modal
     [p-click-out]="false"

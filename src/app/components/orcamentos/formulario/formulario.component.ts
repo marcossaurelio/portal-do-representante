@@ -65,7 +65,6 @@ export class FormularioComponent {
   public infoOrientation: PoInfoOrientation = PoInfoOrientation.Horizontal;
   public rows2Copy: Array<any> = [];
   public pageSlideTitle: string = 'Detalhes';
-  public tableHeight: number = 300;
   public isPriceRangesTablesVisible: boolean = false;
   public isModalSaveButtonLoading: boolean = false;
   public isModalPriceRangesButtonLoading: boolean = false;
@@ -182,6 +181,10 @@ export class FormularioComponent {
     return this.rows.length <= 1 && !this.validateRows(true);
   }
 
+  public get tableHeight(): number {
+    return this.totalPalletsAmount > 0 ? 270 : 300;
+  }
+
   public get budgetTotalValue(): number {
     const totalValue = this.rows.reduce((sum, row) => {
       const price = Number(row.totalPrice);
@@ -260,7 +263,7 @@ export class FormularioComponent {
     return [pallets10x1Amount, pallets30x1Amount, pallets25kgAmount].map(item => isFinite(item) ? item : 0);
   }
 
-  private get totalPalletsAmount(): number {
+  public get totalPalletsAmount(): number {
     return this.palletsAmountPerPackagingFormat[0] + this.palletsAmountPerPackagingFormat[1] + this.palletsAmountPerPackagingFormat[2];
   }
 
