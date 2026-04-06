@@ -24,7 +24,7 @@
     font-size: 14px;
     color: #045B8F;
     font-weight: 600;
-    margin-left: 45px;
+    margin-left: 47px;
     margin-bottom: -10px;
     white-space: nowrap;
 }
@@ -33,8 +33,8 @@
     font-size: 32px;
     color: #045B8F;
     font-weight: 600;
-    margin-left: 45px;
-    margin-top: -42px;
+    margin-left: 47px;
+    margin-top: -33px;
     white-space: nowrap;
 }
 
@@ -42,4 +42,7 @@
     font-size: 36px;
     color: #045B8F;
     margin-left: -3px;
+    margin-top: -5px;
+    position: relative;
+    top: 8px;
 }

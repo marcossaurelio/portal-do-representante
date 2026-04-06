@@ -60,14 +60,20 @@
         ></po-info>
         
         <po-info
-        p-label="Estado Destino"
-        [p-value]="budgetData.destinationState"
+        p-label="Peso Total"
+        [p-value]="totalLoadWeightFormatted"
         [p-orientation]="infoOrientation"
         ></po-info>
 
     </div>
 
     <div class="print-line-items">
+
+        <po-info
+        p-label="Estado Destino"
+        [p-value]="budgetData.destinationState"
+        [p-orientation]="infoOrientation"
+        ></po-info>
 
         <po-info
         p-label="Cidade Destino"
@@ -81,10 +87,20 @@
         [p-orientation]="infoOrientation"
         ></po-info>
         
+    </div>
+
+    <div class="print-line-items">
+
         <po-info
         p-label="Devolução Paletes?"
         [p-value]="!!budgetData.palletReturn ? 'SIM' : 'NÃO'"
         [p-orientation]="infoOrientation"
+        ></po-info>
+
+        <po-info
+        ></po-info>
+        
+        <po-info
         ></po-info>
 
     </div>
@@ -117,12 +133,6 @@
         [p-orientation]="infoOrientation"
         ></po-info>
         
-        <po-info
-        p-label="Peso Total"
-        [p-value]="totalLoadWeightFormatted"
-        [p-orientation]="infoOrientation"
-        ></po-info>
-
         <po-info
         p-label="Valor Total"
         [p-value]="budgetTotalValueWithFreightFormatted"

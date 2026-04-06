@@ -5,14 +5,13 @@ import { PoLookupFilter, PoLookupFilteredItemsParams } from '@po-ui/ng-component
 import { ApiService } from '../../services/api.service';
 import { firstValueFrom } from 'rxjs';
 import { PoNotificationService } from '@po-ui/ng-components';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CustomerService implements PoLookupFilter {
 
-  constructor(private api: ApiService, private poNotification: PoNotificationService, private http: HttpClient) { }
+  constructor(private api: ApiService, private poNotification: PoNotificationService) { }
 
   getFilteredItems(filteredParams: PoLookupFilteredItemsParams): Observable<any> {
     const { filterParams, advancedFilters, ...restFilteredItemsParams } = filteredParams;
