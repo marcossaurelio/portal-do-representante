@@ -93,8 +93,7 @@
 
     <po-table [style.display]="!isRowsEmpty ? 'block' : 'none'"
     [p-columns]="columns"
-    [p-items]="rows"
-    [p-actions]="gridRowActions"
+    [p-items]="getRowsToTable"
     [p-hide-columns-manager]="true"
     [p-draggable]="false"
     [p-sort]="false"
@@ -128,7 +127,7 @@
     [p-title]="rowFormTitle" >
 
         <po-dynamic-form #rowForm
-        [p-fields]="columns"
+        [p-fields]="rowFields"
         [p-value]="rowData"
         [p-validate-fields]="this.validateFieldsRow"
         [p-validate]="this.onChangeFieldsRow.bind(this)" >

@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoDatepickerModule, PoPageEditLiterals, PoTableColumnSpacing } from '@po-ui/ng-components';
+import { PoTabsModule, PoPageModule, PoDynamicModule, PoGridModule, PoContainerModule, PoDynamicFormField, PoTableModule, PoDatepickerModule, PoPageEditLiterals, PoTableColumnSpacing, PoTab } from '@po-ui/ng-components';
 import { PoTableAction, PoModalModule, PoButtonModule, PoModalComponent, PoModalAction, PoPageSlideModule, PoTableColumn } from '@po-ui/ng-components';
 import { PoNotificationService, PoDynamicFormValidation, PoLoadingModule, PoDynamicFormFieldChanged, PoInfoModule } from '@po-ui/ng-components';
 import { PoInfoOrientation, PoTableComponent, PoDividerModule, PoTagModule, PoTagType, PoLookupFilteredItemsParams } from '@po-ui/ng-components';
@@ -60,7 +60,8 @@ export class FormularioComponent {
   public generalDataFields: Array<PoDynamicFormField> = [];
   public logisticsDataFields: Array<PoDynamicFormField> = [];
   public copyModalFields: Array<PoDynamicFormField> = [];
-  public columns: Array<any> = [];
+  public columns: Array<PoTableColumn> = [];
+  public rowFields: Array<PoDynamicFormField> = [];
   public rowFormTitle: string = 'Item - Adicionar';
   public infoOrientation: PoInfoOrientation = PoInfoOrientation.Horizontal;
   public rows2Copy: Array<any> = [];
@@ -94,7 +95,7 @@ export class FormularioComponent {
     loading: false,
   }
 
-  public gridRowActions: Array<PoTableAction> = [];
+  //public gridRowActions: Array<PoTableAction> = [];
 
   public priceRangesColumns: Array<PoTableColumn> = [
     {
@@ -142,7 +143,8 @@ export class FormularioComponent {
     }
       
     this.fields = this.fieldsService.getFields(this);
-    this.columns = this.fieldsService.getColumns(this);
+    this.columns = this.fieldsService.getColumns(this,'table');
+    this.rowFields = this.fieldsService.getColumns(this,'form');
     
     this.generalDataFields = this.getFields(1);
     this.logisticsDataFields = this.getFields(2);
@@ -159,13 +161,15 @@ export class FormularioComponent {
       .map(field => field.property);
     this.validateFreightFields = this.logisticsDataFields
       .map(field => field.property);
-    this.validateFieldsRow = this.columns
+    this.validateFieldsRow = this.rowFields
       .map(field => field.property);
 
+    /*
     this.gridRowActions = [
       { action: this.onModifyRow.bind(this),  icon: 'an an-note-pencil',  label: 'Alterar produto',     disabled: this.isViewMode() },
       { action: this.onAddRow.bind(this),     icon: 'an an-plus',         label: 'Adicionar produto',   disabled: this.isViewMode() },
     ];
+    */
         
     setTimeout(() => {
       this.isHideLoading = true;
@@ -334,12 +338,15 @@ export class FormularioComponent {
   public fillRowNextItem(): void {
     const item = this.rows[this.rows.length-1].item;
     const newItem = parseInt(item, 10)+1;
-    this.rowData.item = newItem.toString().padStart(item.length, '0');
-    //this.rowData.amount = 1;
-    this.rowData.unitPrice = 0;
-    this.rowData.totalPrice = 0;
-    this.rowData.comissionUnitValue = 0;
-    this.rowData.comissionTotalValue = 0;
+    this.rowData = {
+        item: newItem.toString().padStart(item.length, '0'),
+        fobBasePrice: 0,
+        unitPrice: 0,
+        totalPrice: 0,
+        comissionUnitValue: 0,
+        comissionTotalValue: 0,
+
+    }
     this.rowData.operation = 'ADD';
   }
 
@@ -686,7 +693,7 @@ export class FormularioComponent {
   }
 
   public getRequiredRowFields(): Array<PoDynamicFormField> {
-    return this.columns.filter(field => field.required == true);
+    return this.rowFields.filter(field => field.required == true);
 }
 
   public onCancelForm() {
@@ -815,9 +822,9 @@ export class FormularioComponent {
     if (this.isViewMode() || this.supressValidation) {
       return {};
     }
-    const fobBasePricePosition = this.columns.findIndex(col => col.property === 'fobBasePrice');
+    const fobBasePricePosition = this.rowFields.findIndex(field => field.property === 'fobBasePrice');
     if (fobBasePricePosition !== -1) {
-      this.columns[fobBasePricePosition].required = this.fieldsService.getColumns(this)
+      this.rowFields[fobBasePricePosition].required = this.fieldsService.getColumns(this,'form')
         .find(col => col.property === 'fobBasePrice')?.required ?? false;
     }
     changedValue.property === 'productId'                 ? this.fillProductData(changedValue.value.productId)  : null;
@@ -826,7 +833,7 @@ export class FormularioComponent {
     isNaN(Number(changedValue.value.unitPrice))           ? this.rowData.unitPrice = 0                          : null;
     isNaN(Number(changedValue.value.amount))              ? this.rowData.amount = 0                             : null;
     this.updateRowDataPrice();
-    const validation: PoDynamicFormValidation = { fields: this.fieldsService.getColumns(this) };
+    const validation: PoDynamicFormValidation = { fields: this.fieldsService.getColumns(this,'form') };
     return validation;
   };
 
@@ -1169,6 +1176,13 @@ export class FormularioComponent {
       })
     );
     window.open(url, '_blank');
+  }
+
+  public get getRowsToTable(): Array<any> {
+    let rowsToTable: Array<any> = [];
+    rowsToTable = this.rows.map(row => ({ ...row, actions: ['edit'] }));
+    rowsToTable = [...rowsToTable, {actions: ['add']}];
+    return rowsToTable;
   }
 
 }

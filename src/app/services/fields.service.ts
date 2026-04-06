@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { PoDynamicFormField, ForceOptionComponentEnum } from '@po-ui/ng-components';
+import { PoDynamicFormField, ForceOptionComponentEnum, PoTableColumn } from '@po-ui/ng-components';
 import { ApiService } from './api.service';
 
 @Injectable({
@@ -626,8 +626,28 @@ export class FieldsService {
     return fields;
   }
 
-  public getColumns(env: any): Array<any> {
+  public getColumns(env: any, component: string = 'table'): Array<any> {
     return [
+      {
+        property: 'actions',
+        label: ' ',
+        type: 'icon',
+        visible: component === 'table',
+        icons: [
+          {
+            action: env.onAddRow.bind(env),
+            icon: 'an an-plus',
+            tooltip: 'Adicionar produto',
+            value: 'add'
+          },
+          {
+            action: env.onModifyRow.bind(env),
+            icon: 'an an-note-pencil',
+            tooltip: 'Alterar produto',
+            value: 'edit'
+          }
+        ]
+      },
       {
         property: 'item',
         label: 'Item',
