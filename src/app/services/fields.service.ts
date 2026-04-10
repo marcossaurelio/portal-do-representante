@@ -632,7 +632,7 @@ export class FieldsService {
         property: 'actions',
         label: ' ',
         type: 'icon',
-        visible: component === 'table',
+        visible: component === 'table' && !env.isViewMode(),
         icons: [
           {
             action: env.onAddRow.bind(env),
