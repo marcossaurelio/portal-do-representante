@@ -811,7 +811,7 @@ export class FormularioComponent {
     this.headerData.freightCost         = this.headerData.freightType === 'F' ? 0 : this.headerData.freightCost ?? 0;
     this.headerData.transportationMode  = !this.isQuotationBranch ? 'R' : this.headerData.transportationMode ?? 'R';
     this.headerData.customerVehicle     = changedValue.value.freightType === 'C' ? false : this.headerData.customerVehicle ?? false;
-    this.headerData.palletReturn        = this.headerData.cargoType == 'BT' ? false : this.headerData.palletReturn ?? false;
+    this.headerData.palletReturn        = this.headerData.cargoType == 'BT' || this.headerData.freightType == 'F' ? false : this.headerData.palletReturn ?? false;
     changedValue.property === 'destinationState' ? this.headerData.destinationCity = '' : null;
     this.saveForm(true, bkpRows, bkpHeaderData, true);
     const validation: PoDynamicFormValidation = { fields: this.fieldsService.getFields(this) };

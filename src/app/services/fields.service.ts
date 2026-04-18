@@ -350,7 +350,7 @@ export class FieldsService {
       {
         property: 'freightPaymentTerms',
         label: 'Cond. Pag. Frete',
-        visible: env.isQuotationBranch || !env.headerData.branchId,
+        visible: (env.isQuotationBranch || !env.headerData.branchId) && env.headerData.freightType !== 'F',
         required: true,
         showRequired: false,
         disabled: !env.headerData.freightType,
@@ -595,7 +595,7 @@ export class FieldsService {
         required: false,
         showRequired: false,
         noAutocomplete: true,
-        disabled: !env.headerData.freightType || env.headerData.cargoType === 'BT',
+        disabled: !env.headerData.freightType || env.headerData.cargoType === 'BT' || env.headerData.freightType === 'F',
         type: 'boolean',
         booleanTrue: 'Sim',
         booleanFalse: 'Não',
