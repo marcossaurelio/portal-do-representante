@@ -257,6 +257,34 @@ export class FormularioComponent {
     return [productsAmount10x1, productsAmount30x1, productsAmount25kg];
   }
 
+  private get netWeightPerPackagingFormat(): Array<number> {
+    const netWeight10x1 = this.rows.reduce((sum, row) => {
+      const packagingFormat = row.item === this.rowData.item ? this.rowData.packagingFormat : row.packagingFormat;
+      const netWeight = row.item === this.rowData.item ? this.rowData.productNetWeight : row.productNetWeight;
+      if (packagingFormat === '10X1') {
+        return sum + ((Number(row.item === this.rowData.item ? this.rowData.amount : row.amount) ?? 0) * (netWeight ?? 0));
+      }
+      return sum;
+    }, 0);
+    const netWeight30x1 = this.rows.reduce((sum, row) => {
+      const packagingFormat = row.item === this.rowData.item ? this.rowData.packagingFormat : row.packagingFormat;
+      const netWeight = row.item === this.rowData.item ? this.rowData.productNetWeight : row.productNetWeight;
+      if (packagingFormat === '30X1') {
+        return sum + ((Number(row.item === this.rowData.item ? this.rowData.amount : row.amount) ?? 0) * (netWeight ?? 0));
+      }
+      return sum;
+    }, 0);
+    const netWeight25kg = this.rows.reduce((sum, row) => {  
+      const packagingFormat = row.item === this.rowData.item ? this.rowData.packagingFormat : row.packagingFormat;
+      const netWeight = row.item === this.rowData.item ? this.rowData.productNetWeight : row.productNetWeight;
+      if (packagingFormat === '25KG') {
+        return sum + ((Number(row.item === this.rowData.item ? this.rowData.amount : row.amount) ?? 0) * (netWeight ?? 0));
+      }
+      return sum;
+    }, 0);
+    return [netWeight10x1, netWeight30x1, netWeight25kg];
+  }
+
   public get palletsAmountPerPackagingFormat(): Array<number> {
     if (this.headerData.cargoType === 'BT') {
       return [0,0,0];
@@ -455,6 +483,7 @@ export class FormularioComponent {
 
   private async getItemPriceInfo(row: any): Promise<any> {
     const branchId = this.headerData.branchId;
+    const packagingFormatIndex: number = row.packagingFormat === '10X1' ? 0 : row.packagingFormat === '30X1' ? 1 : row.packagingFormat === '25KG' ? 2 : -1; 
     const body = {
       "filial":               this.headerData.branchId                  ?? "",
       "unidadeCarregamento":  this.headerData.loadingLocation           ?? "",
@@ -489,6 +518,15 @@ export class FormularioComponent {
       "volumeTotal":          this.totalLoadWeight                      ?? 0,
       "pesoTotalProdutos":    this.totalProductsNetWeight               ?? 0,
       "qtdTotalPaletes":      this.totalPalletsAmount                   ?? 0,
+      "qtdPaletesFormato":    packagingFormatIndex >= 0 ? this.palletsAmountPerPackagingFormat[packagingFormatIndex] : 0,
+      "pesoProdutosFormato":  packagingFormatIndex >= 0 ? this.netWeightPerPackagingFormat[packagingFormatIndex] : 0,
+      "qtdPaletes10x1":       this.palletsAmountPerPackagingFormat[0]   ?? 0,
+      "qtdPaletes30x1":       this.palletsAmountPerPackagingFormat[1]   ?? 0,
+      "qtdPaletes25kg":       this.palletsAmountPerPackagingFormat[2]   ?? 0,
+      "pesoProdutos10x1":     this.netWeightPerPackagingFormat[0]       ?? 0,
+      "pesoProdutos30x1":     this.netWeightPerPackagingFormat[1]       ?? 0,
+      "pesoProdutos25kg":     this.netWeightPerPackagingFormat[2]       ?? 0,
+      "formatoEmbalagem":     row.packagingFormat                       ?? "",
       "devolucaoPalete":      this.headerData.palletReturn              ? "S" : "N",
       "descontoFinanceiro":   this.headerData.financialDiscount         ?? 0,
     };
@@ -591,7 +629,6 @@ export class FormularioComponent {
       "totalFrete":           this.budgetFreightPerTon                  ?? 0,
       "volumeTotal":          this.totalLoadWeight                      ?? 0,
       "pesoTotalProdutos":    this.totalProductsNetWeight               ?? 0,
-      "qtdTotalPaletes":      this.totalPalletsAmount                   ?? 0,
       "devolucaoPalete":      this.headerData.palletReturn              ? "S" : "N",
       "descontoFinanceiro":   this.headerData.financialDiscount         ?? 0,
     };
