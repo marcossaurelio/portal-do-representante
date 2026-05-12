@@ -441,6 +441,7 @@ export class FormularioComponent {
       "situacao":             budgetStatus                              ?? "",
       "condPagFrete":         this.headerData.freightPaymentTerms       ?? "",
       "valorFrete":           this.headerData.freightCost               ?? 0,
+      "tipoContainer":        this.headerData.containerType             ?? "",
       "tipoCarga":            this.headerData.cargoType                 ?? "",
       "tipoDescarga":         this.headerData.unloadingType             ?? "",
       "valorDescarga":        this.headerData.unloadingCost             ?? 0,
@@ -495,6 +496,7 @@ export class FormularioComponent {
       "situacao":             this.headerData.budgetStatus              ?? "",
       "condPagFrete":         this.headerData.freightPaymentTerms       ?? "",
       "valorFreteBase":       this.headerData.freightCost               ?? 0,
+      "tipoContainer":        this.headerData.containerType             ?? "",
       "tipoCarga":            this.headerData.cargoType                 ?? "",
       "tipoDescarga":         this.headerData.unloadingType             ?? "",
       "valorDescarga":        this.headerData.unloadingCost             ?? 0,
@@ -607,6 +609,7 @@ export class FormularioComponent {
       "situacao":             this.headerData.budgetStatus              ?? "",
       "condPagFrete":         this.headerData.freightPaymentTerms       ?? "",
       "valorFreteBase":       this.headerData.freightCost               ?? 0,
+      "tipoContainer":        this.headerData.containerType             ?? "",
       "tipoCarga":            this.headerData.cargoType                 ?? "",
       "tipoDescarga":         this.headerData.unloadingType             ?? "",
       "valorDescarga":        this.headerData.unloadingCost             ?? 0,
@@ -892,6 +895,7 @@ export class FormularioComponent {
           freightPaymentTerms:  res.condPagFrete          ?? '',
           freightCost:          res.valorFrete            ?? 0,
           cargoType:            res.tipoCarga             ?? '',
+          containerType:        res.tipoContainer         ?? '',
           unloadingType:        res.tipoDescarga          ?? '',
           unloadingCost:        res.valorDescarga         ?? 0,
           maxLoad:              res.cargaMaxima           ?? 0,
@@ -1010,6 +1014,7 @@ export class FormularioComponent {
       freightPaymentTerms:  '001',
       cargoType:            'BT',
       freightCost:          0,
+      containerType:        'C20',
       maxLoad:              0,
       palletPattern10x1:    150,
       palletPattern30x1:    50,
@@ -1165,11 +1170,13 @@ export class FormularioComponent {
     const destinationState = this.headerData.destinationState;
     const destinationCity = this.headerData.destinationCity;
     const totalWeight = this.totalLoadWeight;
+    const containerType = this.headerData.containerType ?? 'C20';
     const body = {
       filialOrigem: branchId,
       cidadeDestino: destinationCity,
       estadoDestino: destinationState,
       pesoTotal: totalWeight,
+      tipoContainer: containerType,
     }
     const transportationMode = this.headerData.transportationMode === 'M' ? 'maritimo' : 'rodoviario';
     if (this.headerData.freightType !== 'C') {
@@ -1190,7 +1197,7 @@ export class FormularioComponent {
         }
         if (this.headerData.transportationMode === 'M') {
           this.headerData.maxLoad = res.pesoMaximo ?? this.headerData.maxLoad;
-          this.headerData.containerType = res.tipoContainer ?? this.headerData.containerType;
+          //this.headerData.containerType = res.tipoContainer ?? this.headerData.containerType;
         }
       } else {
         this.headerData.freightCost = 0;

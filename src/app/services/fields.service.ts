@@ -421,7 +421,7 @@ export class FieldsService {
         visible: env.headerData.transportationMode === 'M',
         required: false,
         showRequired: false,
-        disabled: !env.headerData.freightResponsible,
+        disabled: false,
         noAutocomplete: true,
         minLength: 2,
         maxLength: 2,
