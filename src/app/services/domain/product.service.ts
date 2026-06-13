@@ -15,13 +15,13 @@ export class ProductService implements PoLookupFilter {
   getFilteredItems(filteredParams: PoLookupFilteredItemsParams): Observable<any> {
     const { filterParams, advancedFilters, ...restFilteredItemsParams } = filteredParams;
     const params = { ...restFilteredItemsParams, ...filterParams, ...advancedFilters };
-    let endpoint = 'portal-do-representante/produtos?page=' + params.page + '&pageSize=' + params.pageSize + '&location=' + params.loadingLocation;
+    let endpoint = 'produtos?page=' + params.page + '&pageSize=' + params.pageSize + '&location=' + params.loadingLocation;
     endpoint += !!params.filter ? '&filter=' + params.filter : '';
     return this.api.get(endpoint);
   }
 
   getObjectByValue(value: string): Observable<any> {
-    const endpoint = `portal-do-representante/produtos/${value}`;
+    const endpoint = `produtos/${value}`;
     return this.api.get(endpoint).pipe(
       tap((res: any) => {
         if (!res.success) {

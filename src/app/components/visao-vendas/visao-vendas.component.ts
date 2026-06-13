@@ -7,6 +7,9 @@ import { FieldsService } from '../../services/fields.service';
 import { LOCALE_ID } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
 import { CurrencyPipe } from '@angular/common';
+import { PoLookupFilteredItemsParams } from '@po-ui/ng-components';
+import { SellerService } from '../../services/domain/seller.service';
+import { ProductService } from '../../services/domain/product.service';
 
 @Component({
   selector: 'app-visao-vendas',
@@ -31,7 +34,7 @@ import { CurrencyPipe } from '@angular/common';
 })
 export class VisaoVendasComponent {
 
-  constructor(private api: ApiService, private poNotification: PoNotificationService, private fieldsService: FieldsService) {}
+  constructor(private api: ApiService, private poNotification: PoNotificationService, private fieldsService: FieldsService, private sellerService: SellerService, private productService: ProductService) {}
 
   @ViewChild('pageSlide') pageSlide: any;
 
@@ -151,6 +154,24 @@ export class VisaoVendasComponent {
     branches: this.fieldsService.getBranches.map((branch: any) => branch.id),
   };
 
+  public sellerServiceWrapper = {
+    getFilteredItems: (filteredParams: PoLookupFilteredItemsParams): Observable<any> => {
+      return this.sellerService.getFilteredItems(filteredParams);
+    },
+    getObjectByValue: (value: string): Observable<any> => {
+      return this.sellerService.getObjectByValue(value);
+    }
+  };
+
+  public productServiceWrapper = {
+    getFilteredItems: (filteredParams: PoLookupFilteredItemsParams): Observable<any> => {
+      return this.productService.getFilteredItems(filteredParams);
+    },
+    getObjectByValue: (value: string): Observable<any> => {
+      return this.productService.getObjectByValue(value);
+    }
+  };
+
   async ngOnInit() {
     this.isHideLoading = false;
     this.filtersFields = this.getFiltersFields();
@@ -186,7 +207,7 @@ export class VisaoVendasComponent {
   private async loadAcumulatedRevenueIndicators(): Promise<void> {
     const body: any = this.buildFiltersBody();
     try {
-      const res: any = await firstValueFrom(this.api.post('portal-do-representante/dashboard/faturamento-acumulado', body))
+      const res: any = await firstValueFrom(this.api.post('dashboard/faturamento-acumulado', body))
       this.revenueIndicators.accumulatedRevenueCurrent.value = res.valores[0] ?? 0;
       this.revenueIndicators.accumulatedRevenuePrevious.value = res.valores[1] ?? 0;
     } catch (error) {
@@ -198,7 +219,7 @@ export class VisaoVendasComponent {
   private async loadNewClients(): Promise<void> {
     const body: any = this.buildFiltersBody();
     try {
-      const res: any = await firstValueFrom(this.api.post('portal-do-representante/dashboard/clientes-novos', body))
+      const res: any = await firstValueFrom(this.api.post('dashboard/clientes-novos', body))
       this.revenueIndicators.newClients.value = res.novosClientes ?? 0;
       this.revenueIndicators.newClients.variation = res.variacao ?? 0;
     } catch (error) {
@@ -210,7 +231,7 @@ export class VisaoVendasComponent {
   private async loadNotPurchasedClients(): Promise<void> {
     const body: any = this.buildFiltersBody();
     try {
-      const res: any = await firstValueFrom(this.api.post('portal-do-representante/dashboard/clientes-nao-compraram', body))
+      const res: any = await firstValueFrom(this.api.post('dashboard/clientes-nao-compraram', body))
       this.revenueIndicators.notPurchasedClients.value = res.naoCompraram ?? 0;
       this.revenueIndicators.notPurchasedClients.variation = res.variacao ?? 0;
     } catch (error) {
@@ -222,7 +243,7 @@ export class VisaoVendasComponent {
   private async loadIncreasedClients(): Promise<void> {
     const body: any = this.buildFiltersBody();
     try {
-      const res: any = await firstValueFrom(this.api.post('portal-do-representante/dashboard/clientes-aumento', body))
+      const res: any = await firstValueFrom(this.api.post('dashboard/clientes-aumento', body))
       this.revenueIndicators.increasedClients.value = res.clientesAumento ?? 0;
       this.revenueIndicators.increasedClients.variation = res.variacao ?? 0;
     } catch (error) {
@@ -234,7 +255,7 @@ export class VisaoVendasComponent {
   private async loadDecreasedClients(): Promise<void> {
     const body: any = this.buildFiltersBody();
     try {
-      const res: any = await firstValueFrom(this.api.post('portal-do-representante/dashboard/clientes-reducao', body))
+      const res: any = await firstValueFrom(this.api.post('dashboard/clientes-reducao', body))
       this.revenueIndicators.decreasedClients.value = res.clientesReducao ?? 0;
       this.revenueIndicators.decreasedClients.variation = res.variacao ?? 0;
     } catch (error) {
@@ -247,7 +268,7 @@ export class VisaoVendasComponent {
     let data: Array<PoChartSerie> = [];
     const body: any = this.buildFiltersBody();
     try {
-      const res: any = await firstValueFrom(this.api.post('portal-do-representante/dashboard/faturamento-x-periodo', body))
+      const res: any = await firstValueFrom(this.api.post('dashboard/faturamento-x-periodo', body))
       data = res.anos.map((ano: any) => {
         return {
           label: ano.ano,
@@ -268,7 +289,7 @@ export class VisaoVendasComponent {
     let data: Array<PoChartSerie> = [];
     const body: any = this.buildFiltersBody();
     try {
-      const res: any = await firstValueFrom(this.api.post('portal-do-representante/dashboard/historico-faturamento', body))
+      const res: any = await firstValueFrom(this.api.post('dashboard/historico-faturamento', body))
       this.revenueHistoryCategories = res.anos;
       data = [
         { data: res.valores, type: PoChartType.Column, color: '#045B8F'},
@@ -284,7 +305,7 @@ export class VisaoVendasComponent {
     let data: Array<PoChartSerie> = [];
     const body: any = this.buildFiltersBody();
     try {
-      const res: any = await firstValueFrom(this.api.post('portal-do-representante/dashboard/categorias-clientes', body))
+      const res: any = await firstValueFrom(this.api.post('dashboard/categorias-clientes', body))
       data = res.categorias.map((categoria: any) => {
         return {
           label: categoria.categoria,
@@ -302,7 +323,7 @@ export class VisaoVendasComponent {
     let data: Array<PoChartSerie> = [];
     const body: any = this.buildFiltersBody();
     try {
-      const res: any = await firstValueFrom(this.api.post('portal-do-representante/dashboard/categorias-produtos', body))
+      const res: any = await firstValueFrom(this.api.post('dashboard/categorias-produtos', body))
       this.productCategoriesEvolutionItems = res.produtos;
       data = res.anos.map((ano: any) => {
         return {
@@ -328,7 +349,7 @@ export class VisaoVendasComponent {
         disabled: false,
         noAutocomplete: true,
         gridColumns: 12,
-        optionsService: this.api.baseUrl + '/portal-do-representante/dashboard/filtros/anos',
+        optionsService: this.api.baseUrl + '/dashboard/filtros/anos',
         optionsMulti: true,
         hideSearch: true,
       },
@@ -382,7 +403,7 @@ export class VisaoVendasComponent {
         disabled: !this.fieldsService.isInternalUser,
         noAutocomplete: true,
         gridColumns: 12,
-        searchService: this.api.baseUrl + '/portal-do-representante/vendedores',
+        searchService: this.sellerServiceWrapper,
         columns: [
           { property: 'codigo',   label: 'Código'   },
           { property: 'nome',     label: 'Nome'     },
@@ -402,7 +423,7 @@ export class VisaoVendasComponent {
         disabled: false,
         noAutocomplete: true,
         gridColumns: 12,
-        searchService: this.api.baseUrl + '/portal-do-representante/produtos',
+        searchService: this.productServiceWrapper,
         columns: [
           { property: 'codigo',   label: 'Código' },
           { property: 'descricao',label: 'Descrição' },

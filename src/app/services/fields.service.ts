@@ -268,7 +268,7 @@ export class FieldsService {
         maxLength: 6,
         gridColumns: 4,
         type: 'string',
-        searchService: this.api.baseUrl+'/portal-do-representante/vendedores',
+        searchService: this.api.baseUrl+'/vendedores',
         columns: [
           { property: 'codigo',   label: 'Código'   },
           { property: 'nome',     label: 'Nome'     },
@@ -292,7 +292,7 @@ export class FieldsService {
         maxLength: 40,
         gridColumns: 3,
         type: 'string',
-        searchService: this.api.baseUrl+'/portal-do-representante/condicoes',
+        searchService: this.api.baseUrl+'/condicoes',
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'descricao', label: 'Descrição' },
@@ -359,7 +359,7 @@ export class FieldsService {
         maxLength: 40,
         gridColumns: 3,
         type: 'string',
-        searchService: this.api.baseUrl+'/portal-do-representante/condicoes',
+        searchService: this.api.baseUrl+'/condicoes',
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'descricao', label: 'Descrição' },

@@ -419,7 +419,7 @@ export class OrcamentosComponent {
       }))
     }
     try {
-      const res: any = await firstValueFrom(this.api.post('portal-do-representante/orcamentos/indicadores', body));
+      const res: any = await firstValueFrom(this.api.post('orcamentos/indicadores', body));
       if (res.success) {
         this.blockFilters = this.blockFilters.map((item: any, index: number) => ({
           ...item, // Mantém todos os campos originais
@@ -474,7 +474,7 @@ export class OrcamentosComponent {
     const params: string = '?sellerId='+this.sellerId+'&page=1';
     const body: any = {filtro: filter ?? ''};
     try {
-      const res: any = await firstValueFrom(this.api.post('portal-do-representante/orcamentos' + params,body));
+      const res: any = await firstValueFrom(this.api.post('orcamentos' + params,body));
       return res.objects.map((item: any) => ({
         branchId:             item.filial,
         branchName:           this.getBranchByCode(item.filial),
@@ -609,7 +609,7 @@ export class OrcamentosComponent {
     const budget = item.budget;
     const body = { filial: branchId, orcamento: budget }
     try {
-      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/cotacao/aprovar', body, branchId));
+      const res: any = await firstValueFrom(this.api.put('orcamentos/cotacao/aprovar', body, branchId));
       if (res.success) {
         this.poNotification.success('Cotação aprovada com sucesso!');
         this.items = await this.getItems();
@@ -630,7 +630,7 @@ export class OrcamentosComponent {
     const budget = item.budget;
     const body = { filial: branchId, orcamento: budget }
     try {
-      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/cotacao/rejeitar', body, branchId));
+      const res: any = await firstValueFrom(this.api.put('orcamentos/cotacao/rejeitar', body, branchId));
       if (res.success) {
         this.poNotification.success('Cotação rejeitada com sucesso!');
         this.items = await this.getItems();
@@ -652,7 +652,7 @@ export class OrcamentosComponent {
     const budget = item.budget;
     const body = { filial: branchId, orcamento: budget }
     try {
-      const res: any = await firstValueFrom(this.api.put('portal-do-representante/orcamentos/pre-pedido/aprovar', body, branchId));
+      const res: any = await firstValueFrom(this.api.put('orcamentos/pre-pedido/aprovar', body, branchId));
       if (res.success) {
         this.poNotification.success('Pré pedido enviado para aprovação com sucesso!');
         this.items = await this.getItems();

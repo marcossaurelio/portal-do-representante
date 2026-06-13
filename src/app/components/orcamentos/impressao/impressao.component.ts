@@ -64,7 +64,7 @@ export class ImpressaoComponent {
 
   private async loadBudgetData(branchId: string, budgetId: string): Promise<any> {
     try {
-      const res: any = await firstValueFrom(this.api.get('portal-do-representante/orcamentos/dados?branchId='+branchId+'&budget='+budgetId, branchId));
+      const res: any = await firstValueFrom(this.api.get('orcamentos/dados?branchId='+branchId+'&budget='+budgetId, branchId));
       if (res) {
         this.budgetData = {
           branchId:                       res.filial                ?? '',

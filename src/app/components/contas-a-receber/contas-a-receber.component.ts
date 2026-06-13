@@ -1,9 +1,12 @@
 import { Component } from '@angular/core';
 import { PoTableColumn, PoTableModule, PoTagType, PoLoadingModule } from '@po-ui/ng-components';
+import { PoLookupFilteredItemsParams } from '@po-ui/ng-components';
 import { PoPageDynamicSearchModule, PoPageDynamicSearchFilters } from '@po-ui/ng-templates';
 import { ApiService } from '../../services/api.service';
 import { FieldsService } from '../../services/fields.service';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { CustomerService } from '../../services/domain/customer.service';
+import { SellerService } from '../../services/domain/seller.service';
 
 @Component({
   selector: 'app-contas-a-receber',
@@ -17,9 +20,9 @@ import { firstValueFrom } from 'rxjs';
 })
 export class ContasAReceberComponent {
 
-  constructor(private api: ApiService, private fieldsService: FieldsService) { }
+  constructor(private api: ApiService, private fieldsService: FieldsService, private customerService: CustomerService, private sellerService: SellerService) { }
 
-  public itemsServiceURL = this.api.baseUrl + '/portal-do-representante/contasareceber';
+  public itemsServiceURL = this.api.baseUrl + '/contasareceber';
   public isHideLoading = true;
   public isShowMoreLoading = false;
   public isShowMoreDisabled = false;
@@ -32,6 +35,24 @@ export class ContasAReceberComponent {
   private pageSize = 1000;
   private page = 1;
   private activeDisclaimers: any = {};
+
+  public sellerServiceWrapper = {
+    getFilteredItems: (filteredParams: PoLookupFilteredItemsParams): Observable<any> => {
+      return this.sellerService.getFilteredItems(filteredParams);
+    },
+    getObjectByValue: (value: string): Observable<any> => {
+      return this.sellerService.getObjectByValue(value);
+    }
+  };
+
+  public customerServiceWrapper = {
+    getFilteredItems: (filteredParams: PoLookupFilteredItemsParams): Observable<any> => {
+      return this.customerService.getFilteredItems(filteredParams);
+    },
+    getObjectByValue: (value: string): Observable<any> => {
+      return this.customerService.getObjectByValue(value);
+    }
+  };
 
   public columns: Array<PoTableColumn> = [
     { property: 'status',
@@ -95,7 +116,7 @@ export class ContasAReceberComponent {
       type: 'string',
       gridColumns: 6,
       visible: this.fieldsService.isInternalUser,
-      searchService: this.api.baseUrl + '/portal-do-representante/vendedores',
+      searchService: this.sellerServiceWrapper,
       columns: [
         { property: 'codigo',   label: 'Código'   },
         { property: 'nome',     label: 'Nome'     },
@@ -110,7 +131,7 @@ export class ContasAReceberComponent {
       label: 'Cliente',
       type: 'string',
       gridColumns: 9,
-      searchService: this.api.baseUrl + '/portal-do-representante/clientes',
+      searchService: this.customerServiceWrapper,
       columns: [
         { property: 'codigoLoja', label: 'Código' },
         { property: 'cgc', label: 'CNPJ' },
@@ -162,7 +183,7 @@ export class ContasAReceberComponent {
 
   private async getItems(): Promise<any> {
     const body: any = this.buildBody();
-    const res: any = await firstValueFrom(this.api.post('portal-do-representante/contasareceber', body));
+    const res: any = await firstValueFrom(this.api.post('contasareceber', body));
     this.isShowMoreDisabled = !res.hasNext;
     res.items.forEach((item: any) => {
       item.branch = this.fieldsService.getBranchNameById(item.branch);

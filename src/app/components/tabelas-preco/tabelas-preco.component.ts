@@ -24,7 +24,7 @@ export class TabelasPrecoComponent {
   public isHideLoading: boolean = true;
   public isShowMoreLoading: boolean = false;
   public isShowMoreDisabled: boolean = false;
-  public apiService: string = this.api.baseUrl + '/portal-do-representante/precificacao/tabelas';
+  public apiService: string = this.api.baseUrl + '/precificacao/tabelas';
   public tableHeight: number = 490;
 
   private activeDisclaimers: any = {};
@@ -48,7 +48,7 @@ export class TabelasPrecoComponent {
   }
 
   private async downloadFile(item: any): Promise<void> {
-    const url = `${this.api.baseUrl}/portal-do-representante/precificacao/tabelas/download/${item.branchId + item.tableId}`;
+    const url = `${this.api.baseUrl}/precificacao/tabelas/download/${item.branchId + item.tableId}`;
     window.open(url, '_blank');
   }
 

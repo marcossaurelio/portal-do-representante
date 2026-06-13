@@ -10,7 +10,7 @@ export class AuthService {
 
   constructor(private router: Router, private http: HttpClient, private api: ApiService) {}
 
-  private endPointLogin: string = 'portal-do-representante/login/';
+  private endPointLogin: string = 'login/';
 
   public isLoggedIn(): boolean {
     const token = localStorage.getItem('authToken');

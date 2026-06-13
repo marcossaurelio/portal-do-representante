@@ -470,10 +470,10 @@ export class FormularioComponent {
     };
     try {
       if (!this.headerData.budgetId) {
-        const res = await firstValueFrom( this.api.post('portal-do-representante/orcamentos/incluir/', body, branchId));
+        const res = await firstValueFrom( this.api.post('orcamentos/incluir/', body, branchId));
         return res;
       } else {
-        const res = await firstValueFrom( this.api.put('portal-do-representante/orcamentos/alterar/', body, branchId));
+        const res = await firstValueFrom( this.api.put('orcamentos/alterar/', body, branchId));
         return res;
       }
     } catch (error: any) {
@@ -533,7 +533,7 @@ export class FormularioComponent {
       "descontoFinanceiro":   this.headerData.financialDiscount         ?? 0,
     };
     try {
-      const res: any = await firstValueFrom( this.api.post('portal-do-representante/precificacao/produto/', body, branchId));
+      const res: any = await firstValueFrom( this.api.post('precificacao/produto/', body, branchId));
       if (!res.success) {
         this.poNotification.error('Item ' + row.item + ' - ' + res.message + ': ' + res.fix);
         return null;
@@ -636,7 +636,7 @@ export class FormularioComponent {
       "descontoFinanceiro":   this.headerData.financialDiscount         ?? 0,
     };
     try {
-      const res: any = await firstValueFrom( this.api.post('portal-do-representante/precificacao/faixas/', body, branchId));
+      const res: any = await firstValueFrom( this.api.post('precificacao/faixas/', body, branchId));
       if (!res.success) {
         this.poNotification.error('Item ' + row.item + ' - ' + 'Erro ao consultar faixas de preço.');
         return null;
@@ -879,7 +879,7 @@ export class FormularioComponent {
 
   private async loadBudgetData(branchId: string, budgetId: string): Promise<any> {
     try {
-      const res: any = await firstValueFrom(this.api.get('portal-do-representante/orcamentos/dados?branchId='+branchId+'&budget='+budgetId, branchId));
+      const res: any = await firstValueFrom(this.api.get('orcamentos/dados?branchId='+branchId+'&budget='+budgetId, branchId));
       if (res) {
         this.headerData = {
           branchId:             !this.isCopyMode() ? res.filial : '',
@@ -963,7 +963,7 @@ export class FormularioComponent {
     this.isModalSaveButtonLoading = true;
     const branchId = this.headerData.branchId;
     try {
-      const res: any = await firstValueFrom(this.api.get('portal-do-representante/produtos/'+codigoProduto, branchId));
+      const res: any = await firstValueFrom(this.api.get('produtos/'+codigoProduto, branchId));
       if (res) {
         this.rowData.productDescription = res.descricao;
         this.rowData.packagingType = res.unidade;
@@ -1187,7 +1187,7 @@ export class FormularioComponent {
       return;
     }
     try {
-      const res: any = await firstValueFrom(this.api.post(`portal-do-representante/frete/valor/` + transportationMode, body, branchId));
+      const res: any = await firstValueFrom(this.api.post(`frete/valor/` + transportationMode, body, branchId));
       if (res.success) {
         if (this.headerData.freightCost !== res.valorFrete) {
           this.headerData.freightCost = res.valorFrete;
