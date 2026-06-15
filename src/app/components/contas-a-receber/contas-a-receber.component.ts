@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
 import { PoTableColumn, PoTableModule, PoTagType, PoLoadingModule } from '@po-ui/ng-components';
-import { PoLookupFilteredItemsParams } from '@po-ui/ng-components';
 import { PoPageDynamicSearchModule, PoPageDynamicSearchFilters } from '@po-ui/ng-templates';
 import { ApiService } from '../../services/api.service';
 import { FieldsService } from '../../services/fields.service';
-import { firstValueFrom, Observable } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { CustomerService } from '../../services/domain/customer.service';
 import { SellerService } from '../../services/domain/seller.service';
 
@@ -35,24 +34,6 @@ export class ContasAReceberComponent {
   private pageSize = 1000;
   private page = 1;
   private activeDisclaimers: any = {};
-
-  public sellerServiceWrapper = {
-    getFilteredItems: (filteredParams: PoLookupFilteredItemsParams): Observable<any> => {
-      return this.sellerService.getFilteredItems(filteredParams);
-    },
-    getObjectByValue: (value: string): Observable<any> => {
-      return this.sellerService.getObjectByValue(value);
-    }
-  };
-
-  public customerServiceWrapper = {
-    getFilteredItems: (filteredParams: PoLookupFilteredItemsParams): Observable<any> => {
-      return this.customerService.getFilteredItems(filteredParams);
-    },
-    getObjectByValue: (value: string): Observable<any> => {
-      return this.customerService.getObjectByValue(value);
-    }
-  };
 
   public columns: Array<PoTableColumn> = [
     { property: 'status',
@@ -116,7 +97,7 @@ export class ContasAReceberComponent {
       type: 'string',
       gridColumns: 6,
       visible: this.fieldsService.isInternalUser,
-      searchService: this.sellerServiceWrapper,
+      searchService: this.sellerService,
       columns: [
         { property: 'codigo',   label: 'Código'   },
         { property: 'nome',     label: 'Nome'     },
@@ -131,7 +112,7 @@ export class ContasAReceberComponent {
       label: 'Cliente',
       type: 'string',
       gridColumns: 9,
-      searchService: this.customerServiceWrapper,
+      searchService: this.customerService,
       columns: [
         { property: 'codigoLoja', label: 'Código' },
         { property: 'cgc', label: 'CNPJ' },

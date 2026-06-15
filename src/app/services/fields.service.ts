@@ -1,13 +1,24 @@
 import { Injectable } from '@angular/core';
-import { PoDynamicFormField, ForceOptionComponentEnum, PoTableColumn } from '@po-ui/ng-components';
-import { ApiService } from './api.service';
+import { PoDynamicFormField, ForceOptionComponentEnum, PoTableColumn, PoLookupFilteredItemsParams } from '@po-ui/ng-components';
+import { Observable } from 'rxjs';
+import { CustomerService } from './domain/customer.service';
+import { SellerService } from './domain/seller.service';
+import { PaymentTermsService } from './domain/payment-terms.service';
+import { CityService } from './domain/city.service';
+import { ProductService } from './domain/product.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FieldsService {
 
-  constructor(private api: ApiService) { }
+  constructor(
+    private customerService: CustomerService,
+    private sellerService: SellerService,
+    private paymentTermsService: PaymentTermsService,
+    private cityService: CityService,
+    private productService: ProductService,
+  ) { }
 
     private readonly branches: Array<any> = [
       { name: 'São Camilo',          id: "01010003", isQuotation: true   },
@@ -182,7 +193,7 @@ export class FieldsService {
         maxLength: 6,
         gridColumns: 6,
         type: 'string',
-        searchService: env.customerService,
+        searchService: this.customerService,
         columns: [
           { property: 'codigoLoja', label: 'Código' },
           { property: 'cgc', label: 'CNPJ' },
@@ -207,7 +218,7 @@ export class FieldsService {
         maxLength: 6,
         gridColumns: 6,
         type: 'string',
-        searchService: env.customerService,
+        searchService: this.customerService,
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'cgc', label: 'CNPJ' },
@@ -268,7 +279,7 @@ export class FieldsService {
         maxLength: 6,
         gridColumns: 4,
         type: 'string',
-        searchService: this.api.baseUrl+'/vendedores',
+        searchService: this.sellerService,
         columns: [
           { property: 'codigo',   label: 'Código'   },
           { property: 'nome',     label: 'Nome'     },
@@ -292,7 +303,7 @@ export class FieldsService {
         maxLength: 40,
         gridColumns: 3,
         type: 'string',
-        searchService: this.api.baseUrl+'/condicoes',
+        searchService: this.paymentTermsService,
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'descricao', label: 'Descrição' },
@@ -359,7 +370,7 @@ export class FieldsService {
         maxLength: 40,
         gridColumns: 3,
         type: 'string',
-        searchService: this.api.baseUrl+'/condicoes',
+        searchService: this.paymentTermsService,
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'descricao', label: 'Descrição' },
@@ -518,7 +529,21 @@ export class FieldsService {
         disabled: !env.headerData.freightType,
         gridColumns: 4,
         type: 'string',
-        searchService: env.cityServiceWrapper,
+        searchService: {
+          getFilteredItems: (filteredParams: PoLookupFilteredItemsParams): Observable<any> => {
+            const enhancedParams = {
+              ...filteredParams,
+              filterParams: {
+                ...filteredParams.filterParams,
+                state: env.headerData.destinationState || ''
+              }
+            };
+            return this.cityService.getFilteredItems(enhancedParams);
+          },
+          getObjectByValue: (city: string): Observable<any> => {
+            return this.cityService.getObjectByValue(env.headerData.destinationState + city);
+          }
+        },
         columns: [
           { property: 'codigo', label: 'Código IBGE' },
           { property: 'cidade', label: 'Cidade' },
@@ -669,7 +694,21 @@ export class FieldsService {
         disabled: env.isViewMode(),
         noAutocomplete: true,
         maxLength: 20,
-        searchService: env.productServiceWrapper,
+        searchService: {
+          getFilteredItems: (filteredParams: PoLookupFilteredItemsParams): Observable<any> => {
+            const enhancedParams = {
+              ...filteredParams,
+              filterParams: {
+                ...filteredParams.filterParams,
+                loadingLocation: env.headerData.loadingLocation || ''
+              }
+            };
+            return this.productService.getFilteredItems(enhancedParams);
+          },
+          getObjectByValue: (value: string): Observable<any> => {
+            return this.productService.getObjectByValue(value);
+          }
+        },
         columns: [
           { property: 'codigo', label: 'Código' },
           { property: 'descricao', label: 'Descrição' },

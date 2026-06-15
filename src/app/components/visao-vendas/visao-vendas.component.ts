@@ -7,7 +7,6 @@ import { FieldsService } from '../../services/fields.service';
 import { LOCALE_ID } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
 import { CurrencyPipe } from '@angular/common';
-import { PoLookupFilteredItemsParams } from '@po-ui/ng-components';
 import { SellerService } from '../../services/domain/seller.service';
 import { ProductService } from '../../services/domain/product.service';
 
@@ -152,24 +151,6 @@ export class VisaoVendasComponent {
     years: [new Date().getFullYear().toString(), (new Date().getFullYear() - 1).toString()],
     months: ['01','02','03','04','05','06','07','08','09','10','11','12'],
     branches: this.fieldsService.getBranches.map((branch: any) => branch.id),
-  };
-
-  public sellerServiceWrapper = {
-    getFilteredItems: (filteredParams: PoLookupFilteredItemsParams): Observable<any> => {
-      return this.sellerService.getFilteredItems(filteredParams);
-    },
-    getObjectByValue: (value: string): Observable<any> => {
-      return this.sellerService.getObjectByValue(value);
-    }
-  };
-
-  public productServiceWrapper = {
-    getFilteredItems: (filteredParams: PoLookupFilteredItemsParams): Observable<any> => {
-      return this.productService.getFilteredItems(filteredParams);
-    },
-    getObjectByValue: (value: string): Observable<any> => {
-      return this.productService.getObjectByValue(value);
-    }
   };
 
   async ngOnInit() {
@@ -403,7 +384,7 @@ export class VisaoVendasComponent {
         disabled: !this.fieldsService.isInternalUser,
         noAutocomplete: true,
         gridColumns: 12,
-        searchService: this.sellerServiceWrapper,
+        searchService: this.sellerService,
         columns: [
           { property: 'codigo',   label: 'Código'   },
           { property: 'nome',     label: 'Nome'     },
@@ -423,7 +404,7 @@ export class VisaoVendasComponent {
         disabled: false,
         noAutocomplete: true,
         gridColumns: 12,
-        searchService: this.productServiceWrapper,
+        searchService: this.productService,
         columns: [
           { property: 'codigo',   label: 'Código' },
           { property: 'descricao',label: 'Descrição' },
