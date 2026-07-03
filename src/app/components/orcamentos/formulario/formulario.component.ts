@@ -1165,7 +1165,7 @@ export class FormularioComponent {
     }
   };
 
-  private async updateFreightCost(silent: boolean = false): Promise<void> {
+  private async updateFreightCost(silent: boolean = true): Promise<void> {
     const branchId = this.headerData.branchId;
     const destinationState = this.headerData.destinationState;
     const destinationCity = this.headerData.destinationCity;
