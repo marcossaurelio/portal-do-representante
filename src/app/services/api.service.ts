@@ -13,7 +13,7 @@ export class ApiService {
   
   private restCredentials: any = {
     user: 'admin',
-    password: 'SERVCONSULT25'
+    password: 'SERVConsult@26'
   }
   
   private defaultHeaders: any = {
