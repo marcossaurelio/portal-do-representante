@@ -910,6 +910,10 @@ export class FormularioComponent {
           financialDiscount:    res.descontoFinanceiro    ?? 0,
           palletReturn:         res.devolucaoPalete       ?? false,
         };
+        this.copyModalHeaderData = {
+          loadingLocation:      res.unidadeCarregamento ?? '',
+          customerId:           res.cliente+res.loja,
+        }
         if (!this.isCopyMode()) {
           this.rows = res.itens.map((item: any) => ({
             item:                 item.item,
