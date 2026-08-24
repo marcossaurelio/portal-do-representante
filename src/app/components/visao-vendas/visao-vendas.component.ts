@@ -1,7 +1,7 @@
 import { Component, DEFAULT_CURRENCY_CODE, ViewChild } from '@angular/core';
 import { PoPageModule, PoLoadingModule, PoChartModule, PoChartSerie, PoChartType, PoWidgetModule, PoChartLabelFormat, PoPopupAction, PoDatepickerModule, PoButtonModule, PoDynamicModule, PoPageSlideModule } from '@po-ui/ng-components';
 import { PoChartOptions, PoChartDataLabel, PoNotificationService, PoDynamicFormField, ForceOptionComponentEnum, PoDynamicFormFieldChanged, PoDynamicFormValidation, PoPageSlideFooterComponent, PoComboFilter } from '@po-ui/ng-components';
-import { PoFieldModule } from '@po-ui/ng-components';
+import { PoFieldModule, PoMultiselectOption } from '@po-ui/ng-components';
 import { ApiService } from '../../services/api.service';
 import { FieldsService } from '../../services/fields.service';
 import { LOCALE_ID } from '@angular/core';
@@ -47,7 +47,7 @@ export class VisaoVendasComponent {
   public pageSlideSubtitle: string = 'Ajuste e salve os filtros para atualizar os gráficos.';
   public filtersFields: Array<PoDynamicFormField> = [];
   public validateFiltersFields: Array<string> = [];
-  public yearsOptions: any = [];
+  public yearsOptions: Array<string> = this.fillYearsOptions();
 
   public pageActions: Array<PoPopupAction> = [
     { label: 'Filtros', action: () => { this.pageSlide.open() }, icon: 'an an-funnel' },
@@ -330,7 +330,7 @@ export class VisaoVendasComponent {
         disabled: false,
         noAutocomplete: true,
         gridColumns: 12,
-        optionsService: this.api.baseUrl + '/dashboard/filtros/anos',
+        options: this.yearsOptions,
         optionsMulti: true,
         hideSearch: true,
       },
@@ -460,6 +460,15 @@ export class VisaoVendasComponent {
       vendedores: !this.fieldsService.isInternalUser ? [localStorage.getItem('sellerId')] : (this.filters.sellers ?? []),
     };
     return body;
+  }
+
+  private fillYearsOptions(): Array<string> {
+    const currentYear = new Date().getFullYear();
+    const years: Array<string> = [];
+    for (let i = 0; i < 10; i++) {
+      years.push((currentYear - i).toString());
+    }
+    return years;
   }
 
 }

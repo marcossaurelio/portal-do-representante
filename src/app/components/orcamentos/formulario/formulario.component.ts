@@ -459,13 +459,15 @@ export class FormularioComponent {
       "veiculoProprio":       this.headerData.customerVehicle           ? "S" : "N",
       "devolucaoPalete":      this.headerData.palletReturn              ? "S" : "N",
       "itens":                this.rows.map((item: any) => ({
-        "item":               item.item                 ?? "",
-        "produto":            item.productId            ?? "",
-        "quantidade":         item.amount               ?? 0,
-        "precoFOB":           item.fobBasePrice         ?? 0,
-        "precoUnitario":      item.unitPrice            ?? 0,
-        "comissao":           item.comissionPercentage  ?? 0,
-        "tes":                item.tes                  ?? "",
+        "item":                   item.item                     ?? "",
+        "produto":                item.productId                ?? "",
+        "quantidade":             item.amount                   ?? 0,
+        "precoFOB":               item.fobBasePrice             ?? 0,
+        "precoUnitario":          item.unitPrice                ?? 0,
+        "comissao":               item.comissionPercentage      ?? 0,
+        "tes":                    item.tes                      ?? "",
+        "comissaoFixa":           !item.isComissionFixed ? "N" : "S",
+        "percentualComissaoFixa": item.comissionFixedPercentage ?? 0,
       }))
     };
     try {
@@ -541,7 +543,7 @@ export class FormularioComponent {
       return {
         ...row,
         unitPrice: res.precoUnitario,
-        comissionPercentage: res.comissao,
+        comissionPercentage: row.isComissionFixed ? row.comissionFixedPercentage : res.comissao,
         fobBasePrice: this.isQuotationBranch ? row.fobBasePrice : res.precoBase,
         //totalPrice: res.precoUnitario * row.amount,
         //comissionUnitValue: res.precoUnitario * (1-this.headerData.financialDiscount/100) * (res.comissao / 100),
@@ -747,6 +749,7 @@ export class FormularioComponent {
       this.selectedProductId = this.rowData.productId
       this.rowFormTitle = 'Item - Alterar'
       this.isPriceRangesTablesVisible = false;
+      this.rowFields = this.fieldsService.getColumns(this,'form');
       this.modal.open()
     }
   }
@@ -758,6 +761,7 @@ export class FormularioComponent {
       this.selectedProductId = this.rowData.productId
       this.rowFormTitle = 'Item - Adicionar'
       this.isPriceRangesTablesVisible = false;
+      this.rowFields = this.fieldsService.getColumns(this,'form');
       this.modal.open()
     }
   }
@@ -809,14 +813,27 @@ export class FormularioComponent {
   }
 
   public formatNumericHeaderValues() {
-    const numericFields: Array<string> = this.fields
+    const numericHeaderFields: Array<string> = this.fields
       .filter(field => field.type === 'number' || field.type === 'currency')
       .map(field => field.property);
-    numericFields.forEach((field) => {
+    numericHeaderFields.forEach((field) => {
       const value: number = Math.abs(Number(this.headerData[field])) ?? 0;
       const decimalPlaces: number = Number(this.fields.find(f => f.property === field)?.format?.slice(-1)) ?? 2;
       if (!isNaN(value)) {
         this.headerData[field] = Number(value.toFixed(decimalPlaces));
+      }
+    });
+  }
+
+  public formatNumericRowValues() {
+    const numericRowFields: Array<string> = this.rowFields
+      .filter(field => field.type === 'number' || field.type === 'currency')
+      .map(field => field.property);
+    numericRowFields.forEach((field) => {
+      const value: number = Math.abs(Number(this.rowData[field])) ?? 0;
+      const decimalPlaces: number = Number(this.rowFields.find(f => f.property === field)?.format?.slice(-1)) ?? 2;
+      if (!isNaN(value)) {
+        this.rowData[field] = Number(value.toFixed(decimalPlaces));
       }
     });
   }
@@ -862,16 +879,26 @@ export class FormularioComponent {
     if (this.isViewMode() || this.supressValidation) {
       return {};
     }
+    this.formatNumericRowValues();
     const fobBasePricePosition = this.rowFields.findIndex(field => field.property === 'fobBasePrice');
     if (fobBasePricePosition !== -1) {
       this.rowFields[fobBasePricePosition].required = this.fieldsService.getColumns(this,'form')
         .find(col => col.property === 'fobBasePrice')?.required ?? false;
     }
-    changedValue.property === 'productId'                 ? this.fillProductData(changedValue.value.productId)  : null;
-    //!this.selectedProductId                               ? this.rowData.productId = this.selectedProductId     : null
-    isNaN(Number(changedValue.value.comissionPercentage)) ? this.rowData.comissionPercentage = 0                : null;
-    isNaN(Number(changedValue.value.unitPrice))           ? this.rowData.unitPrice = 0                          : null;
-    isNaN(Number(changedValue.value.amount))              ? this.rowData.amount = 0                             : null;
+    const comissionFixedPercentagePosition = this.rowFields.findIndex(field => field.property === 'comissionFixedPercentage');
+    if (comissionFixedPercentagePosition !== -1) {
+      this.rowFields[comissionFixedPercentagePosition].disabled = this.fieldsService.getColumns(this,'form')
+        .find(col => col.property === 'comissionFixedPercentage')?.disabled ?? false;
+    }
+    changedValue.property === 'productId'                       ? this.fillProductData(changedValue.value.productId)                              : null;
+    //!this.selectedProductId                                     ? this.rowData.productId = this.selectedProductId                                 : null
+    isNaN(Number(changedValue.value.comissionPercentage))       ? this.rowData.comissionPercentage = 0                                            : null;
+    isNaN(Number(changedValue.value.unitPrice))                 ? this.rowData.unitPrice = 0                                                      : null;
+    isNaN(Number(changedValue.value.amount))                    ? this.rowData.amount = 0                                                         : null;
+    isNaN(Number(changedValue.value.fobBasePrice))              ? this.rowData.fobBasePrice = 0                                                   : null;
+    isNaN(Number(changedValue.value.comissionFixedPercentage))  ? this.rowData.comissionFixedPercentage = 0                                       : null;
+    !changedValue.value.isComissionFixed                        ? this.rowData.comissionFixedPercentage = 0                                       : null;
+    changedValue.value.isComissionFixed                         ? this.rowData.comissionPercentage = changedValue.value.comissionFixedPercentage  : null;
     this.updateRowDataPrice();
     const validation: PoDynamicFormValidation = { fields: this.fieldsService.getColumns(this,'form') };
     return validation;
@@ -916,39 +943,43 @@ export class FormularioComponent {
         }
         if (!this.isCopyMode()) {
           this.rows = res.itens.map((item: any) => ({
-            item:                 item.item,
-            productId:            item.produto.trim(),
-            productDescription:   item.descProduto.trim(),
-            amount:               item.quantidade,
-            packagingType:        item.embalagem,
-            fobBasePrice:         item.precoFOB,
-            unitPrice:            item.valorUnitario,
-            totalPrice:           item.valorTotal,
-            tes:                  item.tes,
-            comissionPercentage:  item.comissao,
-            //comissionUnitValue:   item.valorUnitario * item.comissao / 100,
-            //comissionTotalValue:  item.valorTotal * item.comissao / 100,
-            productNetWeight:     item.pesoNeto,
-            productGrossWeight:   item.pesoBruto,
-            packagingFormat:      item.formatoEmbalagem,
+            item:                     item.item,
+            productId:                item.produto.trim(),
+            productDescription:       item.descProduto.trim(),
+            amount:                   item.quantidade,
+            packagingType:            item.embalagem,
+            fobBasePrice:             item.precoFOB,
+            unitPrice:                item.valorUnitario,
+            totalPrice:               item.valorTotal,
+            tes:                      item.tes,
+            comissionPercentage:      item.comissao,
+            //comissionUnitValue:     item.valorUnitario * item.comissao / 100,
+            //comissionTotalValue:    item.valorTotal * item.comissao / 100,
+            productNetWeight:         item.pesoNeto,
+            productGrossWeight:       item.pesoBruto,
+            packagingFormat:          item.formatoEmbalagem,
+            isComissionFixed:         item.comissaoFixa,
+            comissionFixedPercentage: item.percentualComissaoFixa,
           }));
         } else {
           this.rows2Copy = res.itens.map((item: any) => ({
-            item:                 item.item,
-            productId:            item.produto.trim(),
-            productDescription:   item.descProduto.trim(),
-            amount:               item.quantidade,
-            packagingType:        item.embalagem,
-            fobBasePrice:         item.precoFOB,
-            unitPrice:            item.valorUnitario,
-            totalPrice:           item.valorTotal,
-            tes:                  item.tes,
-            comissionPercentage:  item.comissao,
+            item:                     item.item,
+            productId:                item.produto.trim(),
+            productDescription:       item.descProduto.trim(),
+            amount:                   item.quantidade,
+            packagingType:            item.embalagem,
+            fobBasePrice:             item.precoFOB,
+            unitPrice:                item.valorUnitario,
+            totalPrice:               item.valorTotal,
+            tes:                      item.tes,
+            comissionPercentage:      item.comissao,
             //comissionUnitValue:   item.valorUnitario * item.comissao / 100,
             //comissionTotalValue:  item.valorTotal * item.comissao / 100,
-            productNetWeight:     item.pesoNeto,
-            productGrossWeight:   item.pesoBruto,
-            packagingFormat:      item.formatoEmbalagem,
+            productNetWeight:         item.pesoNeto,
+            productGrossWeight:       item.pesoBruto,
+            packagingFormat:          item.formatoEmbalagem,
+            isComissionFixed:         item.comissaoFixa,
+            comissionFixedPercentage: item.percentualComissaoFixa,
           }));
           setTimeout(() => {
             this.openCopyModal();
