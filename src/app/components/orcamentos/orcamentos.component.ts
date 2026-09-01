@@ -31,7 +31,8 @@ export class OrcamentosComponent {
 
   constructor(private router: Router, private api: ApiService, private poNotification: PoNotificationService, private customerService: CustomerService, private cityService: CityService, private fieldsService: FieldsService) {}
 
-  @ViewChild('modal', { static: true }) 'modal': PoModalComponent;
+  @ViewChild('modalCustomer', { static: true }) 'modalCustomer': PoModalComponent;
+  @ViewChild('modalRejection', { static: true }) 'modalRejection': PoModalComponent;
 
   public columns: Array<PoTableColumn> = [];
   public items: Array<any> = [];
@@ -43,6 +44,9 @@ export class OrcamentosComponent {
   public customerModalTitle: string = 'Cadastro de Novo Cliente';
   public customerModalData: any = { hasIe: true };
   public customerModalValidateFields: Array<string> = [];
+  public rejectionModalTitle: string = 'Informar Rejeição';
+  public rejectionModalFields: Array<PoDynamicFormField> = [];
+  public rejectionModalData: any = { reason: '', description: '' };
 
   public readonly actions: Array<PoPageAction> = [
     { label: 'Incluir',       action: this.addBudget.bind(this),          icon: 'an an-plus',       disabled: false,  visible: true },
@@ -50,14 +54,13 @@ export class OrcamentosComponent {
   ]
   
   public readonly itemActions: Array<PoTableAction> = [
-    { action: this.modifyBudget.bind(this),      icon: 'an an-note-pencil',        label: 'Alterar',               disabled: (item: any) => !this.isModifiable(item), visible: (item: any) => !this.isExpired(item)  },
-    { action: this.modifyBudget.bind(this),      icon: 'an an-note-pencil',        label: 'Renovar',               disabled: (item: any) => !this.isModifiable(item), visible: (item: any) => this.isExpired(item)   },
-    { action: this.viewBudget.bind(this),        icon: 'an an-magnifying-glass',   label: 'Visualizar',            disabled: false                                           },
-    { action: this.copyBudget.bind(this),        icon: 'an an-copy',               label: 'Copiar',                disabled: false                                           },
-    { action: this.printBudget.bind(this),       icon: 'an an-printer',            label: 'Imprimir',              disabled: false                                           },
-    { action: this.sendToApproval.bind(this),    icon: 'an an-paper-plane-tilt',   label: 'Enviar para Aprovação', disabled: (item: any) => !this.isPendingOrder(item)       },
-    { action: this.approveQuotation.bind(this),  icon: 'an an-check',              label: 'Aprovar cotação',       disabled: (item: any) => !this.isPendingQuotation(item)   },
-    { action: this.rejectQuotation.bind(this),   icon: 'an an-x',                  label: 'Rejeitar cotação',      disabled: (item: any) => !this.isPendingQuotation(item)   },
+    { action: this.modifyBudget.bind(this),      icon: 'an an-note-pencil',        label: 'Alterar',                disabled: (item: any) => !this.isModifiable(item), visible: (item: any) => !this.isExpired(item)  },
+    { action: this.modifyBudget.bind(this),      icon: 'an an-note-pencil',        label: 'Renovar',                disabled: (item: any) => !this.isModifiable(item), visible: (item: any) => this.isExpired(item)   },
+    { action: this.viewBudget.bind(this),        icon: 'an an-magnifying-glass',   label: 'Visualizar',             disabled: false                                           },
+    { action: this.copyBudget.bind(this),        icon: 'an an-copy',               label: 'Copiar',                 disabled: false                                           },
+    { action: this.printBudget.bind(this),       icon: 'an an-printer',            label: 'Imprimir',               disabled: false                                           },
+    { action: this.sendToApproval.bind(this),    icon: 'an an-paper-plane-tilt',   label: 'Enviar para Aprovação',  disabled: (item: any) => !this.isPendingBudget(item)      },
+    { action: this.informRejection.bind(this),   icon: 'an an-x',                  label: 'Informar Rejeição',      disabled: (item: any) => !this.isPendingBudget(item)      },
   ]
 
   public readonly filters: Array<PoPageDynamicSearchFilters> = [
@@ -397,6 +400,18 @@ export class OrcamentosComponent {
     loading: false,
   }
 
+  public readonly confirmRejection: PoModalAction = {
+    action: () => { this.sendRejection(this.rejectionModalData); },
+    label: 'Confirmar',
+    loading: false,
+  }
+  
+  public readonly cancelRejection: PoModalAction = {
+    action: () => { this.modalRejection.close(); },
+    label: 'Cancelar',
+    disabled: false,
+    loading: false,
+  }
 
   public async ngOnInit(): Promise<void> {
     this.isHideLoading = false;
@@ -451,7 +466,7 @@ export class OrcamentosComponent {
           { value: 'PE',  type: PoTagType.Info,       label: 'Pré pedido em aprovação', icon: true  },
           { value: 'PR',  type: PoTagType.Danger,     label: 'Pré pedido rejeitado',    icon: true  },
           { value: 'PA',  type: PoTagType.Success,    label: 'Pré pedido aprovado',     icon: true  },
-          { value: 'EX',  type: PoTagType.Neutral,    label: 'Orçamento expirado',      icon: true  },
+          { value: 'EX',  type: PoTagType.Neutral,    label: 'Orçamento expirado',      icon: false  },
         ]
       },
       {property: 'order', label: 'Pedido'},
@@ -499,6 +514,45 @@ export class OrcamentosComponent {
 
   public cleanBrowse() {
     this.filteredItems = [];
+  }
+
+  public async setRejectionModalFields(): Promise<void> {
+    this.isHideLoading = false;
+    const rejectionOptionsResponse: any = await firstValueFrom(this.api.get('orcamentos/motivos-rejeicao'));
+    const rejectionOptions: Array<any> = rejectionOptionsResponse.motivos.map((item: any) => ({
+      code: item.codigo,
+      label: item.descricao
+    }));
+    this.rejectionModalFields = [
+      {
+        property: 'reason',
+        label: 'Motivo da Rejeição',
+        visible: true,
+        required: true,
+        showRequired: false,
+        disabled: false,
+        noAutocomplete: true,
+        maxLength: 100,
+        gridColumns: 12,
+        options: rejectionOptions,
+        fieldValue: 'code',
+        fieldLabel: 'label',
+        type: 'string',
+      },
+      {
+        property: 'description',
+        label: 'Descrição da Rejeição',
+        visible: true,
+        required: true,
+        showRequired: false,
+        disabled: false,
+        noAutocomplete: true,
+        maxLength: 100,
+        gridColumns: 12,
+        type: 'string',
+      }
+    ];
+    this.isHideLoading = true;
   }
 
   private getBranchByCode(branchId: string): string{
@@ -554,12 +608,8 @@ export class OrcamentosComponent {
     }
   }
 
-  private isPendingQuotation(item: any): boolean {
-    return item.budgetStatus === 'CP';
-  }
-
-  private isPendingOrder(item: any): boolean {
-    return item.budgetStatus === 'PP'
+  private isPendingBudget(item: any): boolean {
+    return item.budgetStatus === 'CP' || item.budgetStatus === 'PP';
   }
 
   private isModifiable(item: any): boolean {
@@ -602,46 +652,43 @@ export class OrcamentosComponent {
   public modifyBudget(item: any) {
     this.router.navigate(['/','orcamentos','formulario'], { queryParams: { mode: 'modify', branch: item.branchId, budget: item.budget } })
   }
-  
-  public async approveQuotation(item: any): Promise<void> {
-    this.isHideLoading = false;
-    const branchId = item.branchId;
-    const budget = item.budget;
-    const body = { filial: branchId, orcamento: budget }
-    try {
-      const res: any = await firstValueFrom(this.api.put('orcamentos/cotacao/aprovar', body, branchId));
-      if (res.success) {
-        this.poNotification.success('Cotação aprovada com sucesso!');
-        this.items = await this.getItems();
-        this.filteredItems = [...this.items];
-        await this.updateBlockFilters();
-      } else {
-        this.poNotification.error('Falha ao aprovar a cotação: ' + res.message);
-      }
-    } catch (e: any) {
-      this.poNotification.error('Falha ao aprovar a cotação: ' + e.message);
-    }
-    this.isHideLoading = true;
+
+  public async informRejection(item: any): Promise<void> {
+    await this.setRejectionModalFields();
+    this.rejectionModalTitle = `Informar Rejeição - Orçamento ${item.budget} - Filial ${item.branchName}`;
+    this.rejectionModalData = { reason: '', description: '', branchId: item.branchId, budget: item.budget };
+    this.modalRejection.open();
   }
 
-  public async rejectQuotation(item: any): Promise<void> {
+  
+  public async sendRejection(rejectionData: any): Promise<void> {
+    if (!rejectionData.reason) {
+      this.poNotification.warning('É necessário informar o motivo da rejeição.');
+      return;
+    } else if (rejectionData.reason === '0' && !rejectionData.description) {
+      this.poNotification.warning('É obrigatório informar a descrição da rejeição quando o motivo for "Outros".');
+      return;
+    }
     this.isHideLoading = false;
-    const branchId = item.branchId;
-    const budget = item.budget;
-    const body = { filial: branchId, orcamento: budget }
+    const branchId = rejectionData.branchId;
+    const budget = rejectionData.budget;
+    const reason = rejectionData.reason;
+    const description = rejectionData.description;
+    const body = { filial: branchId, orcamento: budget, motivo: reason, descricao: description };
     try {
-      const res: any = await firstValueFrom(this.api.put('orcamentos/cotacao/rejeitar', body, branchId));
+      const res: any = await firstValueFrom(this.api.put('orcamentos/rejeitar', body, branchId));
       if (res.success) {
-        this.poNotification.success('Cotação rejeitada com sucesso!');
+        this.poNotification.success('Orçamento rejeitado com sucesso!');
+        this.modalRejection.close();
         this.items = await this.getItems();
         this.filteredItems = [...this.items];
         await this.updateBlockFilters();
       } else {
-        this.poNotification.error('Falha ao rejeitar a cotação: ' + res.message);
+        this.poNotification.error('Falha ao informar rejeição do orçamento: ' + res.message);
       }
     }
     catch (e: any) {
-      this.poNotification.error('Falha ao rejeitar a cotação: ' + e.message);
+      this.poNotification.error('Falha ao informar rejeição do orçamento: ' + e.message);
     }
     this.isHideLoading = true;
   }
@@ -652,17 +699,17 @@ export class OrcamentosComponent {
     const budget = item.budget;
     const body = { filial: branchId, orcamento: budget }
     try {
-      const res: any = await firstValueFrom(this.api.put('orcamentos/pre-pedido/aprovar', body, branchId));
+      const res: any = await firstValueFrom(this.api.put('orcamentos/aprovar', body, branchId));
       if (res.success) {
-        this.poNotification.success('Pré pedido enviado para aprovação com sucesso!');
+        this.poNotification.success('Orçamento enviado para aprovação com sucesso!');
         this.items = await this.getItems();
         this.filteredItems = [...this.items];
         await this.updateBlockFilters();
       } else {
-        this.poNotification.error('Falha ao enviar o pré pedido para aprovação: ' + res.message);
+        this.poNotification.error('Falha ao enviar o orçamento para aprovação: ' + res.message);
       }
     } catch (e: any) {
-      this.poNotification.error('Falha ao enviar o pré pedido para aprovação: ' + e.message);
+      this.poNotification.error('Falha ao enviar o orçamento para aprovação: ' + e.message);
     }
     this.isHideLoading = true;
   }
@@ -766,11 +813,11 @@ export class OrcamentosComponent {
 }
 
   private openCustomerModal() {
-    this.modal.open()
+    this.modalCustomer.open()
   }
 
   private closeCustomerModal() {
-    this.modal.close()
+    this.modalCustomer.close()
   }
 
   private printBudget(item: any) {

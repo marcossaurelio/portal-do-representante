@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
-import { PoTableColumn, PoTableModule, PoTagType, PoLoadingModule } from '@po-ui/ng-components';
+import { PoTableColumn, PoTableModule, PoTagType, PoLoadingModule, PoPageAction } from '@po-ui/ng-components';
 import { PoPageDynamicSearchModule, PoPageDynamicSearchFilters } from '@po-ui/ng-templates';
 import { ApiService } from '../../services/api.service';
 import { FieldsService } from '../../services/fields.service';
 import { firstValueFrom } from 'rxjs';
 import { CustomerService } from '../../services/domain/customer.service';
 import { SellerService } from '../../services/domain/seller.service';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-contas-a-receber',
@@ -28,12 +29,16 @@ export class ContasAReceberComponent {
   public items: Array<any> = [];
   public filteredItems: Array<any> = [];
   public get tableHeight(): number {
-    return Object.keys(this.activeDisclaimers).length > 0 ? 480 : 570;
+    return Object.keys(this.activeDisclaimers).length > 0 ? 450 : 540;
   }
   
   private pageSize = 1000;
   private page = 1;
   private activeDisclaimers: any = {};
+
+  public readonly pageActions: Array<PoPageAction> = [
+    { label: 'Download XLSX',   action: this.exportXLSX.bind(this),     icon: 'an an-download-simple',   disabled: false,  visible: true },
+  ];
 
   public columns: Array<PoTableColumn> = [
     { property: 'status',
@@ -190,6 +195,61 @@ export class ContasAReceberComponent {
     this.filteredItems = [...this.items];
     this.page++;
     this.isHideLoading = true;
+  }
+
+  private async exportXLSX() {
+    this.isHideLoading = false;
+    const pageBkp = this.page;
+    const pageSizeBkp = this.pageSize;
+    this.page = 1;
+    this.pageSize = 40000;
+    const items = await this.getItems();
+    const dadosParaExcel = items.map((item: any) => {
+      return this.columns.reduce((acc: Record<string, any>, column) => {
+        const property = column.property ?? '';
+        const key = String(column.label);
+        const value = item?.[property];
+        let formattedValue = value;
+        if (property === 'status') {
+          formattedValue = this.getStatusLabel(value);
+        } else if (['issueDate', 'dueDate', 'paymentDate'].includes(property)) {
+          formattedValue = this.formatDate(value);
+        }
+        acc[key] = formattedValue;
+        return acc;
+      }, {});
+    });
+    const worksheet = XLSX.utils.json_to_sheet(dadosParaExcel);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Contas a Receber');
+    XLSX.writeFile(workbook, 'contas-a-receber.xlsx');
+    this.page = pageBkp;
+    this.pageSize = pageSizeBkp;
+    this.isHideLoading = true;
+  }
+
+  private formatDate(value: string | Date | null | undefined): string {
+    if (!value) {
+      return '';
+    }
+
+    const date = value instanceof Date ? value : new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return String(value);
+    }
+
+    return date.toLocaleDateString('pt-BR');
+  }
+
+  private getStatusLabel(status: string): string {
+    const map: Record<string, string> = {
+      PE: 'Pendente',
+      PP: 'Pago Parcialmente',
+      PG: 'Pago',
+      AT: 'Atrasado'
+    };
+    return map[status] ?? status;
   }
 
   public onQuickSearch(value: string) {
