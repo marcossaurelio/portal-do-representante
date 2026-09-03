@@ -18,7 +18,7 @@
 .widget-label {
     font-weight: bold;
     position: absolute;
-    top: 16px;
+    top: 13px;
     left: 0;
     width: 100%;
     text-align: center;
@@ -27,7 +27,7 @@
 .widget-value {
     font-weight: bold;
     position: absolute;
-    top: 43px;
+    top: 40px;
     left: 0;
     width: 100%;
     text-align: center;

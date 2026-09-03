@@ -1,7 +1,7 @@
 import { Component, DEFAULT_CURRENCY_CODE, ViewChild } from '@angular/core';
-import { PoPageModule, PoLoadingModule, PoChartModule, PoChartSerie, PoChartType, PoWidgetModule, PoChartLabelFormat, PoPopupAction, PoDatepickerModule, PoButtonModule, PoDynamicModule, PoPageSlideModule } from '@po-ui/ng-components';
+import { PoPageModule, PoLoadingModule, PoChartModule, PoChartSerie, PoChartType, PoWidgetModule, PoChartLabelFormat, PoPopupAction, PoDatepickerModule, PoButtonModule, PoDynamicModule, PoPageSlideModule, PoTableColumn } from '@po-ui/ng-components';
 import { PoChartOptions, PoChartDataLabel, PoNotificationService, PoDynamicFormField, ForceOptionComponentEnum, PoDynamicFormFieldChanged, PoDynamicFormValidation, PoPageSlideFooterComponent, PoComboFilter } from '@po-ui/ng-components';
-import { PoFieldModule, PoMultiselectOption } from '@po-ui/ng-components';
+import { PoFieldModule, PoTableModule, PoModalModule, PoModalAction, PoSearchFilterMode } from '@po-ui/ng-components';
 import { ApiService } from '../../services/api.service';
 import { FieldsService } from '../../services/fields.service';
 import { LOCALE_ID } from '@angular/core';
@@ -9,6 +9,7 @@ import { firstValueFrom, Observable } from 'rxjs';
 import { CurrencyPipe } from '@angular/common';
 import { SellerService } from '../../services/domain/seller.service';
 import { ProductService } from '../../services/domain/product.service';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-visao-vendas',
@@ -23,6 +24,8 @@ import { ProductService } from '../../services/domain/product.service';
     PoDynamicModule,
     PoPageSlideModule,
     CurrencyPipe,
+    PoTableModule,
+    PoModalModule
 ],
   templateUrl: './visao-vendas.component.html',
   styleUrl: './visao-vendas.component.css',
@@ -36,6 +39,7 @@ export class VisaoVendasComponent {
   constructor(private api: ApiService, private poNotification: PoNotificationService, private fieldsService: FieldsService, private sellerService: SellerService, private productService: ProductService) {}
 
   @ViewChild('pageSlide') pageSlide: any;
+  @ViewChild('modalRevenue') modalRevenue: any;
 
   public isHideLoading: boolean = true;
   public loadingText: string = 'Carregando';
@@ -48,7 +52,52 @@ export class VisaoVendasComponent {
   public filtersFields: Array<PoDynamicFormField> = [];
   public validateFiltersFields: Array<string> = [];
   public yearsOptions: Array<string> = this.fillYearsOptions();
+  public revenueModalTitle: string = 'Dados de Faturamento';
+  public revenueDataItems: Array<any> = [];
+  public modalFilterMode: PoSearchFilterMode = PoSearchFilterMode.contains;
+  
+  public readonly exportRevenueData: PoModalAction = {
+    action: () => { this.exportXLSX(); },
+    label: 'Download XLSX',
+    loading: false,
+  }
+  
+  public readonly closeRevenueModal: PoModalAction = {
+    action: () => { this.modalRevenue.close(); },
+    label: 'Fechar',
+    disabled: false,
+    loading: false,
+  }
 
+  public readonly revenueDataColumns: Array<PoTableColumn> = [
+    {
+      property: 'clientId',
+      label: 'Código',
+      type: 'string',
+    },
+    {
+      property: 'clientName',
+      label: 'Cliente',
+      type: 'string',
+      width: '350px',
+    },
+    {
+      property: 'revenueCurrent',
+      label: 'Período Atual',
+      type: 'currency',
+    },
+    {
+      property: 'revenuePrevious',
+      label: 'Período Anterior',
+      type: 'currency',
+    },
+    {
+      property: 'status',
+      label: 'Status',
+      type: 'string',
+    }
+  ];
+  
   public pageActions: Array<PoPopupAction> = [
     { label: 'Filtros', action: () => { this.pageSlide.open() }, icon: 'an an-funnel' },
   ]
@@ -181,7 +230,7 @@ export class VisaoVendasComponent {
   public getWidgetTagDefinition(indicator: any): any {
     return {
       icon: indicator.variation > 0 ? 'an an-arrow-up' : (indicator.variation < 0 ? 'an an-arrow-down' : undefined),
-      type: indicator.variation > 0 ? (indicator.positive ? 'success' : 'danger') : (indicator.variation < 0 ? (indicator.positive ? 'danger' : 'success') : 'neutral'),
+      type: indicator.positive ? 'success' : 'danger',
     }
   }
 
@@ -189,59 +238,19 @@ export class VisaoVendasComponent {
     const body: any = this.buildFiltersBody();
     try {
       const res: any = await firstValueFrom(this.api.post('dashboard/faturamento-acumulado', body))
-      this.revenueIndicators.accumulatedRevenueCurrent.value = res.valores[0] ?? 0;
-      this.revenueIndicators.accumulatedRevenuePrevious.value = res.valores[1] ?? 0;
+      this.revenueIndicators.accumulatedRevenueCurrent.value = res.faturamentoAtual ?? 0;
+      this.revenueIndicators.accumulatedRevenuePrevious.value = res.faturamentoAnterior ?? 0;
+      this.revenueIndicators.newClients.value = res.clientesNovos ?? 0;
+      this.revenueIndicators.notPurchasedClients.value = res.naoCompraram ?? 0;
+      this.revenueIndicators.increasedClients.value = res.aumentoEmClientes ?? 0;
+      this.revenueIndicators.decreasedClients.value = res.reducaoEmClientes ?? 0;
+      this.revenueIndicators.newClients.variation = res.percentualClientesNovos ?? 0;
+      this.revenueIndicators.notPurchasedClients.variation = res.percentualNaoCompraram ?? 0;
+      this.revenueIndicators.increasedClients.variation = res.percentualAumentoEmClientes ?? 0;
+      this.revenueIndicators.decreasedClients.variation = res.percentualReducaoEmClientes ?? 0;
     } catch (error) {
       this.revenueIndicators.accumulatedRevenueCurrent.value = 0;
       this.revenueIndicators.accumulatedRevenuePrevious.value = 0;
-    }
-  }
-
-  private async loadNewClients(): Promise<void> {
-    const body: any = this.buildFiltersBody();
-    try {
-      const res: any = await firstValueFrom(this.api.post('dashboard/clientes-novos', body))
-      this.revenueIndicators.newClients.value = res.novosClientes ?? 0;
-      this.revenueIndicators.newClients.variation = res.variacao ?? 0;
-    } catch (error) {
-      this.revenueIndicators.newClients.value = 0;
-      this.revenueIndicators.newClients.variation = 0;
-    } 
-  }
-
-  private async loadNotPurchasedClients(): Promise<void> {
-    const body: any = this.buildFiltersBody();
-    try {
-      const res: any = await firstValueFrom(this.api.post('dashboard/clientes-nao-compraram', body))
-      this.revenueIndicators.notPurchasedClients.value = res.naoCompraram ?? 0;
-      this.revenueIndicators.notPurchasedClients.variation = res.variacao ?? 0;
-    } catch (error) {
-      this.revenueIndicators.notPurchasedClients.value = 0;
-      this.revenueIndicators.notPurchasedClients.variation = 0;
-    }
-  }
-
-  private async loadIncreasedClients(): Promise<void> {
-    const body: any = this.buildFiltersBody();
-    try {
-      const res: any = await firstValueFrom(this.api.post('dashboard/clientes-aumento', body))
-      this.revenueIndicators.increasedClients.value = res.clientesAumento ?? 0;
-      this.revenueIndicators.increasedClients.variation = res.variacao ?? 0;
-    } catch (error) {
-      this.revenueIndicators.increasedClients.value = 0;
-      this.revenueIndicators.increasedClients.variation = 0;
-    }
-  }
-
-  private async loadDecreasedClients(): Promise<void> {
-    const body: any = this.buildFiltersBody();
-    try {
-      const res: any = await firstValueFrom(this.api.post('dashboard/clientes-reducao', body))
-      this.revenueIndicators.decreasedClients.value = res.clientesReducao ?? 0;
-      this.revenueIndicators.decreasedClients.variation = res.variacao ?? 0;
-    } catch (error) {
-      this.revenueIndicators.decreasedClients.value = 0;
-      this.revenueIndicators.decreasedClients.variation = 0;
     }
   }
 
@@ -426,10 +435,10 @@ export class VisaoVendasComponent {
   private async refreshChartsData() {
     await Promise.all([
       this.loadAcumulatedRevenueIndicators(),
-      this.loadNewClients(),
-      this.loadNotPurchasedClients(),
-      this.loadIncreasedClients(),
-      this.loadDecreasedClients(),
+      //this.loadNewClients(),
+      //this.loadNotPurchasedClients(),
+      //this.loadIncreasedClients(),
+      //this.loadDecreasedClients(),
     ]);
     [
       this.revenueOverTime,
@@ -461,6 +470,7 @@ export class VisaoVendasComponent {
     };
     return body;
   }
+  
 
   private fillYearsOptions(): Array<string> {
     const currentYear = new Date().getFullYear();
@@ -469,6 +479,80 @@ export class VisaoVendasComponent {
       years.push((currentYear - i).toString());
     }
     return years;
+  }
+  
+  public async showRevenueData(status: string = '') {
+    this.isHideLoading = false;
+    let statusFilter = ''
+    if (status === 'newClients') {
+      statusFilter = 'CLIENTE NOVO';
+    } else if (status === 'increasedClients') {
+      statusFilter = 'AUMENTOU';
+    } else if (status === 'notPurchasedClients') {
+      statusFilter = 'SEM COMPRAS';
+    } else if (status === 'decreasedClients') {
+      statusFilter = 'REDUZIU';
+    }
+    let body: any = this.buildFiltersBody();
+    body.status = statusFilter;
+    try {
+      const res: any = await firstValueFrom(this.api.post('dashboard/faturamento-detalhado', body))
+      this.revenueDataItems = res.clientes.map((client: any) => {
+        return {
+          clientId:         client.codigo.trim(),
+          clientName:       client.nome.trim(),
+          revenueCurrent:   client.faturamentoAtual,
+          revenuePrevious:  client.faturamentoAnterior,
+          status:           client.status,
+        }
+      });
+    } catch (error) {
+      this.revenueDataItems = [];
+    }
+    this.modalRevenue.open();
+    this.isHideLoading = true;
+  }
+
+  private exportXLSX() {
+    this.isHideLoading = false;
+    const rows = this.revenueDataItems.map((item: any) => {
+      const row: Record<string, any> = {};
+      this.revenueDataColumns.forEach((column) => {
+        const property = column.property ?? '';
+        const value = property ? item[property] : undefined;
+        if (!column.label) {
+          return;
+        }
+        if (column.type === 'currency') {
+          row[column.label] = Number(value ?? 0);
+          return;
+        }
+        row[column.label] = value;
+      });
+      return row;
+    });
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(rows);
+    const currencyFormat = '[$R$-pt-BR] #,##0.00;-[$R$-pt-BR] #,##0.00';
+    const range = XLSX.utils.decode_range(ws['!ref'] ?? 'A1');
+    for (let row = 1; row <= range.e.r; row++) {
+      for (let col = 0; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        const cell = ws[cellAddress];
+        if (!cell) {
+          continue;
+        }
+        const headerCell = ws[XLSX.utils.encode_cell({ r: 0, c: col })];
+        const headerText = headerCell?.v ?? '';
+        if (headerText === 'Período Atual' || headerText === 'Período Anterior') {
+          cell.t = 'n';
+          cell.z = currencyFormat;
+        }
+      }
+    }
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Faturamento');
+    XLSX.writeFile(wb, 'faturamento.xlsx');
+    this.isHideLoading = true;
   }
 
 }

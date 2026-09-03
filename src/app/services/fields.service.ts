@@ -324,7 +324,7 @@ export class FieldsService {
         type: 'currency',
         maxLength: 5,
         gridColumns: 2,
-        format: 'BRL',
+        format: '1.2-2',
         order: 1
       },
       {
@@ -391,7 +391,7 @@ export class FieldsService {
         type: 'currency',
         maxLength: 20,
         gridColumns: 2,
-        format: 'BRL',
+        format: '1.2-2',
         order: 2
       },
       {
@@ -501,7 +501,7 @@ export class FieldsService {
         type: 'currency',
         maxLength: 20,
         gridColumns: 2,
-        format: 'BRL',
+        format: '1.2-2',
         order: 2
       },
       {
@@ -638,7 +638,7 @@ export class FieldsService {
         type: 'currency',
         maxLength: 20,
         gridColumns: 2,
-        format: 'BRL',
+        format: '1.2-2',
         order: 2
       }
     ];
