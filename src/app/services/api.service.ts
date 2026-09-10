@@ -1,4 +1,4 @@
-import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, from, firstValueFrom, switchMap } from 'rxjs';
 
@@ -29,6 +29,25 @@ export class ApiService {
       switchMap(token => {
         options.headers = this.processHeaders(options.headers, tenantId, token);
         return this.http.get<T>(`${this.baseUrl}/${endpoint}`, options);
+      })
+    );
+  }
+
+  getFile(endpoint: string, tenantId: string = '01010001', options: {
+    headers?: { [header: string]: string | string[] },
+    params?: HttpParams | { [param: string]: string | number | boolean | ReadonlyArray<string | number | boolean> }
+  } = {}): Observable<HttpResponse<Blob>> {
+    return from(this.getRestToken()).pipe(
+      switchMap(token => {
+        const headers = this.processHeaders(options.headers, tenantId, token);
+        headers['Accept'] = 'application/pdf';
+        delete headers['Content-Type'];
+        return this.http.get(`${this.baseUrl}/${endpoint}`, {
+          ...options,
+          headers,
+          observe: 'response' as const,
+          responseType: 'blob' as const
+        }) as Observable<HttpResponse<Blob>>;
       })
     );
   }

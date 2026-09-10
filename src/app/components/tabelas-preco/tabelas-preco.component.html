@@ -1,13 +1,17 @@
-<po-page-dynamic-table
-p-title="Tabelas de Preço"
-[p-height]="tableHeight"
-[p-fields]="columns"
-[p-table-custom-actions]="tableActions"
-[p-hide-columns-manager]="true"
-[p-quick-search-width]="3"
-[p-service-api]="apiService"
-[p-actions-right]="true"
->
+<po-page-default #dynamicTable
+p-title="Tabelas de Preço">
 
-</po-page-dynamic-table>
+<po-table
+[p-height]="tableHeight"
+[p-columns]="columns"
+[p-items]="items"
+[p-actions]="tableActions"
+[p-hide-columns-manager]="true"
+p-container="border"
+[p-striped]="true"
+[p-actions-right]="true">
+
+</po-table>
+
+</po-page-default>
 <po-loading-overlay [hidden]="isHideLoading"></po-loading-overlay>
