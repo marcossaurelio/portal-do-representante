@@ -1,4 +1,4 @@
-import { Component, DEFAULT_CURRENCY_CODE, ViewChild } from '@angular/core';
+import { Component, DEFAULT_CURRENCY_CODE, Injectable, ViewChild } from '@angular/core';
 import { PoPageModule, PoLoadingModule, PoChartModule, PoChartSerie, PoChartType, PoWidgetModule, PoChartLabelFormat, PoPopupAction, PoDatepickerModule, PoButtonModule, PoDynamicModule, PoPageSlideModule, PoTableColumn } from '@po-ui/ng-components';
 import { PoChartOptions, PoChartDataLabel, PoNotificationService, PoDynamicFormField, ForceOptionComponentEnum, PoDynamicFormFieldChanged, PoDynamicFormValidation, PoPageSlideFooterComponent, PoComboFilter } from '@po-ui/ng-components';
 import { PoFieldModule, PoTableModule, PoModalModule, PoModalAction, PoSearchFilterMode } from '@po-ui/ng-components';
@@ -6,10 +6,19 @@ import { ApiService } from '../../services/api.service';
 import { FieldsService } from '../../services/fields.service';
 import { LOCALE_ID } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { SellerService } from '../../services/domain/seller.service';
 import { ProductService } from '../../services/domain/product.service';
 import * as XLSX from 'xlsx';
+
+@Injectable()
+class ZeroDecimalPipe extends DecimalPipe {
+  override transform(value: number | string, digitsInfo?: string, locale?: string): string | null;
+  override transform(value: null | undefined, digitsInfo?: string, locale?: string): null;
+  override transform(value: number | string | null | undefined, digitsInfo?: string, locale?: string): string | null {
+    return super.transform(value, digitsInfo === '1.2-2' ? '1.0-0' : digitsInfo, locale);
+  }
+}
 
 @Component({
   selector: 'app-visao-vendas',
@@ -31,7 +40,8 @@ import * as XLSX from 'xlsx';
   styleUrl: './visao-vendas.component.css',
   providers: [
     { provide: LOCALE_ID, useValue: 'pt-BR' },
-    { provide: DEFAULT_CURRENCY_CODE, useValue: 'BRL' }
+    { provide: DEFAULT_CURRENCY_CODE, useValue: 'BRL' },
+    { provide: DecimalPipe, useClass: ZeroDecimalPipe }
   ]
 })
 export class VisaoVendasComponent {
@@ -182,6 +192,19 @@ export class VisaoVendasComponent {
   public customerCategories: Array<PoChartSerie> = this.customerCategoriesDefaultData;
 
 
+  // Volume x Período
+  public volumeOverTimeTitle: string = 'Volume (TON) x Período';
+  public volumeOverTimeOptions: PoChartOptions = {
+    axis: {
+      labelType: PoChartLabelFormat.Number,
+    }
+  };
+  private volumeOverTimeDefaultData: Array<PoChartSerie> = [
+    { label: '2025', data: [0,0,0,0,0,0,0,0,0,0,0,0], type: PoChartType.Column, color: '#045B8F' },
+  ];
+  public volumeOverTime: Array<PoChartSerie> = this.volumeOverTimeDefaultData;
+
+
   // Crescimento das Categorias por Produto
   public productCategoriesEvolutionTitle: string = 'Crescimento da Categoria por Produto (R$)';
   public productCategoriesEvolutionItems: Array<string> = [];
@@ -274,7 +297,7 @@ export class VisaoVendasComponent {
     }
     return data
   }
-  
+
   private async loadRevenueHistoryData(): Promise<Array<PoChartSerie>> {
     let data: Array<PoChartSerie> = [];
     const body: any = this.buildFiltersBody();
@@ -305,6 +328,27 @@ export class VisaoVendasComponent {
       data[0].color = '#045B8F'
     } catch (error) {
       //data = this.customerCategoriesDefaultData;
+    }
+    return data
+  }
+
+  private async loadVolumeOverTimeData(): Promise<Array<PoChartSerie>> {
+    let data: Array<PoChartSerie> = [];
+    const body: any = this.buildFiltersBody();
+    try {
+      const res: any = await firstValueFrom(this.api.post('dashboard/volume-x-periodo', body))
+      data = res.anos.map((ano: any) => {
+        return {
+          label: ano.ano,
+          data: ano.meses.map((mes: number) => Math.round(mes)),
+          type: PoChartType.Column,
+        }
+      });
+      data[0].color = '#045B8F'
+    } catch (error) {
+      this.poNotification.warning('Não foram encontrados dados com os filtros selecionados.');
+      this.pageSlide.open();
+      //data = this.revenueTimeDefaultData;
     }
     return data
   }
@@ -444,11 +488,13 @@ export class VisaoVendasComponent {
       this.revenueOverTime,
       this.revenueHistory,
       this.customerCategories,
+      this.volumeOverTime,
       this.productCategoriesEvolution
     ] = await Promise.all([
       this.loadRevenueOverTimeData(),
       this.loadRevenueHistoryData(),
       this.loadCustomerCategoriesData(),
+      this.loadVolumeOverTimeData(),
       this.loadProductCategoriesEvolutionData()
     ]);
   }

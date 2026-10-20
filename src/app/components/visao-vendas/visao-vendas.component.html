@@ -140,6 +140,17 @@ p-title="Visão Geral de Vendas">
     <div class="po-md-12 div-chart">
         <po-chart
         class="po-md-12"
+        [p-title]="volumeOverTimeTitle"
+        [p-options]="volumeOverTimeOptions"
+        [p-categories]="months"
+        [p-series]="volumeOverTime"
+        >
+        </po-chart>
+    </div>
+
+    <div class="po-md-12 div-chart">
+        <po-chart
+        class="po-md-12"
         [p-title]="productCategoriesEvolutionTitle"
         [p-height]="550"
         [p-categories]="productCategoriesEvolutionItems"
