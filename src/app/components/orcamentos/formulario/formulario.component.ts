@@ -495,6 +495,7 @@ export class FormularioComponent {
       "lojaCliente":          this.headerData.customerId.slice(-2)      ?? "",
       "condPagamento":        this.headerData.paymentTerms              ?? "",
       "vendedor":             this.headerData.sellerId                  ?? "",
+      "tipoVendedor":         localStorage.getItem('sellerType')        ?? "",
       "situacao":             this.headerData.budgetStatus              ?? "",
       "condPagFrete":         this.headerData.freightPaymentTerms       ?? "",
       "valorFreteBase":       this.headerData.freightCost               ?? 0,
